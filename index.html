@@ -347,10 +347,10 @@ body {
   width: 18px; border-radius: 3px;
 }
 
-/* Integration layer */
-.v2-layer.layer-integ { background: rgba(99, 223, 78, 0.04); }
-.v2-layer.layer-integ:hover { background: rgba(99, 223, 78, 0.07); box-shadow: 0 12px 40px rgba(99,223,78,0.05), 0 4px 20px rgba(0,0,0,0.3); }
-.v2-layer.layer-integ .layer-accent { background: var(--wasabi); box-shadow: 0 0 10px rgba(99,223,78,0.3); }
+/* Integration / WDF layer — Dark Teal accent (connectivity) */
+.v2-layer.layer-integ { background: rgba(4, 67, 85, 0.12); }
+.v2-layer.layer-integ:hover { background: rgba(4, 67, 85, 0.2); box-shadow: 0 12px 40px rgba(4,67,85,0.1), 0 4px 20px rgba(0,0,0,0.3); }
+.v2-layer.layer-integ .layer-accent { background: var(--dark-teal); box-shadow: 0 0 10px rgba(4,67,85,0.5); }
 
 /* ══════════ TOP ROW CARDS (use v2-layer base for consistency) ══════════ */
 /* EmployeeWorks accent */
@@ -390,18 +390,19 @@ body {
   display: flex; flex-direction: column; gap: 0;
 }
 .foundation-stack .v2-layer { margin-bottom: 0; }
-/* Core layer accent */
-.v2-layer.layer-core { background: rgba(61, 184, 212, 0.035); }
-.v2-layer.layer-core:hover { background: rgba(61, 184, 212, 0.07); box-shadow: 0 12px 40px rgba(61,184,212,0.05), 0 4px 20px rgba(0,0,0,0.3); }
-.v2-layer.layer-core .layer-accent { background: #3DB8D4; box-shadow: 0 0 10px rgba(61,184,212,0.3); }
-/* Security layer accent */
-.v2-layer.layer-security { background: rgba(140, 170, 190, 0.03); }
-.v2-layer.layer-security:hover { background: rgba(140, 170, 190, 0.06); box-shadow: 0 12px 40px rgba(140,170,190,0.04), 0 4px 20px rgba(0,0,0,0.3); }
-.v2-layer.layer-security .layer-accent { background: #8CAABE; box-shadow: 0 0 10px rgba(140,170,190,0.25); }
-/* Infrastructure layer accent */
-.v2-layer.layer-infra { background: rgba(90, 122, 138, 0.03); }
-.v2-layer.layer-infra:hover { background: rgba(90, 122, 138, 0.06); box-shadow: 0 12px 40px rgba(90,122,138,0.04), 0 4px 20px rgba(0,0,0,0.3); }
-.v2-layer.layer-infra .layer-accent { background: #6A8A9A; box-shadow: 0 0 10px rgba(90,122,138,0.25); }
+/* Foundation layers — progressive Infinite Blue tint fade (bright → muted) */
+/* Core layer — brightest foundation, Infinite Blue with teal tint */
+.v2-layer.layer-core { background: rgba(3, 45, 66, 0.25); }
+.v2-layer.layer-core:hover { background: rgba(3, 45, 66, 0.35); box-shadow: 0 12px 40px rgba(3,45,66,0.12), 0 4px 20px rgba(0,0,0,0.3); }
+.v2-layer.layer-core .layer-accent { background: #0A6E8A; box-shadow: 0 0 10px rgba(10,110,138,0.4); }
+/* Security layer — mid foundation */
+.v2-layer.layer-security { background: rgba(3, 45, 66, 0.18); }
+.v2-layer.layer-security:hover { background: rgba(3, 45, 66, 0.28); box-shadow: 0 12px 40px rgba(3,45,66,0.08), 0 4px 20px rgba(0,0,0,0.3); }
+.v2-layer.layer-security .layer-accent { background: #0A5A72; box-shadow: 0 0 10px rgba(10,90,114,0.35); }
+/* Infrastructure layer — most muted foundation */
+.v2-layer.layer-infra { background: rgba(3, 45, 66, 0.12); }
+.v2-layer.layer-infra:hover { background: rgba(3, 45, 66, 0.22); box-shadow: 0 12px 40px rgba(3,45,66,0.06), 0 4px 20px rgba(0,0,0,0.3); }
+.v2-layer.layer-infra .layer-accent { background: #0A4A5E; box-shadow: 0 0 10px rgba(10,74,94,0.3); }
 
 /* ══════════ EW PLUGIN SIDEBAR (LEFT) ══════════ */
 .ew-sidebar {
