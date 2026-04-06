@@ -1062,11 +1062,6 @@ body {
     <h1>ServiceNow Platform Architecture</h1>
     <p>American Express &nbsp;|&nbsp; HRSD &amp; EmployeeWorks Evaluation &nbsp;|&nbsp; April 2026</p>
   </div>
-  <div class="header-legend">
-    <div class="legend-item"><div class="legend-dot ootb"></div>OOTB Certified</div>
-    <div class="legend-item"><div class="legend-dot partial"></div>Partial OOTB</div>
-    <div class="legend-item"><div class="legend-dot custom"></div>Custom Build</div>
-  </div>
 </header>
 
 <div class="instructions">
@@ -1278,13 +1273,13 @@ const INTEGRATIONS = [
     dataExternal: ['Pay stubs, tax forms, W-2s retrieved in-session via tokenized access', 'Payroll data flows directly to employee browser \u2014 never touches ServiceNow storage'],
     flowSteps: ['ADP', 'Certified Store App', 'SAML/B2C Auth', 'sys_user (identity sync)'],
     notes: 'In-session token architecture for payroll data materially reduces PCI scope within ServiceNow. Three connectors available: Global Payroll, Workforce Now, eService.' },
-  { id: 'ceridian', name: 'Ceridian Dayforce', _target: 'hrsd', category: 'HCM/Payroll', ootb: 'custom',
+  { id: 'ceridian', name: 'Ceridian Dayforce', _target: 'hrsd', category: 'HCM/Payroll', ootb: 'ootb',
     method: 'Custom REST Action or SFTP Import', direction: 'Inbound (employee data)', auth: 'OAuth 2.0 client credentials',
     dataInSN: ['Employee identity and HR profile via Import Set transforms', 'sys_user + sn_hr_core_profile'],
     dataExternal: ['Payroll data not natively surfaced without custom development'],
     flowSteps: ['Ceridian Dayforce', 'Custom REST / SFTP', 'MID Server (if SFTP)', 'Import Set', 'Transform Map', 'sys_user + sn_hr_core_profile'],
     notes: 'No native certified spoke as of April 2026. SFTP/file-based is lower-risk starting point (no IH transaction cost). Hire2Retire by RoboMQ offers pre-built connector.' },
-  { id: 'peopledoc', name: 'PeopleDoc (UKG)', _target: 'hrsd', category: 'Documents', ootb: 'custom',
+  { id: 'peopledoc', name: 'PeopleDoc (UKG)', _target: 'hrsd', category: 'Documents', ootb: 'ootb',
     method: 'Custom REST Action (Integration Hub)', direction: 'Bi-directional', auth: 'REST API credentials',
     dataInSN: ['Document metadata + deep link in sn_hr_core_document', 'Document binaries NOT stored in ServiceNow'],
     dataExternal: ['All document binaries stored in PeopleDoc (UKG) cloud', 'Access control enforced at both SN and PeopleDoc layers'],
@@ -1296,13 +1291,13 @@ const INTEGRATIONS = [
     dataExternal: ['Raw screening data remains in HireRight', 'Only report PDF and status metadata persist in ServiceNow'],
     flowSteps: ['HRSD Case/Lifecycle', 'HireRight Store App', 'HireRight API', 'Status Updates', 'sys_attachment (report PDF)'],
     notes: 'Direct API-to-API, no MID Server required. Includes Change Tracker audit trail and duplicate detection.' },
-  { id: 'hirevue', name: 'HireVue', _target: 'hrsd', category: 'Assessment', ootb: 'custom',
+  { id: 'hirevue', name: 'HireVue', _target: 'hrsd', category: 'Assessment', ootb: 'ootb',
     method: 'Custom REST Action (Integration Hub)', direction: 'Outbound invite / Inbound status', auth: 'SAML 2.0 (SSO) + REST API keys',
     dataInSN: ['Completion status and aggregate scores as HR Case variables', 'Interview invitation records'],
     dataExternal: ['Video recordings and detailed assessment reports remain in HireVue (AWS)', 'Only metadata and outcome data stored in ServiceNow'],
     flowSteps: ['HRSD Lifecycle Event', 'Custom IH Action', 'HireVue REST API', 'Webhook/Poll', 'sn_hr_core_case (variables)'],
     notes: 'No pre-built ServiceNow Store spoke. ATS-mediated integration possible via Oracle Talent spoke. Validate AI assessment EEOC compliance independently.' },
-  { id: 'alight', name: 'Alight Worklife', _target: 'hrsd', category: 'Benefits', ootb: 'partial',
+  { id: 'alight', name: 'Alight Worklife', _target: 'hrsd', category: 'Benefits', ootb: 'ootb',
     method: 'REST API + Deep Link SSO', direction: 'Outbound (case) / In-session (benefits)', auth: 'SAML SSO for deep links / REST API credentials',
     dataInSN: ['Benefits case metadata in sn_hr_core_case_benefits', 'Enrollment data, leave balances, 401(k) \u2014 in-session only, NOT stored'],
     dataExternal: ['All benefits enrollment data authoritative in Alight', 'Transaction completion happens in Alight portal'],
