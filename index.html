@@ -50,6 +50,9 @@ body {
   color: var(--text-primary);
   overflow-x: hidden;
   position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 /* ══════════ ATMOSPHERIC BACKGROUND ══════════ */
@@ -74,7 +77,7 @@ body {
   background: rgba(3, 45, 66, 0.45);
   backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);
   border-bottom: 1px solid var(--border-glass);
-  padding: 20px 40px;
+  padding: 18px 40px;
   display: flex; align-items: center; gap: 18px;
 }
 .header-bar { width: 3px; height: 44px; background: var(--wasabi); border-radius: 2px; flex-shrink: 0; box-shadow: 0 0 12px rgba(99,223,78,0.3); }
@@ -89,7 +92,7 @@ body {
 
 /* ══════════ INSTRUCTIONS ══════════ */
 .instructions {
-  text-align: center; padding: 11px 20px; position: relative; z-index: 2;
+  text-align: center; padding: 9px 20px; position: relative; z-index: 2;
   font-size: 12px; color: var(--text-muted); font-weight: 300; letter-spacing: 0.3px;
   background: rgba(3, 45, 66, 0.18);
   border-bottom: 1px solid rgba(255,255,255,0.025);
@@ -100,16 +103,20 @@ body {
 .diagram-container {
   max-width: 100vw;
   margin: 0 auto;
-  padding: 10px 12px 8px;
+  padding: 14px 12px 6px;
   box-sizing: border-box;
+  flex: 1;
   position: relative; z-index: 2;
+  display: flex;
+  flex-direction: column;
 }
 
 .main-grid {
   display: grid;
-  grid-template-columns: minmax(120px, 15vw) 1fr minmax(120px, 15vw);
+  grid-template-columns: minmax(160px, 18vw) 1fr minmax(160px, 18vw);
   gap: 10px;
   align-items: start;
+  flex: 1;
 }
 
 .conn-svg {
@@ -124,20 +131,24 @@ body {
     linear-gradient(var(--bg-deep), var(--bg-deep)) padding-box,
     conic-gradient(from var(--border-angle), rgba(99,223,78,0.4), rgba(99,223,78,0.05), rgba(167,139,250,0.2), rgba(99,223,78,0.05), rgba(99,223,78,0.4)) border-box;
   border-radius: 20px;
-  padding: 24px;
+  padding: 20px 24px;
   position: relative;
   box-shadow: 0 0 60px rgba(99, 223, 78, 0.03), inset 0 0 60px rgba(99, 223, 78, 0.01);
   animation: spin-border 8s linear infinite;
   display: flex;
   flex-direction: column;
   gap: 0;
+  min-width: 0;
+  justify-content: space-evenly;
+  align-self: stretch;
 }
 
 .sn-label {
-  position: absolute; top: -10px; left: 28px;
+  position: absolute; top: -6px; left: 50%; transform: translateX(-50%);
   font-size: 11px; font-weight: 600; text-transform: uppercase;
   letter-spacing: 1.5px; color: var(--wasabi);
-  background: var(--bg-deep); padding: 0 12px;
+  background: var(--bg-deep); padding: 0 16px;
+  white-space: nowrap;
 }
 
 .top-row {
@@ -158,6 +169,7 @@ body {
   gap: 10px;
   background: rgba(92, 224, 216, 0.03);
   border: 1px solid rgba(92, 224, 216, 0.08);
+  --accent-rgb: 92, 224, 216;
 }
 .v2-layer.layer-engage-thin:hover {
   background: rgba(92, 224, 216, 0.07);
@@ -200,7 +212,7 @@ body {
 }
 
 .flow-indicator {
-  text-align: center; padding: 6px 0;
+  text-align: center; padding: 4px 0;
   font-size: 10px; color: var(--wasabi); opacity: 0.08;
   letter-spacing: 12px;
 }
@@ -212,7 +224,7 @@ body {
 
 /* ══════════ COMPACT LAYER ROWS ══════════ */
 .v2-layer {
-  padding: 20px 28px;
+  padding: 18px 28px;
   border-radius: var(--radius);
   cursor: pointer;
   transition: transform var(--transition), box-shadow var(--transition), background var(--transition), border-color var(--transition);
@@ -225,6 +237,7 @@ body {
   margin-bottom: 0;
   opacity: 0;
   animation: layer-enter 0.6s var(--ease-out) forwards;
+  overflow: hidden;
 }
 .v2-layer:hover {
   transform: translateY(-3px) scale(1.006);
@@ -233,16 +246,33 @@ body {
   border-color: var(--border-accent);
 }
 .v2-layer:hover .layer-accent {
-  width: 4px;
-  box-shadow: 0 0 14px currentColor;
+  width: 6px;
+  box-shadow: 0 0 18px currentColor;
 }
 .v2-layer:hover .layer-badge {
   background: rgba(255,255,255,0.08);
 }
 .v2-layer .layer-accent {
-  position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
-  border-radius: 3px 0 0 3px;
+  position: absolute; left: 0; top: 0; bottom: 0; width: 5px;
+  border-radius: 0;
   transition: width 0.3s ease, box-shadow 0.3s ease;
+  z-index: 1;
+}
+/* Gradient wash that bleeds accent color into the card */
+.v2-layer::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 80px;
+  background: linear-gradient(to right, rgba(var(--accent-rgb, 255,255,255), 0.12), rgba(var(--accent-rgb, 255,255,255), 0.02), transparent);
+  pointer-events: none;
+  z-index: 0;
+  transition: width 0.4s var(--ease-out), opacity 0.4s ease;
+  opacity: 0.8;
+}
+.v2-layer:hover::before {
+  width: 140px;
+  opacity: 1;
 }
 .v2-layer .layer-icon { font-size: 24px; width: 36px; text-align: center; flex-shrink: 0; }
 .v2-layer .layer-info { flex: 1; min-width: 0; }
@@ -257,12 +287,12 @@ body {
 .v2-layer:hover .layer-arrow { transform: translateX(4px); color: var(--wasabi); }
 
 /* AI layer accent */
-.v2-layer.layer-ai { background: rgba(99, 223, 78, 0.045); }
+.v2-layer.layer-ai { background: rgba(99, 223, 78, 0.045); --accent-rgb: 99, 223, 78; }
 .v2-layer.layer-ai:hover { background: rgba(99, 223, 78, 0.08); box-shadow: 0 12px 40px rgba(99,223,78,0.05), 0 4px 20px rgba(0,0,0,0.3); }
 .v2-layer.layer-ai .layer-accent { background: var(--wasabi); box-shadow: 0 0 10px rgba(99,223,78,0.3); }
 
 /* App layer accent */
-.v2-layer.layer-hrsd { background: rgba(129, 181, 161, 0.04); }
+.v2-layer.layer-hrsd { background: rgba(129, 181, 161, 0.04); --accent-rgb: 129, 181, 161; }
 .v2-layer.layer-hrsd:hover { background: rgba(129, 181, 161, 0.08); box-shadow: 0 12px 40px rgba(129,181,161,0.05), 0 4px 20px rgba(0,0,0,0.3); }
 .v2-layer.layer-hrsd .layer-accent { background: var(--sn-green); box-shadow: 0 0 10px rgba(129,181,161,0.3); }
 
@@ -271,6 +301,7 @@ body {
   position: relative;
   opacity: 0;
   animation: layer-enter 0.6s var(--ease-out) 0.3s forwards;
+  min-width: 0;
 }
 .app-carousel-scroll {
   display: flex;
@@ -283,6 +314,8 @@ body {
   gap: 0;
   /* Lock height to a standard layer so scaffold content doesn't expand it */
   max-height: 78px;
+  min-width: 0;
+  width: 100%;
 }
 .app-carousel-scroll::-webkit-scrollbar { display: none; }
 
@@ -326,10 +359,15 @@ body {
   border-radius: 6px;
 }
 
-/* Dot indicators */
+/* Dot indicators — overlaid inside the carousel */
 .app-carousel-dots {
   display: flex; justify-content: center; gap: 6px;
-  padding: 6px 0 0;
+  padding: 0;
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
 }
 .app-carousel-dot {
   width: 6px; height: 6px; border-radius: 50%;
@@ -344,13 +382,13 @@ body {
 }
 
 /* Integration / WDF layer — Dark Teal accent (connectivity) */
-.v2-layer.layer-integ { background: rgba(4, 67, 85, 0.12); }
+.v2-layer.layer-integ { background: rgba(4, 67, 85, 0.12); --accent-rgb: 4, 67, 85; }
 .v2-layer.layer-integ:hover { background: rgba(4, 67, 85, 0.2); box-shadow: 0 12px 40px rgba(4,67,85,0.1), 0 4px 20px rgba(0,0,0,0.3); }
 .v2-layer.layer-integ .layer-accent { background: var(--dark-teal); box-shadow: 0 0 10px rgba(4,67,85,0.5); }
 
 /* ══════════ TOP ROW CARDS (use v2-layer base for consistency) ══════════ */
 /* EmployeeWorks accent */
-.v2-layer.layer-ew { background: rgba(167, 139, 250, 0.04); animation: layer-enter 0.6s var(--ease-out) 0.1s forwards, ew-pulse 4s ease-in-out 0.8s infinite; }
+.v2-layer.layer-ew { background: rgba(167, 139, 250, 0.04); --accent-rgb: 167, 139, 250; animation: layer-enter 0.6s var(--ease-out) 0.1s forwards, ew-pulse 4s ease-in-out 0.8s infinite; }
 .v2-layer.layer-ew:hover { background: rgba(167, 139, 250, 0.08); box-shadow: 0 12px 40px rgba(167,139,250,0.06), 0 4px 20px rgba(0,0,0,0.3); }
 .v2-layer.layer-ew .layer-accent { background: #A78BFA; box-shadow: 0 0 10px rgba(167,139,250,0.4); }
 .v2-layer.layer-ew .layer-name { color: #A78BFA; }
@@ -366,7 +404,7 @@ body {
 .ew-sub-stat strong { color: #A78BFA; font-weight: 600; }
 
 /* Engagement Layer accent */
-.v2-layer.layer-engage { background: rgba(92, 224, 216, 0.04); }
+.v2-layer.layer-engage { background: rgba(92, 224, 216, 0.04); --accent-rgb: 92, 224, 216; }
 .v2-layer.layer-engage:hover { background: rgba(92, 224, 216, 0.08); box-shadow: 0 12px 40px rgba(92,224,216,0.05), 0 4px 20px rgba(0,0,0,0.3); }
 .v2-layer.layer-engage .layer-accent { background: #5CE0D8; box-shadow: 0 0 10px rgba(92,224,216,0.3); }
 .v2-layer.layer-engage:hover .layer-arrow { color: #5CE0D8; }
@@ -388,15 +426,15 @@ body {
 .foundation-stack .v2-layer { margin-bottom: 0; }
 /* Foundation layers — progressive Infinite Blue tint fade (bright → muted) */
 /* Core layer — brightest foundation, Infinite Blue with teal tint */
-.v2-layer.layer-core { background: rgba(3, 45, 66, 0.25); }
+.v2-layer.layer-core { background: rgba(3, 45, 66, 0.25); --accent-rgb: 10, 110, 138; }
 .v2-layer.layer-core:hover { background: rgba(3, 45, 66, 0.35); box-shadow: 0 12px 40px rgba(3,45,66,0.12), 0 4px 20px rgba(0,0,0,0.3); }
 .v2-layer.layer-core .layer-accent { background: #0A6E8A; box-shadow: 0 0 10px rgba(10,110,138,0.4); }
 /* Security layer — mid foundation */
-.v2-layer.layer-security { background: rgba(3, 45, 66, 0.18); }
+.v2-layer.layer-security { background: rgba(3, 45, 66, 0.18); --accent-rgb: 10, 90, 114; }
 .v2-layer.layer-security:hover { background: rgba(3, 45, 66, 0.28); box-shadow: 0 12px 40px rgba(3,45,66,0.08), 0 4px 20px rgba(0,0,0,0.3); }
 .v2-layer.layer-security .layer-accent { background: #0A5A72; box-shadow: 0 0 10px rgba(10,90,114,0.35); }
 /* Infrastructure layer — most muted foundation */
-.v2-layer.layer-infra { background: rgba(3, 45, 66, 0.12); }
+.v2-layer.layer-infra { background: rgba(3, 45, 66, 0.12); --accent-rgb: 10, 74, 94; }
 .v2-layer.layer-infra:hover { background: rgba(3, 45, 66, 0.22); box-shadow: 0 12px 40px rgba(3,45,66,0.06), 0 4px 20px rgba(0,0,0,0.3); }
 .v2-layer.layer-infra .layer-accent { background: #0A4A5E; box-shadow: 0 0 10px rgba(10,74,94,0.3); }
 
@@ -405,6 +443,8 @@ body {
   display: flex; flex-direction: column; gap: 8px;
   padding: 0 0 0 0;
   position: relative;
+  min-width: 0;
+  overflow: hidden;
 }
 .ew-sidebar-label {
   font-size: 9px; font-weight: 600; text-transform: uppercase;
@@ -412,14 +452,15 @@ body {
   padding-left: 4px;
 }
 .ew-node {
-  padding: 14px 16px; border-radius: 12px;
+  padding: 12px 10px; border-radius: 12px;
   background: rgba(167, 139, 250, 0.03);
   border: 1px solid rgba(167, 139, 250, 0.08);
   cursor: pointer; transition: all 0.3s ease;
-  display: flex; align-items: center; gap: 10px;
+  display: flex; align-items: center; gap: 8px;
   position: relative;
   opacity: 0;
   animation: ew-node-enter 0.5s var(--ease-out) forwards;
+  min-width: 0;
 }
 .ew-node:hover {
   background: rgba(167, 139, 250, 0.07);
@@ -433,7 +474,7 @@ body {
   box-shadow: 0 0 24px rgba(167, 139, 250, 0.12), 0 8px 24px rgba(0,0,0,0.2);
 }
 .ew-node-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; background: #A78BFA; box-shadow: 0 0 8px rgba(167,139,250,0.5); }
-.ew-node-info { flex: 1; }
+.ew-node-info { flex: 1; min-width: 0; }
 .ew-node-name { font-size: 12px; font-weight: 600; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ew-node-cat { font-size: 10px; color: var(--text-muted); margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ew-node-count { font-size: 10px; color: #A78BFA; font-weight: 600; font-family: 'JetBrains Mono', monospace; flex-shrink: 0; }
@@ -450,6 +491,8 @@ body {
   padding: 0 0 0 0;
   position: relative;
   transition: opacity 0.4s ease, transform 0.4s ease;
+  min-width: 0;
+  overflow: hidden;
 }
 .integ-sidebar.hidden {
   opacity: 0;
@@ -462,14 +505,15 @@ body {
   padding-left: 4px;
 }
 .int-node {
-  padding: 14px 16px; border-radius: 12px;
+  padding: 12px 10px; border-radius: 12px;
   background: rgba(255,255,255,0.02);
   border: 1px solid rgba(255,255,255,0.05);
   cursor: pointer; transition: all 0.3s ease;
-  display: flex; align-items: center; gap: 10px;
+  display: flex; align-items: center; gap: 8px;
   position: relative;
   opacity: 0;
   animation: node-enter 0.5s var(--ease-out) forwards;
+  min-width: 0;
 }
 .int-node:hover {
   background: rgba(255,255,255,0.04);
@@ -486,9 +530,9 @@ body {
 .int-node-dot.ootb { background: var(--ootb-color); box-shadow: 0 0 8px rgba(99,223,78,0.5); }
 .int-node-dot.partial { background: var(--partial-color); box-shadow: 0 0 8px rgba(240,180,41,0.5); }
 .int-node-dot.custom { background: var(--custom-color); box-shadow: 0 0 8px rgba(255,107,74,0.5); }
-.int-node-info { flex: 1; }
+.int-node-info { flex: 1; min-width: 0; }
 .int-node-name { font-size: 12px; font-weight: 600; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.int-node-cat { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
+.int-node-cat { font-size: 10px; color: var(--text-muted); margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .int-node-arrow { color: var(--text-muted); font-size: 14px; transition: all 0.3s ease; flex-shrink: 0; }
 
 @keyframes node-enter {
@@ -1152,15 +1196,14 @@ const SVG_NS = 'http://www.w3.org/2000/svg';
 
 const LAYERS = [
   {
-    id: 'channels', name: 'Employee Channels', icon: '\uD83D\uDCF1', cssClass: 'layer-channels', accentClass: 'accent-channels',
-    subtitle: 'User Touchpoints',
-    tooltip: 'How employees access the platform',
-    desc: 'All employee-facing entry points into the ServiceNow ecosystem. Employee requests from any channel flow down into the EmployeeWorks AI layer below for intent classification, routing, and orchestrated resolution.',
+    id: 'fulfiller', name: 'Fulfiller Engagement Layer', icon: '\u2699\uFE0F', cssClass: 'layer-channels', accentClass: 'accent-channels',
+    subtitle: 'Agent & Admin Interfaces \u2014 Next Experience UI',
+    tooltip: 'Backend fulfillment interfaces for HR agents, managers, and admins',
+    desc: 'The platform UI layer that powers backend fulfillment. HR agents, managers, and admins use these interfaces to resolve requests that flow in through EmployeeWorks. Built on the Next Experience UI framework \u2014 a unified, role-based interface that reduces clicks and surfaces insights across the ServiceNow AI Platform. <a href="https://www.servicenow.com/docs/r/platform-user-interface/next-experience-landing-page.html" target="_blank" class="cite-link">[Next Experience UI Docs \u2197]</a>',
     components: [
-      { name: 'Slack', brief: 'Chat-based access to HR services', detail: 'EmployeeWorks AI Assistant integrates natively with Slack. Employees submit requests, check case status, and receive notifications directly in Slack. Virtual Agent and EmployeeWorks AI surface within the Slack interface via Integration Hub Slack Spoke.' },
-      { name: 'NowMobile App', brief: 'Native mobile application', detail: 'ServiceNow NowMobile provides full Employee Center functionality on iOS and Android. No separate mobile deployment required; inherits all HRSD configurations and ACLs from the platform.' },
-      { name: 'Web Portal', brief: 'Employee Center Pro (browser)', detail: 'Next Experience UI framework with branded layouts, personalized content tiles, and department-specific catalogs. Single portal surfaces HR, IT, Legal, and Facilities requests simultaneously based on employee profile.' },
-      { name: 'EmployeeWorks Web App', brief: 'Standalone AI assistant portal', detail: 'Direct browser access to the EmployeeWorks AI Assistant outside of Employee Center. Provides the same conversational AI and enterprise search capabilities.' }
+      { name: 'Next Experience UI', brief: 'Unified navigation shell with role-based landing pages', detail: 'The Next Experience UI delivers a next-generation, intuitive, personalized experience to drive productivity. Unifies your instance apps and reduces clicks with contextual app pill, menus, notifications, and search \u2014 all in one place. Features role-specific landing pages, pinnable navigation, favorites folders, and the Sidebar (replacing Connect Chat in Australia). <a href="https://www.servicenow.com/docs/r/platform-user-interface/next-experience-landing-page.html" target="_blank" class="cite-link">[Docs \u2197]</a>' },
+      { name: 'Configurable Workspace', brief: 'Agent-focused single-pane workspace with AI recommendations', detail: 'Provides a suite of tools in a single, focused work area to resolve issues. Agents get full context and AI-assisted recommendations in a single view. Communicate with customers, review issues, monitor major incidents \u2014 all from one configurable interface built on UI Builder. <a href="https://www.servicenow.com/docs/r/platform-user-interface/workspace-landing-page.html" target="_blank" class="cite-link">[Docs \u2197]</a>' },
+      { name: 'Now Mobile', brief: 'Native mobile app for agents and managers on iOS/Android', detail: 'ServiceNow Now Mobile provides full platform functionality on iOS and Android. Agents can manage cases, approvals, and tasks on the go. Inherits all configurations and ACLs from the platform. No separate mobile deployment required.' }
     ]
   },
   {
@@ -1224,16 +1267,16 @@ const LAYERS = [
   },
   {
     id: 'core', name: 'Now Platform Core', icon: '\u2699\uFE0F', cssClass: 'layer-core', accentClass: 'accent-core',
-    subtitle: 'Glide Runtime, MariaDB, CMDB, ACL Engine',
-    tooltip: 'Core platform runtime and data layer',
-    desc: 'All ServiceNow business logic runs through the Glide platform, a proprietary Java-based runtime. Custom scripts run in a restricted JavaScript sandbox with no file system access, no OS command execution, and no network calls except via approved APIs.',
+    subtitle: 'Glide Runtime, RaptorDB, CMDB/CSDM, ACL Engine, Workflow Studio',
+    tooltip: 'Core platform runtime, data layer, and automation engine',
+    desc: 'The foundational runtime powering all ServiceNow applications. All business logic executes through the Glide platform \u2014 a proprietary Java-based runtime with sandboxed scripting. Data persists in RaptorDB (dedicated database per customer), structured by the CMDB and Common Service Data Model. Access is enforced by a default-deny ACL engine, and automation runs through Workflow Studio. <a href="https://www.servicenow.com/docs/r/api-reference/server-api-reference/c_GlideRecordAPI.html" target="_blank" class="cite-link">[Glide API Docs \u2197]</a>',
     components: [
-      { name: 'Glide Runtime', brief: 'Java-based application platform', detail: 'Server-side JavaScript engine (ES5 compatible) with GlideRecord ORM, GlideSystem, and GlideUser APIs. Business rules execute as database triggers (before/after insert/update/delete). All custom scripts run in restricted sandbox: no file system access, no OS commands, no arbitrary network calls.' },
-      { name: 'MariaDB (Raptor DB)', brief: 'Isolated database per customer', detail: 'MySQL-compatible with InnoDB storage engine. Schema per customer (no shared tables between customers). Table inheritance model: child tables store only extended columns, joining to parent via sys_id. Full-text search via Apache Lucene index maintained alongside MariaDB.' },
-      { name: 'CMDB / CSDM 5.0', brief: 'Foundational data model for all applications', detail: 'Common Service Data Model v5.0 hierarchy: <strong>Business Capability</strong> (e.g., Workforce Management) \u2192 <strong>Business Service</strong> (e.g., HR Self-Service Portal) \u2192 <strong>Technical Service</strong> (infrastructure cluster) \u2192 <strong>Configuration Item</strong> (individual component). For HRSD: Employee \u2192 HR Cases \u2192 Business Service "HR Service Delivery" \u2192 Business Capability "Colleague Experience".' },
-      { name: 'ACL Engine', brief: 'Table, row, and field-level access control', detail: 'Every database read/write passes through the ACL engine before execution. Enforces field-level, row-level, and table-level controls. HRSD ACLs restrict case visibility to assigned HR agent and the employee. Even HR managers see only their department\'s cases by default. Agentic AI actions scoped by same ACL framework as human users.' },
-      { name: 'Workflow Engine', brief: 'State machine with parallel activities', detail: 'State machine-based execution supporting parallel activities, approvals, timers, and conditions. Powers all HRSD case routing, Lifecycle Event orchestration, and escalation workflows.' },
-      { name: 'Session Management', brief: 'Hazelcast distributed cache', detail: 'Distributed session cache managed by Hazelcast. Sessions survive individual node failures. Application tier is stateless by design; all state persists in database or cache. Nodes can be terminated and replaced without data loss.' }
+      { name: 'Glide Runtime', brief: 'Java-based application runtime with Mozilla Rhino JavaScript engine and sandboxed scripting', detail: 'The Glide platform is ServiceNow\'s proprietary Java-based application server runtime. Server-side JavaScript executes on the Mozilla Rhino engine (an ECMAScript implementation written in Java), which creates an individual sandboxed context for each script execution \u2014 if a script crashes, only that sandbox fails, not the entire Java environment. The sandbox restricts file system access, OS commands, and arbitrary network calls; the Java SecurityManager acts as a last line of defense.<br><br><strong>Key APIs:</strong><ul><li><strong>GlideRecord</strong> \u2014 Primary database interaction class (ORM). Query construction via addQuery()/addEncodedQuery(), execution with query(), iteration with next(), batch updates via updateMultiple(). Dot-walking syntax accesses related record fields.</li><li><strong>GlideSystem (gs)</strong> \u2014 Utility functions: user info retrieval, logging (info/warn/error/debug), page messaging, event generation, scheduled job execution</li><li><strong>GlideDateTime</strong> \u2014 Date-time operations, timezone handling, chronological comparisons</li><li><strong>GlideElement</strong> \u2014 Field-level methods: canCreate(), canRead(), canWrite()</li></ul><strong>Execution model:</strong> Business Rules execute as server-side triggers (before/after/async/display) on insert/update/delete. Script Includes provide reusable server-side classes. The <code>current</code> and <code>previous</code> GlideRecord objects are auto-instantiated in Business Rules.<br><div class="cite-section"><strong style="color:var(--text-muted);">Sources:</strong><br><a href="https://www.servicenow.com/docs/r/api-reference/server-api-reference/c_GlideRecordAPI.html" target="_blank" class="cite-link">GlideRecord API Reference \u2197</a><br><a href="https://www.servicenow.com/docs/r/api-reference/server-api-reference/c_GlideSystemAPI.html" target="_blank" class="cite-link">GlideSystem API Reference \u2197</a></div>' },
+      { name: 'RaptorDB', brief: 'PostgreSQL-based HTAP database replacing MariaDB \u2014 dedicated per customer instance', detail: 'ServiceNow is transitioning from MariaDB (MySQL fork) to <strong>RaptorDB</strong>, a high-performance Hybrid Transactional and Analytical Processing (HTAP) database built on a fork of PostgreSQL. ServiceNow acquired Swarm64 (a PostgreSQL performance specialist) to build RaptorDB with proprietary extensions. Each customer instance gets a dedicated, isolated database \u2014 no co-mingling of customer data.<br><br><strong>RaptorDB capabilities:</strong><ul><li><strong>HTAP</strong> \u2014 Combines transactional and analytical processing on a single engine, eliminating ETL processes</li><li><strong>Parallel processing</strong> \u2014 Distributes workloads across multiple CPU cores with a custom query planner</li><li><strong>Column-store indexing</strong> \u2014 Automatically indexes and compresses large datasets for faster reporting</li><li><strong>Performance</strong> \u2014 Up to 93,257 TPS vs MariaDB\'s 35,121; analytics up to 27x faster; overall transactions up to 53% faster</li></ul><strong>Table inheritance model:</strong> Tables use a hierarchical extension model \u2014 child tables inherit parent fields. The CMDB uses Table Per Partition (TPP) where parent and child records are stored in a single logical table. Full-text search powered by Apache Lucene.<br><br><strong>Variants:</strong> RaptorDB Standard (default for new instances) and RaptorDB Professional (ultra-scale for AI and machine-scale workloads).<br><div class="cite-section"><strong style="color:var(--text-muted);">Sources:</strong><br><a href="https://www.servicenow.com/docs/r/servicenow-platform/raptordb.html" target="_blank" class="cite-link">RaptorDB Documentation \u2197</a><br><a href="https://www.servicenow.com/products/raptordb.html" target="_blank" class="cite-link">RaptorDB Product Page \u2197</a></div>' },
+      { name: 'CMDB / CSDM', brief: 'Configuration Management Database with Common Service Data Model \u2014 standardized data foundation', detail: 'The <strong>CMDB</strong> is ServiceNow\'s system of record for all IT and business assets, built on a hierarchical table model. The base table <code>cmdb</code> (non-IT CIs) extends to <code>cmdb_ci</code> (IT Configuration Items), which further extends to classes like cmdb_ci_hardware, cmdb_ci_computer, cmdb_ci_service, etc. Relationships defined in <code>cmdb_rel_ci</code>.<br><br>The <strong>Common Service Data Model (CSDM)</strong> is a standardized framework defining service-related terms and relationships for all ServiceNow products.<br><br><strong>CSDM Domains:</strong><ul><li><strong>Foundation</strong> \u2014 Data definitions, locations, groups, users, companies</li><li><strong>Design</strong> \u2014 Business capabilities, information objects, service design</li><li><strong>Build & Integration</strong> \u2014 Application services, technical services, infrastructure</li><li><strong>Manage Technical Services</strong> \u2014 Operational CIs, monitoring, health</li><li><strong>Sell/Consume</strong> \u2014 Service offerings, requests, entitlements</li></ul><strong>Implementation maturity:</strong> Foundation \u2192 Crawl \u2192 Walk \u2192 Run \u2192 Fly.<br><div class="cite-section"><strong style="color:var(--text-muted);">Sources:</strong><br><a href="https://www.servicenow.com/docs/r/servicenow-platform/configuration-management-database-cmdb/cnfig-mgmt-and-cmdb.html" target="_blank" class="cite-link">CMDB Overview \u2197</a><br><a href="https://www.servicenow.com/docs/r/servicenow-platform/common-service-data-model-csdm/csdm-landing-page.html" target="_blank" class="cite-link">CSDM Documentation \u2197</a></div>' },
+      { name: 'ACL Engine', brief: 'Default-deny security engine enforcing table, row, and field-level access control', detail: 'ServiceNow is <strong>default deny</strong> \u2014 permission must be explicitly granted by Access Controls for a user to have access. Every database read/write passes through the ACL engine before execution. Each ACL rule is evaluated as a three-part check where <em>all three must return true</em>:<br><br><strong>Three-part evaluation:</strong><ol><li><strong>Requires Role</strong> \u2014 User must possess at least one specified role</li><li><strong>Condition</strong> \u2014 Dynamic field-based requirements (e.g., [Assigned to] [is] [Me])</li><li><strong>Script</strong> \u2014 Server-side logic using GlideSystem/GlideRecord APIs</li></ol><strong>Evaluation order</strong> (most specific to most generic):<ol><li>Table.field (exact match)</li><li>Parent table.field</li><li>*.field (wildcard)</li><li>Table.*</li><li>Parent table.*</li><li>*.* (universal wildcard)</li></ol><strong>ACL types protect:</strong> Records (table rows), Fields (columns), Client-callable Script Includes, Processors, REST endpoints, and UI Pages.<br><div class="cite-section"><strong style="color:var(--text-muted);">Sources:</strong><br><a href="https://www.servicenow.com/docs/r/platform-security/access-control/acl-rule-types.html" target="_blank" class="cite-link">ACL Rule Types \u2197</a><br><a href="https://www.servicenow.com/docs/r/platform-security/access-control/t_CreateAnACLRule.html" target="_blank" class="cite-link">Configure an ACL Rule \u2197</a></div>' },
+      { name: 'Workflow Studio', brief: 'Low-code automation engine with triggers, actions, subflows, and IntegrationHub', detail: '<strong>Workflow Studio</strong> (formerly Flow Designer) is ServiceNow\'s strategic low-code automation engine, replacing the legacy Workflow Editor. A flow consists of a trigger and one or more actions, executing in sequence when trigger conditions are satisfied.<br><br><strong>Trigger types:</strong><ul><li><strong>Record triggers</strong> \u2014 Execute on record create/update/delete with configurable run frequency</li><li><strong>Date triggers</strong> \u2014 Scheduled: daily, weekly, monthly, repeat, or run-once</li><li><strong>Application triggers</strong> \u2014 SLA Task, Inbound Email, Service Catalog</li></ul><strong>Core capabilities:</strong><ul><li><strong>Actions</strong> \u2014 Reusable blocks: Create/Update Record, Ask for Approval, Look Up Records, Send Email/SMS, Log, Wait For Condition</li><li><strong>Subflows</strong> \u2014 Reusable flows without triggers, called programmatically or from other flows. Accept inputs and return outputs.</li><li><strong>Data pills</strong> \u2014 Visual variable references with dot-walking support</li><li><strong>Error handling</strong> \u2014 Dedicated error handler section with up to 10 remediation actions</li><li><strong>Flow logic</strong> \u2014 If/Else, For Each, Do Until, Wait For Condition</li></ul><strong>IntegrationHub</strong> extends Workflow Studio with 250+ pre-built spokes for third-party system integration.<br><div class="cite-section"><strong style="color:var(--text-muted);">Source:</strong> <a href="https://www.servicenow.com/docs/r/build-workflows/workflow-studio/flow-designer-reference.html" target="_blank" class="cite-link">Workflow Studio Reference \u2197</a></div>' },
+      { name: 'Application Nodes', brief: 'Multi-instance architecture with dedicated app nodes, horizontal scaling, and AHA failover', detail: 'The Now Platform is deployed on an advanced <strong>multi-instance architecture</strong> with separate application nodes and database processes for each customer. No co-mingling of customer data \u2014 each instance runs its own application logic and database independently.<br><br><strong>Architecture:</strong><ul><li>Every instance has minimum <strong>2 application nodes</strong> (up to 37 in rare cases)</li><li>Each node runs a <strong>Java servlet (Glide)</strong> with servlet container and thread pool</li><li><strong>Generic nodes</strong> process all workloads; <strong>UI/Worker nodes</strong> split user transactions from scheduled jobs/integrations</li><li>Horizontal scaling on a per-customer basis to meet performance needs</li></ul><strong>Availability:</strong><ul><li>Instances deployed across <strong>10 regional colocation pairs</strong> (20 data centers, 5 continents)</li><li>Both data centers active with real-time async database replication</li><li><strong>AHA transfer</strong> completes in under 2 minutes between facilities</li><li>No downtime necessary for upgrades</li></ul><strong>Sessions:</strong> Sticky affinity to specific nodes. If a node fails, user re-authenticates on a replacement. All persistent state stored in database, enabling node replacement without data loss.<br><div class="cite-section"><strong style="color:var(--text-muted);">Sources:</strong><br><a href="https://www.servicenow.com/standard/resource-center/white-paper/wp-sn-advanced-high-availability-architecture.html" target="_blank" class="cite-link">AHA Architecture White Paper \u2197</a><br><a href="https://www.servicenow.com/community/developer-articles/understanding-application-nodes/ta-p/2586823" target="_blank" class="cite-link">Understanding Application Nodes \u2197</a></div>' }
     ]
   },
   {
@@ -1488,14 +1531,14 @@ const FEATURED_INTEGRATIONS = [
 // ═══════════════════════════════════════════
 
 const ENGAGEMENT_LAYER = {
-  id: 'engagement', name: 'Employee Channels', icon: '\uD83D\uDCF1',
-  subtitle: 'User Touchpoints',
-  tooltip: 'How employees access the platform',
-  desc: 'All employee-facing entry points into the ServiceNow ecosystem. Employees interact through these channels to access HR services, submit requests, and receive support.',
+  id: 'engagement', name: 'Fulfiller Engagement Layer', icon: '\u2699\uFE0F',
+  subtitle: 'Agent & Admin Interfaces \u2014 Next Experience UI',
+  tooltip: 'Backend fulfillment interfaces for HR agents, managers, and admins',
+  desc: 'The platform UI layer that powers backend fulfillment. HR agents, managers, and admins use these interfaces to resolve requests that flow in through EmployeeWorks. Built on the Next Experience UI framework \u2014 a unified, role-based interface that reduces clicks and surfaces insights across the ServiceNow AI Platform. <a href="https://www.servicenow.com/docs/r/platform-user-interface/next-experience-landing-page.html" target="_blank" class="cite-link">[Next Experience UI Docs \u2197]</a>',
   components: [
-    ...LAYERS[0].components,
-    LAYERS[2].components[6],
-    { name: 'Virtual Agent', brief: 'Conversational AI entry point across all channels', detail: LAYERS[1].components[0].detail }
+    { name: 'Next Experience UI', brief: 'Unified navigation shell with role-based landing pages', detail: 'The Next Experience UI delivers a next-generation, intuitive, personalized experience to drive productivity. Unifies your instance apps and reduces clicks with contextual app pill, menus, notifications, and search \u2014 all in one place. Features role-specific landing pages, pinnable navigation, favorites folders, and the Sidebar (replacing Connect Chat in Australia). <a href="https://www.servicenow.com/docs/r/platform-user-interface/next-experience-landing-page.html" target="_blank" class="cite-link">[Docs \u2197]</a>' },
+    { name: 'Configurable Workspace', brief: 'Agent-focused single-pane workspace with AI recommendations', detail: 'Provides a suite of tools in a single, focused work area to resolve issues. Agents get full context and AI-assisted recommendations in a single view. Communicate with customers, review issues, monitor major incidents \u2014 all from one configurable interface built on UI Builder. <a href="https://www.servicenow.com/docs/r/platform-user-interface/workspace-landing-page.html" target="_blank" class="cite-link">[Docs \u2197]</a>' },
+    { name: 'Now Mobile', brief: 'Native mobile app for agents and managers on iOS/Android', detail: 'ServiceNow Now Mobile provides full platform functionality on iOS and Android. Agents can manage cases, approvals, and tasks on the go. Inherits all configurations and ACLs from the platform. No separate mobile deployment required.' }
   ]
 };
 
@@ -1586,15 +1629,14 @@ function renderEngagementCompact() {
   container.innerHTML = `
     <div class="v2-layer layer-engage-thin" data-tooltip="${ENGAGEMENT_LAYER.tooltip}" style="animation-delay: 0.15s">
       <div class="layer-accent"></div>
-      <div class="layer-icon">\uD83D\uDCF1</div>
+      <div class="layer-icon">\u2699\uFE0F</div>
       <div class="layer-info">
-        <div class="layer-name">Employee Channels</div>
+        <div class="layer-name">Fulfiller Engagement Layer</div>
       </div>
       <div class="engage-channels-thin">
         ${channelNames.map(n => `<span>${n}</span>`).join('')}
       </div>
-      <div class="needs-review-tag">NEEDS REVIEW</div>
-      <div class="layer-badge">${comps.length} channels</div>
+      <div class="layer-badge">${comps.length} interfaces</div>
       <div class="layer-arrow">\u203A</div>
     </div>
   `;
@@ -1842,7 +1884,8 @@ function drawEWConnections() {
   const ewLayerEl = document.querySelector('#ew-compact .v2-layer');
   if (!ewLayerEl) return;
 
-  EW_SIDEBAR_PLUGINS.forEach((plugin) => {
+  const totalPlugins = EW_SIDEBAR_PLUGINS.length;
+  EW_SIDEBAR_PLUGINS.forEach((plugin, idx) => {
     const nodeEl = document.getElementById(`ew-${plugin.id}`);
     if (!nodeEl) return;
 
@@ -1850,11 +1893,13 @@ function drawEWConnections() {
     const tR = ewLayerEl.getBoundingClientRect();
     const color = '#A78BFA';
 
-    // From right edge of node to left edge of EmployeeWorks layer
+    // From right edge of node to left edge of EmployeeWorks layer, spread along the edge
     const x1 = nR.right - cRect.left;
     const y1 = nR.top + nR.height / 2 - cRect.top;
     const x2 = tR.left - cRect.left;
-    const y2 = tR.top + tR.height / 2 - cRect.top;
+    const padY = 8;
+    const spreadRange = tR.height - padY * 2;
+    const y2 = tR.top + padY + (totalPlugins > 1 ? (idx / (totalPlugins - 1)) * spreadRange : spreadRange / 2) - cRect.top;
 
     const midX = (x1 + x2) / 2;
     const cpOffset = (y1 - y2) * 0.15;
