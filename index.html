@@ -1,0 +1,2628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ServiceNow Platform Architecture v2 | American Express</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+@property --border-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+:root {
+  --bg-deep: #070E1A;
+  --bg-surface: rgba(3, 45, 66, 0.32);
+  --bg-surface-hover: rgba(3, 45, 66, 0.52);
+  --bg-card: rgba(8, 20, 42, 0.85);
+  --infinite-blue: #032D42;
+  --dark-teal: #044355;
+  --wasabi: #63DF4E;
+  --wasabi-50: rgba(99, 223, 78, 0.5);
+  --wasabi-20: rgba(99, 223, 78, 0.2);
+  --wasabi-10: rgba(99, 223, 78, 0.1);
+  --wasabi-05: rgba(99, 223, 78, 0.05);
+  --sn-green: #81B5A1;
+  --text-primary: #E4EDF0;
+  --text-secondary: #94ABB8;
+  --text-muted: #5A7080;
+  --border-glass: rgba(255, 255, 255, 0.06);
+  --border-accent: rgba(99, 223, 78, 0.15);
+  --border-hover: rgba(99, 223, 78, 0.35);
+  --ootb-color: #63DF4E;
+  --partial-color: #F0B429;
+  --custom-color: #FF6B4A;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --radius-xs: 6px;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --transition: 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Outfit', -apple-system, sans-serif;
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* ══════════ ATMOSPHERIC BACKGROUND ══════════ */
+.bg-mesh {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 900px 700px at 10% 40%, rgba(4, 67, 85, 0.5) 0%, transparent 70%),
+    radial-gradient(ellipse 600px 500px at 92% 18%, rgba(99, 223, 78, 0.035) 0%, transparent 55%),
+    radial-gradient(ellipse 1100px 800px at 50% 100%, rgba(3, 45, 66, 0.4) 0%, transparent 60%),
+    radial-gradient(ellipse 450px 450px at 78% 72%, rgba(99, 223, 78, 0.02) 0%, transparent 50%);
+  transition: transform 0.4s ease-out;
+}
+.bg-grid {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image: radial-gradient(circle, rgba(99, 223, 78, 0.035) 1px, transparent 1px);
+  background-size: 30px 30px;
+}
+
+/* ══════════ HEADER ══════════ */
+.header {
+  position: relative; z-index: 10;
+  background: rgba(3, 45, 66, 0.45);
+  backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);
+  border-bottom: 1px solid var(--border-glass);
+  padding: 20px 40px;
+  display: flex; align-items: center; gap: 18px;
+}
+.header-bar { width: 3px; height: 44px; background: var(--wasabi); border-radius: 2px; flex-shrink: 0; box-shadow: 0 0 12px rgba(99,223,78,0.3); }
+.header h1 { font-size: 21px; font-weight: 700; color: var(--wasabi); letter-spacing: -0.5px; }
+.header p { font-size: 12px; color: var(--text-secondary); margin-top: 3px; font-weight: 300; letter-spacing: 0.5px; }
+.header-legend { margin-left: auto; display: flex; gap: 20px; align-items: center; flex-shrink: 0; }
+.legend-item { display: flex; align-items: center; gap: 7px; font-size: 11px; color: var(--text-muted); font-weight: 400; letter-spacing: 0.3px; white-space: nowrap; }
+.legend-dot { width: 7px; height: 7px; border-radius: 50%; }
+.legend-dot.ootb { background: var(--ootb-color); box-shadow: 0 0 8px rgba(99,223,78,0.5); }
+.legend-dot.partial { background: var(--partial-color); box-shadow: 0 0 8px rgba(240,180,41,0.5); }
+.legend-dot.custom { background: var(--custom-color); box-shadow: 0 0 8px rgba(255,107,74,0.5); }
+
+/* ══════════ INSTRUCTIONS ══════════ */
+.instructions {
+  text-align: center; padding: 11px 20px; position: relative; z-index: 2;
+  font-size: 12px; color: var(--text-muted); font-weight: 300; letter-spacing: 0.3px;
+  background: rgba(3, 45, 66, 0.18);
+  border-bottom: 1px solid rgba(255,255,255,0.025);
+}
+.instructions strong { color: var(--wasabi); font-weight: 500; }
+
+/* ══════════ DIAGRAM CONTAINER ══════════ */
+.diagram-container {
+  max-width: 100vw;
+  margin: 0 auto;
+  padding: 10px 12px 8px;
+  box-sizing: border-box;
+  position: relative; z-index: 2;
+}
+
+.main-grid {
+  display: grid;
+  grid-template-columns: minmax(120px, 15vw) 1fr minmax(120px, 15vw);
+  gap: 10px;
+  align-items: start;
+}
+
+.conn-svg {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none; z-index: 5;
+}
+
+/* ══════════ SERVICENOW PLATFORM CONTAINER ══════════ */
+.sn-container {
+  border: 1px solid transparent;
+  background:
+    linear-gradient(var(--bg-deep), var(--bg-deep)) padding-box,
+    conic-gradient(from var(--border-angle), rgba(99,223,78,0.4), rgba(99,223,78,0.05), rgba(167,139,250,0.2), rgba(99,223,78,0.05), rgba(99,223,78,0.4)) border-box;
+  border-radius: 20px;
+  padding: 24px;
+  position: relative;
+  box-shadow: 0 0 60px rgba(99, 223, 78, 0.03), inset 0 0 60px rgba(99, 223, 78, 0.01);
+  animation: spin-border 8s linear infinite;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.sn-label {
+  position: absolute; top: -10px; left: 28px;
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 1.5px; color: var(--wasabi);
+  background: var(--bg-deep); padding: 0 12px;
+}
+
+.top-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 0;
+  opacity: 0;
+  animation: layer-enter 0.6s var(--ease-out) 0.1s forwards;
+}
+.top-row > div { display: flex; }
+.top-row .v2-layer { width: 100%; min-height: 0; }
+
+/* Engagement bar — thinner beneath EW */
+.v2-layer.layer-engage-thin {
+  min-height: 0;
+  padding: 8px 20px 8px 28px;
+  gap: 10px;
+  background: rgba(92, 224, 216, 0.03);
+  border: 1px solid rgba(92, 224, 216, 0.08);
+}
+.v2-layer.layer-engage-thin:hover {
+  background: rgba(92, 224, 216, 0.07);
+  box-shadow: 0 8px 28px rgba(92,224,216,0.04), 0 4px 16px rgba(0,0,0,0.2);
+}
+.v2-layer.layer-engage-thin .layer-accent { background: #5CE0D8; box-shadow: 0 0 10px rgba(92,224,216,0.3); }
+.v2-layer.layer-engage-thin:hover .layer-arrow { color: #5CE0D8; }
+.v2-layer.layer-engage-thin .layer-icon { font-size: 14px; width: 20px; flex-shrink: 0; }
+.v2-layer.layer-engage-thin .layer-info { flex: 0 0 auto; }
+.v2-layer.layer-engage-thin .layer-name { font-size: 11px; white-space: nowrap; }
+.v2-layer.layer-engage-thin .layer-sub { display: none; }
+.v2-layer.layer-engage-thin .layer-badge { font-size: 9px; padding: 2px 8px; flex-shrink: 0; white-space: nowrap; }
+.v2-layer.layer-engage-thin .layer-arrow { flex-shrink: 0; }
+.engage-channels-thin {
+  display: flex; flex-wrap: wrap; gap: 3px; flex: 1 1 0; min-width: 0; overflow: hidden;
+}
+.engage-channels-thin span {
+  font-size: 9px; color: var(--text-muted);
+  padding: 1px 7px;
+  background: rgba(92, 224, 216, 0.05);
+  border-radius: 8px;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+}
+.needs-review-tag {
+  flex-shrink: 0;
+  font-size: 9px; font-weight: 800; letter-spacing: 1px;
+  color: #fff;
+  background: #E53E3E;
+  padding: 3px 10px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  box-shadow: 0 0 12px rgba(229, 62, 62, 0.6), 0 0 4px rgba(229, 62, 62, 0.4);
+  animation: review-pulse 1.5s ease-in-out infinite;
+  white-space: nowrap;
+}
+@keyframes review-pulse {
+  0%, 100% { box-shadow: 0 0 12px rgba(229, 62, 62, 0.6), 0 0 4px rgba(229, 62, 62, 0.4); }
+  50% { box-shadow: 0 0 20px rgba(229, 62, 62, 0.9), 0 0 8px rgba(229, 62, 62, 0.6); }
+}
+
+.flow-indicator {
+  text-align: center; padding: 6px 0;
+  font-size: 10px; color: var(--wasabi); opacity: 0.08;
+  letter-spacing: 12px;
+}
+@keyframes flow-pulse {
+  0%, 100% { opacity: 0.08; }
+  50% { opacity: 0.25; }
+}
+.flow-indicator { animation: flow-pulse 3s ease-in-out infinite; }
+
+/* ══════════ COMPACT LAYER ROWS ══════════ */
+.v2-layer {
+  padding: 20px 28px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: transform var(--transition), box-shadow var(--transition), background var(--transition), border-color var(--transition);
+  position: relative;
+  display: flex; align-items: center; gap: 16px;
+  min-height: 72px;
+  background: var(--bg-surface);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-glass);
+  margin-bottom: 0;
+  opacity: 0;
+  animation: layer-enter 0.6s var(--ease-out) forwards;
+}
+.v2-layer:hover {
+  transform: translateY(-3px) scale(1.006);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+  background: var(--bg-surface-hover);
+  border-color: var(--border-accent);
+}
+.v2-layer:hover .layer-accent {
+  width: 4px;
+  box-shadow: 0 0 14px currentColor;
+}
+.v2-layer:hover .layer-badge {
+  background: rgba(255,255,255,0.08);
+}
+.v2-layer .layer-accent {
+  position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  border-radius: 3px 0 0 3px;
+  transition: width 0.3s ease, box-shadow 0.3s ease;
+}
+.v2-layer .layer-icon { font-size: 24px; width: 36px; text-align: center; flex-shrink: 0; }
+.v2-layer .layer-info { flex: 1; min-width: 0; }
+.v2-layer .layer-name { font-size: 15px; font-weight: 600; color: var(--text-primary); letter-spacing: -0.2px; }
+.v2-layer .layer-sub { font-size: 11px; color: var(--text-secondary); margin-top: 3px; font-weight: 300; }
+.v2-layer .layer-badge {
+  font-size: 10px; padding: 3px 10px; border-radius: 20px; white-space: nowrap;
+  background: rgba(255,255,255,0.05); color: var(--text-muted); font-weight: 400; letter-spacing: 0.3px;
+  transition: background 0.3s ease;
+}
+.v2-layer .layer-arrow { color: var(--text-muted); font-size: 16px; margin-left: 8px; transition: transform var(--transition), color var(--transition); }
+.v2-layer:hover .layer-arrow { transform: translateX(4px); color: var(--wasabi); }
+
+/* AI layer accent */
+.v2-layer.layer-ai { background: rgba(99, 223, 78, 0.045); }
+.v2-layer.layer-ai:hover { background: rgba(99, 223, 78, 0.08); box-shadow: 0 12px 40px rgba(99,223,78,0.05), 0 4px 20px rgba(0,0,0,0.3); }
+.v2-layer.layer-ai .layer-accent { background: var(--wasabi); box-shadow: 0 0 10px rgba(99,223,78,0.3); }
+
+/* App layer accent */
+.v2-layer.layer-hrsd { background: rgba(129, 181, 161, 0.04); }
+.v2-layer.layer-hrsd:hover { background: rgba(129, 181, 161, 0.08); box-shadow: 0 12px 40px rgba(129,181,161,0.05), 0 4px 20px rgba(0,0,0,0.3); }
+.v2-layer.layer-hrsd .layer-accent { background: var(--sn-green); box-shadow: 0 0 10px rgba(129,181,161,0.3); }
+
+/* ══════════ APP CAROUSEL (Swipeable) ══════════ */
+.app-carousel-wrapper {
+  position: relative;
+  opacity: 0;
+  animation: layer-enter 0.6s var(--ease-out) 0.3s forwards;
+}
+.app-carousel-scroll {
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+  gap: 0;
+  /* Lock height to a standard layer so scaffold content doesn't expand it */
+  max-height: 78px;
+}
+.app-carousel-scroll::-webkit-scrollbar { display: none; }
+
+.app-carousel-slide {
+  flex: 0 0 100%;
+  scroll-snap-align: start;
+  min-width: 0;
+}
+.app-carousel-slide .v2-layer {
+  opacity: 1;
+  animation: none;
+  margin: 0;
+}
+
+/* Scaffold slide styling */
+.app-carousel-slide.scaffold .v2-layer {
+  border: 1px dashed rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.015);
+  cursor: default;
+  min-height: 0;
+  max-height: 76px;
+  overflow: hidden;
+}
+.app-carousel-slide.scaffold .v2-layer:hover {
+  transform: none;
+  background: rgba(255,255,255,0.025);
+}
+.app-scaffold-badge {
+  font-size: 9px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1.2px; color: var(--text-muted);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 3px 10px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.app-scaffold-modules {
+  display: flex; flex-wrap: wrap; gap: 3px; margin-top: 4px;
+}
+.app-scaffold-modules span {
+  font-size: 8px; color: rgba(255,255,255,0.3);
+  padding: 1px 6px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 6px;
+}
+
+/* Dot indicators */
+.app-carousel-dots {
+  display: flex; justify-content: center; gap: 6px;
+  padding: 6px 0 0;
+}
+.app-carousel-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+  cursor: pointer; transition: all 0.3s ease;
+  border: none; padding: 0;
+}
+.app-carousel-dot.active {
+  background: var(--sn-green);
+  box-shadow: 0 0 8px rgba(129, 181, 161, 0.5);
+  width: 18px; border-radius: 3px;
+}
+
+/* Integration layer */
+.v2-layer.layer-integ { background: rgba(99, 223, 78, 0.04); }
+.v2-layer.layer-integ:hover { background: rgba(99, 223, 78, 0.07); box-shadow: 0 12px 40px rgba(99,223,78,0.05), 0 4px 20px rgba(0,0,0,0.3); }
+.v2-layer.layer-integ .layer-accent { background: var(--wasabi); box-shadow: 0 0 10px rgba(99,223,78,0.3); }
+
+/* ══════════ TOP ROW CARDS (use v2-layer base for consistency) ══════════ */
+/* EmployeeWorks accent */
+.v2-layer.layer-ew { background: rgba(167, 139, 250, 0.04); animation: layer-enter 0.6s var(--ease-out) 0.1s forwards, ew-pulse 4s ease-in-out 0.8s infinite; }
+.v2-layer.layer-ew:hover { background: rgba(167, 139, 250, 0.08); box-shadow: 0 12px 40px rgba(167,139,250,0.06), 0 4px 20px rgba(0,0,0,0.3); }
+.v2-layer.layer-ew .layer-accent { background: #A78BFA; box-shadow: 0 0 10px rgba(167,139,250,0.4); }
+.v2-layer.layer-ew .layer-name { color: #A78BFA; }
+.v2-layer.layer-ew:hover .layer-arrow { color: #A78BFA; }
+@keyframes ew-pulse {
+  0%, 100% { border-color: rgba(167, 139, 250, 0.12); box-shadow: 0 0 0 rgba(167,139,250,0); }
+  50% { border-color: rgba(167, 139, 250, 0.25); box-shadow: 0 0 20px rgba(167,139,250,0.04); }
+}
+.ew-sub-stats {
+  display: flex; gap: 10px; margin-top: 6px;
+}
+.ew-sub-stat { font-size: 10px; color: var(--text-muted); }
+.ew-sub-stat strong { color: #A78BFA; font-weight: 600; }
+
+/* Engagement Layer accent */
+.v2-layer.layer-engage { background: rgba(92, 224, 216, 0.04); }
+.v2-layer.layer-engage:hover { background: rgba(92, 224, 216, 0.08); box-shadow: 0 12px 40px rgba(92,224,216,0.05), 0 4px 20px rgba(0,0,0,0.3); }
+.v2-layer.layer-engage .layer-accent { background: #5CE0D8; box-shadow: 0 0 10px rgba(92,224,216,0.3); }
+.v2-layer.layer-engage:hover .layer-arrow { color: #5CE0D8; }
+.engagement-channels-inline {
+  display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px;
+}
+.engagement-channels-inline span {
+  font-size: 10px; color: var(--text-muted);
+  padding: 2px 8px;
+  background: rgba(92, 224, 216, 0.05);
+  border-radius: 10px;
+}
+
+/* ══════════ FOUNDATION LAYERS (stacked like v1) ══════════ */
+.foundation-stack {
+  margin-top: 0;
+  display: flex; flex-direction: column; gap: 0;
+}
+.foundation-stack .v2-layer { margin-bottom: 0; }
+/* Core layer accent */
+.v2-layer.layer-core { background: rgba(61, 184, 212, 0.035); }
+.v2-layer.layer-core:hover { background: rgba(61, 184, 212, 0.07); box-shadow: 0 12px 40px rgba(61,184,212,0.05), 0 4px 20px rgba(0,0,0,0.3); }
+.v2-layer.layer-core .layer-accent { background: #3DB8D4; box-shadow: 0 0 10px rgba(61,184,212,0.3); }
+/* Security layer accent */
+.v2-layer.layer-security { background: rgba(140, 170, 190, 0.03); }
+.v2-layer.layer-security:hover { background: rgba(140, 170, 190, 0.06); box-shadow: 0 12px 40px rgba(140,170,190,0.04), 0 4px 20px rgba(0,0,0,0.3); }
+.v2-layer.layer-security .layer-accent { background: #8CAABE; box-shadow: 0 0 10px rgba(140,170,190,0.25); }
+/* Infrastructure layer accent */
+.v2-layer.layer-infra { background: rgba(90, 122, 138, 0.03); }
+.v2-layer.layer-infra:hover { background: rgba(90, 122, 138, 0.06); box-shadow: 0 12px 40px rgba(90,122,138,0.04), 0 4px 20px rgba(0,0,0,0.3); }
+.v2-layer.layer-infra .layer-accent { background: #6A8A9A; box-shadow: 0 0 10px rgba(90,122,138,0.25); }
+
+/* ══════════ EW PLUGIN SIDEBAR (LEFT) ══════════ */
+.ew-sidebar {
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 0 0 0 0;
+  position: relative;
+}
+.ew-sidebar-label {
+  font-size: 9px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 1.5px; color: var(--text-muted); margin-bottom: 4px;
+  padding-left: 4px;
+}
+.ew-node {
+  padding: 14px 16px; border-radius: 12px;
+  background: rgba(167, 139, 250, 0.03);
+  border: 1px solid rgba(167, 139, 250, 0.08);
+  cursor: pointer; transition: all 0.3s ease;
+  display: flex; align-items: center; gap: 10px;
+  position: relative;
+  opacity: 0;
+  animation: ew-node-enter 0.5s var(--ease-out) forwards;
+}
+.ew-node:hover {
+  background: rgba(167, 139, 250, 0.07);
+  border-color: rgba(167, 139, 250, 0.25);
+  transform: translateX(4px);
+}
+.ew-node:hover .ew-node-arrow { transform: translateX(4px); color: #A78BFA; }
+.ew-node.active {
+  border-color: #A78BFA;
+  background: rgba(167, 139, 250, 0.08);
+  box-shadow: 0 0 24px rgba(167, 139, 250, 0.12), 0 8px 24px rgba(0,0,0,0.2);
+}
+.ew-node-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; background: #A78BFA; box-shadow: 0 0 8px rgba(167,139,250,0.5); }
+.ew-node-info { flex: 1; }
+.ew-node-name { font-size: 12px; font-weight: 600; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ew-node-cat { font-size: 10px; color: var(--text-muted); margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ew-node-count { font-size: 10px; color: #A78BFA; font-weight: 600; font-family: 'JetBrains Mono', monospace; flex-shrink: 0; }
+.ew-node-arrow { color: var(--text-muted); font-size: 14px; transition: all 0.3s ease; flex-shrink: 0; }
+
+@keyframes ew-node-enter {
+  from { opacity: 0; transform: translateX(-30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* ══════════ INTEGRATION SIDEBAR ══════════ */
+.integ-sidebar {
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 0 0 0 0;
+  position: relative;
+}
+.integ-sidebar-label {
+  font-size: 9px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 1.5px; color: var(--text-muted); margin-bottom: 4px;
+  padding-left: 4px;
+}
+.int-node {
+  padding: 14px 16px; border-radius: 12px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.05);
+  cursor: pointer; transition: all 0.3s ease;
+  display: flex; align-items: center; gap: 10px;
+  position: relative;
+  opacity: 0;
+  animation: node-enter 0.5s var(--ease-out) forwards;
+}
+.int-node:hover {
+  background: rgba(255,255,255,0.04);
+  border-color: rgba(99, 223, 78, 0.15);
+  transform: translateX(-4px);
+}
+.int-node:hover .int-node-arrow { transform: translateX(-4px); color: var(--wasabi); }
+.int-node.active {
+  border-color: var(--wasabi);
+  background: rgba(99, 223, 78, 0.06);
+  box-shadow: 0 0 24px rgba(99, 223, 78, 0.12), 0 8px 24px rgba(0,0,0,0.2);
+}
+.int-node-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.int-node-dot.ootb { background: var(--ootb-color); box-shadow: 0 0 8px rgba(99,223,78,0.5); }
+.int-node-dot.partial { background: var(--partial-color); box-shadow: 0 0 8px rgba(240,180,41,0.5); }
+.int-node-dot.custom { background: var(--custom-color); box-shadow: 0 0 8px rgba(255,107,74,0.5); }
+.int-node-info { flex: 1; }
+.int-node-name { font-size: 12px; font-weight: 600; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.int-node-cat { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
+.int-node-arrow { color: var(--text-muted); font-size: 14px; transition: all 0.3s ease; flex-shrink: 0; }
+
+@keyframes node-enter {
+  from { opacity: 0; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* ══════════ ANIMATIONS ══════════ */
+@keyframes layer-enter {
+  from { opacity: 0; transform: translateY(22px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes spin-border { to { --border-angle: 360deg; } }
+@keyframes pulse-ring {
+  0% { transform: scale(1); opacity: 0.22; }
+  100% { transform: scale(1.07); opacity: 0; }
+}
+
+/* ══════════ OVERLAY BACKDROP ══════════ */
+.overlay-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(4, 8, 16, 0.7);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  z-index: 100;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.overlay-backdrop.open { opacity: 1; pointer-events: all; }
+
+/* ══════════ LAYER DETAIL PANEL ══════════ */
+.layer-panel {
+  position: fixed; inset: 0; z-index: 101;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none; opacity: 0;
+  transition: opacity 0.35s ease;
+  padding: 40px 20px;
+}
+.layer-panel.open { pointer-events: all; opacity: 1; }
+.lp-card {
+  width: 820px; max-height: calc(100vh - 80px); overflow-y: auto;
+  background: var(--bg-card);
+  backdrop-filter: blur(32px); -webkit-backdrop-filter: blur(32px);
+  border: 1px solid var(--border-accent);
+  border-radius: 22px;
+  box-shadow: 0 32px 100px rgba(0,0,0,0.55), 0 0 60px rgba(99,223,78,0.04);
+  transform: scale(0.94) translateY(16px);
+  transition: transform 0.45s var(--ease-spring), opacity 0.35s ease;
+  opacity: 0;
+}
+.layer-panel.open .lp-card { transform: scale(1) translateY(0); opacity: 1; }
+.lp-header {
+  position: sticky; top: 0; z-index: 2;
+  padding: 24px 28px 18px;
+  display: flex; align-items: center; gap: 14px;
+  background: rgba(8, 20, 42, 0.97);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-glass);
+  border-radius: 22px 22px 0 0;
+}
+.lp-header .lp-icon { font-size: 28px; }
+.lp-header h2 { font-size: 18px; font-weight: 700; color: var(--text-primary); flex: 1; letter-spacing: -0.3px; }
+.lp-header .lp-sub { font-size: 11px; color: var(--text-secondary); font-weight: 300; }
+.close-btn {
+  width: 34px; height: 34px; border: 1px solid var(--border-glass); background: rgba(255,255,255,0.04);
+  border-radius: 50%; cursor: pointer; font-size: 17px; color: var(--text-muted);
+  display: flex; align-items: center; justify-content: center;
+  transition: all var(--transition); flex-shrink: 0;
+}
+.close-btn:hover { background: rgba(255,255,255,0.1); color: var(--text-primary); border-color: var(--border-accent); }
+.lp-body { padding: 22px 28px 30px; }
+.lp-desc {
+  font-size: 13px; color: var(--text-secondary); line-height: 1.75; margin-bottom: 22px;
+  font-weight: 300; padding-bottom: 18px; border-bottom: 1px solid var(--border-glass);
+}
+
+/* ══════════ COMPONENT CARDS ══════════ */
+.comp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.comp-card {
+  padding: 15px 16px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.comp-card:hover { border-color: var(--border-accent); background: rgba(99,223,78,0.025); }
+.comp-card.expanded {
+  grid-column: 1 / -1;
+  border-color: var(--border-hover);
+  background: rgba(99, 223, 78, 0.035);
+}
+.cc-title {
+  font-size: 13px; font-weight: 600; color: var(--text-primary);
+  display: flex; align-items: center; gap: 6px;
+}
+.cc-toggle {
+  font-size: 9px; color: var(--text-muted); margin-left: auto;
+  transition: transform 0.3s ease, color 0.3s ease;
+}
+.comp-card.expanded .cc-toggle { transform: rotate(90deg); color: var(--wasabi); }
+.cc-brief { font-size: 11px; color: var(--text-muted); margin-top: 4px; line-height: 1.4; font-weight: 300; }
+.cc-detail {
+  max-height: 0; overflow: hidden;
+  transition: max-height 0.4s ease-out, padding-top 0.3s ease, opacity 0.3s ease;
+  font-size: 12.5px; color: var(--text-secondary); line-height: 1.7; opacity: 0;
+}
+.comp-card.expanded .cc-detail { max-height: 2000px; padding-top: 14px; opacity: 1; }
+.cite-link { color: var(--wasabi); font-size: 10px; text-decoration: none; opacity: 0.6; transition: opacity 0.2s; }
+.cite-link:hover { opacity: 1; text-decoration: underline; }
+.cite-section { margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); font-size: 10px; line-height: 1.8; }
+.cc-detail ul { padding-left: 18px; margin: 6px 0; }
+.cc-detail li { margin-bottom: 5px; }
+.cc-detail strong { color: var(--text-primary); font-weight: 600; }
+.cc-detail code {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  background: rgba(99,223,78,0.1); color: var(--wasabi);
+  padding: 2px 7px; border-radius: 4px;
+}
+
+/* ══════════ INTEGRATION MODAL ══════════ */
+.integ-modal {
+  position: fixed; inset: 0; z-index: 102;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none; opacity: 0;
+  transition: opacity 0.3s ease;
+  padding: 40px 20px;
+}
+.integ-modal.open { pointer-events: all; opacity: 1; }
+.im-card {
+  width: 620px; max-height: calc(100vh - 80px); overflow-y: auto;
+  background: var(--bg-card);
+  backdrop-filter: blur(32px); -webkit-backdrop-filter: blur(32px);
+  border: 1px solid var(--border-accent);
+  border-radius: 22px;
+  box-shadow: 0 32px 100px rgba(0,0,0,0.55), 0 0 60px rgba(99,223,78,0.04);
+  transform: translateY(24px) scale(0.95);
+  transition: transform 0.45s var(--ease-spring), opacity 0.35s ease;
+  opacity: 0;
+}
+.integ-modal.open .im-card { transform: translateY(0) scale(1); opacity: 1; }
+
+.im-header {
+  padding: 26px 28px 18px;
+  display: flex; align-items: flex-start; gap: 14px;
+  border-bottom: 1px solid var(--border-glass);
+}
+.im-header-info { flex: 1; }
+.im-header h3 { font-size: 20px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.3px; }
+.im-category { font-size: 10px; color: var(--text-muted); margin-top: 3px; font-weight: 400; text-transform: uppercase; letter-spacing: 1px; }
+.im-status {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 14px; border-radius: 20px;
+  font-size: 11px; font-weight: 500; margin-top: 10px;
+}
+.im-status.ootb { background: rgba(99,223,78,0.1); color: var(--ootb-color); border: 1px solid rgba(99,223,78,0.15); }
+.im-status.partial { background: rgba(240,180,41,0.1); color: var(--partial-color); border: 1px solid rgba(240,180,41,0.15); }
+.im-status.custom { background: rgba(255,107,74,0.1); color: var(--custom-color); border: 1px solid rgba(255,107,74,0.15); }
+
+.im-body { padding: 22px 28px 30px; }
+.im-section { margin-bottom: 18px; }
+.im-section-title {
+  font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.1px;
+  color: var(--text-muted); margin-bottom: 7px;
+}
+.im-section-content { font-size: 13px; color: var(--text-secondary); line-height: 1.65; font-weight: 300; }
+.im-section-content ul { padding-left: 18px; margin: 5px 0; }
+.im-section-content li { margin-bottom: 4px; }
+.im-divider { border: none; border-top: 1px solid var(--border-glass); margin: 20px 0; }
+
+/* ══════════ FLOW PIPELINE ══════════ */
+.flow-box {
+  background: rgba(99, 223, 78, 0.035);
+  border: 1px solid var(--border-accent);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+}
+.flow-box-title {
+  font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.1px;
+  color: var(--wasabi); margin-bottom: 12px;
+}
+.flow-steps { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.flow-step {
+  font-size: 11px; padding: 5px 13px; border-radius: 20px;
+  background: rgba(255,255,255,0.04); border: 1px solid var(--border-glass);
+  color: var(--text-secondary); white-space: nowrap; font-weight: 400;
+}
+.flow-step.source {
+  background: var(--wasabi); color: var(--bg-deep); font-weight: 600; border-color: transparent;
+  box-shadow: 0 0 12px rgba(99,223,78,0.3);
+}
+.flow-step.target {
+  background: var(--infinite-blue); color: var(--wasabi); font-weight: 600;
+  border-color: rgba(99,223,78,0.3);
+}
+.flow-arrow { color: rgba(99,223,78,0.5); font-size: 13px; }
+
+/* ══════════ DATA TABLES ══════════ */
+.data-table {
+  width: 100%; border-collapse: separate; border-spacing: 0;
+  border-radius: 8px; overflow: hidden; margin-top: 8px;
+}
+.data-table th {
+  text-align: left; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px;
+  color: var(--wasabi); padding: 9px 14px;
+  background: rgba(99,223,78,0.07);
+  border-bottom: 1px solid var(--border-accent);
+}
+.data-table td {
+  font-size: 12px; padding: 9px 14px; color: var(--text-secondary);
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
+.data-table td.table-name {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--wasabi);
+}
+
+/* ══════════ ARCHITECTURE NOTES ══════════ */
+.im-notes {
+  font-size: 12.5px; color: var(--text-muted); line-height: 1.65; font-weight: 300;
+  padding: 14px 18px;
+  background: rgba(255,255,255,0.02);
+  border-radius: var(--radius-xs);
+  border-left: 2px solid var(--border-accent);
+}
+
+/* ══════════ INFO GRID ══════════ */
+.info-grid {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;
+  margin-bottom: 18px;
+}
+.info-cell-label {
+  font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
+  color: var(--text-muted); margin-bottom: 4px;
+}
+.info-cell-value { font-size: 12.5px; color: var(--text-secondary); font-weight: 400; line-height: 1.4; }
+
+/* ══════════ PLUGIN LIBRARY (inside EW modal) ══════════ */
+.plugin-section {
+  border-top: 1px solid rgba(167, 139, 250, 0.1);
+  padding: 14px 0 0;
+  margin-top: 20px;
+}
+.plugin-section-title {
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px;
+  color: #A78BFA; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;
+}
+.plugin-section-sub {
+  font-size: 10px; color: var(--text-muted); font-weight: 300; margin-bottom: 10px;
+  font-style: italic;
+}
+.plugin-stats {
+  display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap;
+}
+.plugin-stat {
+  font-size: 9px; color: var(--text-muted); font-weight: 400; letter-spacing: 0.3px;
+}
+.plugin-stat strong { color: #A78BFA; font-weight: 600; }
+
+/* -- Featured Integrations -- */
+.featured-label {
+  font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.2px;
+  color: var(--wasabi); margin-bottom: 6px; display: flex; align-items: center; gap: 5px;
+}
+.featured-label::after {
+  content: ''; flex: 1; height: 1px;
+  background: linear-gradient(90deg, rgba(99,223,78,0.2), transparent);
+}
+.featured-grid {
+  display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px;
+}
+.featured-item {
+  padding: 8px 10px; border-radius: 6px; cursor: pointer;
+  background: rgba(99, 223, 78, 0.04);
+  border: 1px solid rgba(99, 223, 78, 0.12);
+  transition: all 0.25s ease; position: relative;
+}
+.featured-item:hover {
+  background: rgba(99, 223, 78, 0.08);
+  border-color: rgba(99, 223, 78, 0.3);
+}
+.featured-item.expanded {
+  background: rgba(99, 223, 78, 0.06);
+  border-color: rgba(99, 223, 78, 0.25);
+  border-style: solid;
+}
+.featured-item.no-plugins {
+  opacity: 0.5; cursor: default;
+  border-style: dashed;
+}
+.featured-header {
+  display: flex; align-items: center; gap: 8px;
+}
+.featured-name {
+  font-size: 11px; font-weight: 600; color: var(--text-primary); flex: 1;
+}
+.featured-badge {
+  font-size: 9px; font-weight: 600; padding: 2px 7px; border-radius: 10px;
+  white-space: nowrap;
+}
+.featured-badge.has-plugins {
+  background: rgba(99, 223, 78, 0.12); color: var(--wasabi);
+}
+.featured-badge.no-plugins-badge {
+  background: rgba(255,255,255,0.04); color: var(--text-muted);
+}
+.featured-arrow {
+  font-size: 10px; color: var(--text-muted); transition: transform 0.2s ease;
+}
+.featured-item.expanded .featured-arrow { transform: rotate(90deg); color: var(--wasabi); }
+.featured-plugins {
+  display: none; margin-top: 8px; padding-top: 8px;
+  border-top: 1px solid rgba(99, 223, 78, 0.08);
+}
+.featured-item.expanded .featured-plugins { display: block; }
+.fp-row {
+  display: flex; align-items: baseline; gap: 6px;
+  padding: 3px 0; font-size: 10px;
+}
+.fp-dot {
+  width: 4px; height: 4px; border-radius: 50%; flex-shrink: 0;
+  background: var(--wasabi); opacity: 0.5; margin-top: 5px;
+}
+.fp-name { color: var(--text-secondary); font-weight: 400; flex: 1; }
+.fp-cats { font-size: 8px; color: var(--text-muted); opacity: 0.6; }
+
+/* -- Browse Full Library -- */
+.library-toggle {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 7px 0; margin-bottom: 8px; cursor: pointer;
+  font-size: 9px; font-weight: 500; color: var(--text-muted);
+  letter-spacing: 0.5px; text-transform: uppercase;
+  border-top: 1px solid rgba(167, 139, 250, 0.08);
+  transition: color 0.2s ease;
+}
+.library-toggle:hover { color: #A78BFA; }
+.library-toggle-arrow {
+  font-size: 8px; transition: transform 0.2s ease;
+}
+.library-toggle.open .library-toggle-arrow { transform: rotate(180deg); }
+.library-body { display: none; }
+.library-body.open { display: block; }
+.plugin-tabs {
+  display: flex; gap: 3px; margin-bottom: 8px; flex-wrap: wrap;
+}
+.plugin-tab {
+  font-size: 9px; padding: 3px 8px; border-radius: 4px; cursor: pointer;
+  background: rgba(167, 139, 250, 0.06); color: var(--text-muted); font-weight: 400;
+  border: 1px solid transparent; transition: all 0.2s ease; letter-spacing: 0.2px;
+  white-space: nowrap;
+}
+.plugin-tab:hover { background: rgba(167, 139, 250, 0.12); color: var(--text-secondary); }
+.plugin-tab.active {
+  background: rgba(167, 139, 250, 0.15); color: #A78BFA;
+  border-color: rgba(167, 139, 250, 0.25); font-weight: 500;
+}
+.plugin-tab-count {
+  font-size: 8px; opacity: 0.6; margin-left: 3px;
+}
+.plugin-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 5px;
+  max-height: 280px; overflow-y: auto; padding-right: 4px;
+}
+.plugin-grid::-webkit-scrollbar { width: 3px; }
+.plugin-grid::-webkit-scrollbar-thumb { background: rgba(167,139,250,0.15); border-radius: 2px; }
+.plugin-item {
+  padding: 7px 9px;
+  background: rgba(167, 139, 250, 0.04);
+  border: 1px solid rgba(167, 139, 250, 0.08);
+  border-radius: 6px;
+  transition: all 0.25s ease;
+  cursor: default;
+}
+.plugin-item:hover {
+  border-color: rgba(167, 139, 250, 0.25);
+  background: rgba(167, 139, 250, 0.08);
+}
+.plugin-name { font-size: 11px; font-weight: 500; color: var(--text-secondary); }
+.plugin-count {
+  font-size: 9px; color: rgba(167,139,250,0.6); font-weight: 500; margin-top: 1px;
+}
+.plugin-cats {
+  font-size: 8px; color: var(--text-muted); margin-top: 2px; font-weight: 300;
+  line-height: 1.4; opacity: 0.7;
+}
+
+/* ══════════ EW MODAL SECTION HEADERS ══════════ */
+.ew-modal-section-title {
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px;
+  color: #A78BFA; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;
+}
+.ew-modal-section-title::after {
+  content: ''; flex: 1; height: 1px;
+  background: linear-gradient(90deg, rgba(167,139,250,0.2), transparent);
+}
+
+/* ══════════ EW PLATFORM DETAIL SECTIONS ══════════ */
+.ew-platform-nav {
+  display: flex; gap: 4px; margin-bottom: 20px; flex-wrap: wrap;
+  border-bottom: 1px solid rgba(167, 139, 250, 0.1); padding-bottom: 12px;
+}
+.ew-nav-btn {
+  font-size: 10px; padding: 6px 14px; border-radius: 6px; cursor: pointer;
+  background: rgba(167, 139, 250, 0.06); color: var(--text-muted); font-weight: 500;
+  border: 1px solid transparent; transition: all 0.2s ease; letter-spacing: 0.2px;
+}
+.ew-nav-btn:hover { background: rgba(167, 139, 250, 0.12); color: var(--text-secondary); }
+.ew-nav-btn.active {
+  background: rgba(167, 139, 250, 0.15); color: #A78BFA;
+  border-color: rgba(167, 139, 250, 0.25); font-weight: 600;
+}
+.ew-panel-section { display: none; }
+.ew-panel-section.active { display: block; }
+
+.ew-capability-card {
+  padding: 16px; margin-bottom: 10px; border-radius: 10px;
+  background: rgba(167, 139, 250, 0.03); border: 1px solid rgba(167, 139, 250, 0.08);
+  transition: all 0.25s ease;
+}
+.ew-capability-card:hover { border-color: rgba(167, 139, 250, 0.2); background: rgba(167, 139, 250, 0.05); }
+.ew-cap-title { font-size: 13px; font-weight: 600; color: #A78BFA; margin-bottom: 4px; }
+.ew-cap-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.6; font-weight: 300; }
+.ew-cap-link {
+  display: inline-block; margin-top: 8px; font-size: 10px; color: var(--wasabi);
+  text-decoration: none; opacity: 0.7; transition: opacity 0.2s;
+}
+.ew-cap-link:hover { opacity: 1; text-decoration: underline; }
+
+.ew-arch-diagram {
+  margin: 16px 0; padding: 20px; border-radius: 12px;
+  background: rgba(167, 139, 250, 0.04); border: 1px solid rgba(167, 139, 250, 0.1);
+  text-align: center;
+}
+.ew-arch-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 12px; }
+.ew-arch-flow {
+  display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap;
+}
+.ew-arch-node {
+  padding: 8px 16px; border-radius: 8px; font-size: 11px; font-weight: 500;
+  white-space: nowrap;
+}
+.ew-arch-node.primary { background: #A78BFA; color: var(--bg-deep); }
+.ew-arch-node.secondary { background: rgba(167, 139, 250, 0.15); color: #A78BFA; border: 1px solid rgba(167,139,250,0.2); }
+.ew-arch-node.accent { background: rgba(99, 223, 78, 0.12); color: var(--wasabi); border: 1px solid rgba(99,223,78,0.2); }
+.ew-arch-arrow { color: rgba(167, 139, 250, 0.4); font-size: 14px; }
+
+.ew-stat-grid {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 16px 0;
+}
+.ew-stat-cell {
+  padding: 14px; border-radius: 10px; text-align: center;
+  background: rgba(167, 139, 250, 0.04); border: 1px solid rgba(167, 139, 250, 0.08);
+}
+.ew-stat-value { font-size: 20px; font-weight: 700; color: #A78BFA; }
+.ew-stat-label { font-size: 9px; color: var(--text-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+.ew-security-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px;
+}
+.ew-security-cell {
+  padding: 14px; border-radius: 10px;
+  background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04);
+}
+.ew-security-title { font-size: 12px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+.ew-security-desc { font-size: 11px; color: var(--text-muted); line-height: 1.5; font-weight: 300; }
+
+.ew-testimonial {
+  padding: 16px 18px; margin-bottom: 10px; border-radius: 10px;
+  background: rgba(255,255,255,0.02); border-left: 2px solid rgba(167,139,250,0.3);
+}
+.ew-testimonial-quote { font-size: 12px; color: var(--text-secondary); line-height: 1.6; font-style: italic; font-weight: 300; }
+.ew-testimonial-source { font-size: 10px; color: var(--text-muted); margin-top: 8px; font-weight: 500; }
+.ew-testimonial-metric { font-size: 11px; color: var(--wasabi); font-weight: 600; margin-top: 4px; }
+
+.ew-domain-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px;
+}
+.ew-domain-card {
+  padding: 14px; border-radius: 10px;
+  background: rgba(167, 139, 250, 0.03); border: 1px solid rgba(167, 139, 250, 0.08);
+}
+.ew-domain-title { font-size: 12px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+.ew-domain-desc { font-size: 11px; color: var(--text-muted); line-height: 1.5; font-weight: 300; }
+
+/* ══════════ EMBEDDED SCREENSHOTS ══════════ */
+.ew-screenshot {
+  width: 100%; border-radius: 10px; margin: 12px 0;
+  border: 1px solid rgba(167, 139, 250, 0.1);
+  transition: border-color 0.3s ease;
+}
+.ew-screenshot:hover { border-color: rgba(167, 139, 250, 0.25); }
+.ew-screenshot-caption {
+  font-size: 9px; color: var(--text-muted); text-align: center;
+  margin-top: -8px; margin-bottom: 12px; font-style: italic;
+}
+.ew-screenshot-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0;
+}
+.ew-screenshot-grid img {
+  width: 100%; border-radius: 8px;
+  border: 1px solid rgba(167, 139, 250, 0.08);
+  transition: border-color 0.3s ease, transform 0.3s ease;
+}
+.ew-screenshot-grid img:hover { border-color: rgba(167, 139, 250, 0.2); transform: scale(1.02); }
+
+/* ══════════ TOOLTIP ══════════ */
+.tooltip {
+  position: fixed;
+  background: rgba(8, 18, 35, 0.95);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  color: var(--text-primary);
+  padding: 7px 14px; border-radius: 8px;
+  font-size: 11px; font-weight: 400;
+  pointer-events: none; z-index: 300;
+  white-space: nowrap;
+  border: 1px solid var(--border-glass);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+  opacity: 0; transition: opacity 0.15s ease;
+}
+.tooltip.visible { opacity: 1; }
+
+/* ══════════ FOOTER ══════════ */
+.footer {
+  text-align: center; padding: 6px 20px; position: relative; z-index: 2;
+  background: transparent;
+  border-top: 1px solid var(--border-glass);
+}
+.footer-conf { font-size: 9px; color: var(--text-muted); letter-spacing: 0.3px; }
+.footer-copy { display: none; }
+.footer-legal { display: none; }
+
+/* ══════════ SCROLLBAR ══════════ */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(99,223,78,0.12); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(99,223,78,0.25); }
+
+/* ══════════ RESPONSIVE ══════════ */
+@media (max-width: 1200px) {
+  .main-grid { grid-template-columns: 1fr; }
+  .ew-sidebar {
+    flex-direction: row; flex-wrap: wrap; gap: 8px;
+    padding: 0 0 16px;
+    order: -1;
+  }
+  .ew-sidebar .ew-node { flex: 1 1 200px; min-width: 180px; }
+  .integ-sidebar {
+    flex-direction: row; flex-wrap: wrap; gap: 8px;
+    padding: 16px 0 0;
+  }
+  .integ-sidebar .int-node { flex: 1 1 200px; min-width: 180px; }
+  .conn-svg { display: none; }
+}
+@media (max-width: 1024px) {
+  .foundation-stack { gap: 4px; }
+  .header { padding: 16px 24px; }
+  .info-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 768px) {
+  .sn-container { padding: 12px; }
+  .v2-layer { padding: 14px 18px; }
+  .lp-card, .im-card { width: 95vw; max-width: 95vw; }
+}
+</style>
+</head>
+<body>
+
+<div class="bg-mesh" id="bg-mesh"></div>
+<div class="bg-grid"></div>
+
+<header class="header">
+  <div class="header-bar"></div>
+  <div>
+    <h1>ServiceNow Platform Architecture</h1>
+    <p>American Express &nbsp;|&nbsp; HRSD &amp; EmployeeWorks Evaluation &nbsp;|&nbsp; April 2026</p>
+  </div>
+  <div class="header-legend">
+    <div class="legend-item"><div class="legend-dot ootb"></div>OOTB Certified</div>
+    <div class="legend-item"><div class="legend-dot partial"></div>Partial OOTB</div>
+    <div class="legend-item"><div class="legend-dot custom"></div>Custom Build</div>
+  </div>
+</header>
+
+<div class="instructions">
+  Click any <strong>platform layer</strong> to explore components &middot; Click any <strong>integration node</strong> to view architecture details &amp; data flow
+</div>
+
+<div class="diagram-container" id="diagram">
+  <svg class="conn-svg" id="conn-svg">
+    <defs>
+      <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="3.5" result="b1"/>
+        <feGaussianBlur in="SourceGraphic" stdDeviation="1.5" result="b2"/>
+        <feMerge>
+          <feMergeNode in="b1"/>
+          <feMergeNode in="b2"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+      <filter id="glow-soft" x="-40%" y="-40%" width="180%" height="180%">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="b"/>
+        <feMerge>
+          <feMergeNode in="b"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+    </defs>
+  </svg>
+
+  <div class="main-grid">
+    <div class="ew-sidebar" id="ew-sidebar"></div>
+    <div class="sn-container">
+      <div class="sn-label">ServiceNow Platform</div>
+
+      <div class="top-row">
+        <div id="ew-compact"></div>
+        <div id="engagement-compact"></div>
+      </div>
+
+      <div class="flow-indicator" style="animation-delay:0s">&#9662; &#9662; &#9662;</div>
+
+      <div id="ai-row"></div>
+
+      <div class="flow-indicator" style="animation-delay:0.5s">&#9662; &#9662; &#9662;</div>
+
+      <div id="app-row"></div>
+
+      <div class="flow-indicator" style="animation-delay:1s">&#9662; &#9662; &#9662;</div>
+
+      <div id="integ-row"></div>
+
+      <div class="flow-indicator" style="animation-delay:1.5s">&#9662; &#9662; &#9662;</div>
+    <div class="foundation-stack" id="foundation-stack"></div>
+    </div>
+
+    <div class="integ-sidebar" id="integ-sidebar"></div>
+  </div>
+</div>
+
+<div class="overlay-backdrop" id="overlay-backdrop"></div>
+
+<div class="layer-panel" id="layer-panel">
+  <div class="lp-card" id="lp-card"></div>
+</div>
+
+<div class="integ-modal" id="integ-modal">
+  <div class="im-card" id="im-card"></div>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<footer class="footer">
+  <div class="footer-conf">ServiceNow Confidential &mdash; For Internal Use Only</div>
+  <div class="footer-copy" id="copyright"></div>
+  <div class="footer-legal">The information contained in this document is confidential and proprietary to ServiceNow and may not be disclosed to third parties without prior written consent.</div>
+</footer>
+
+<script>
+document.getElementById('copyright').textContent = '\u00A9 ' + new Date().getFullYear() + ' ServiceNow, Inc. All rights reserved. ServiceNow, the ServiceNow logo, Now, and other ServiceNow marks are trademarks and/or registered trademarks of ServiceNow, Inc.';
+
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+// ═══════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════
+
+const LAYERS = [
+  {
+    id: 'channels', name: 'Employee Channels', icon: '\uD83D\uDCF1', cssClass: 'layer-channels', accentClass: 'accent-channels',
+    subtitle: 'User Touchpoints',
+    tooltip: 'How employees access the platform',
+    desc: 'All employee-facing entry points into the ServiceNow ecosystem. Employee requests from any channel flow down into the EmployeeWorks AI layer below for intent classification, routing, and orchestrated resolution.',
+    components: [
+      { name: 'Slack', brief: 'Chat-based access to HR services', detail: 'EmployeeWorks AI Assistant integrates natively with Slack. Employees submit requests, check case status, and receive notifications directly in Slack. Virtual Agent and EmployeeWorks AI surface within the Slack interface via Integration Hub Slack Spoke.' },
+      { name: 'NowMobile App', brief: 'Native mobile application', detail: 'ServiceNow NowMobile provides full Employee Center functionality on iOS and Android. No separate mobile deployment required; inherits all HRSD configurations and ACLs from the platform.' },
+      { name: 'Web Portal', brief: 'Employee Center Pro (browser)', detail: 'Next Experience UI framework with branded layouts, personalized content tiles, and department-specific catalogs. Single portal surfaces HR, IT, Legal, and Facilities requests simultaneously based on employee profile.' },
+      { name: 'EmployeeWorks Web App', brief: 'Standalone AI assistant portal', detail: 'Direct browser access to the EmployeeWorks AI Assistant outside of Employee Center. Provides the same conversational AI and enterprise search capabilities.' }
+    ]
+  },
+  {
+    id: 'ai', name: 'Now Assist & Agentic AI', icon: '\uD83E\uDD16', cssClass: 'layer-ai', accentClass: 'accent-ai',
+    subtitle: 'ServiceNow GenAI \u2014 Now Assist, Agentic AI (Yokohama)',
+    tooltip: 'ServiceNow native AI capabilities \u2014 GenAI skills, autonomous workflows, governance',
+    desc: 'ServiceNow\u2019s native AI layer providing generative AI skills (Now Assist), autonomous multi-step workflows (Agentic AI), and centralized AI governance. AI inference uses customer data for responses but never for model training. Zero-retention architecture ensures context window data is not retained after response generation.',
+    components: [
+      { name: 'Now Assist Virtual Agent', brief: 'GenAI-enhanced conversational HR support', detail: 'Generates responses grounded in configured HR Knowledge Base articles. Does not hallucinate outside KB context. Escalates to live HR agent when no relevant article exists. Responses are generated per-session with no data retained after response.' },
+      { name: 'Case Summarization', brief: 'Auto-generated case summaries on transfer', detail: 'Generates structured summaries of HR case history when transferred or escalated. Includes core issue, actions taken, employee sentiment, and recommended next steps. Reduces handle time by eliminating re-reading of case history.' },
+      { name: 'KB Article Generation', brief: 'Draft knowledge articles from resolved cases', detail: 'When an HR case is resolved, Now Assist drafts a knowledge article from the resolution. HR knowledge manager reviews and approves before publication. Closes the loop between case resolution and self-service deflection.' },
+      { name: 'Agentic AI (Yokohama)', brief: 'Multi-step autonomous workflows with guardrails', detail: 'Plans and executes action sequences autonomously within defined guardrails. Example: new hire triggers Lifecycle Event creation, AD provisioning, hardware ordering, orientation scheduling. Human-in-loop approval gates configurable at any step. Every agent action logged with timestamp, rationale, and outcome.' },
+      { name: 'AI Control Tower', brief: 'Governance console for all AI capabilities', detail: 'Real-time usage metrics by AI capability and department. Model performance monitoring (accuracy, hallucination rate, user feedback). Data residency compliance monitoring. Kill-switch controls to disable specific AI capabilities without platform downtime. Governs both Now Assist native skills and EmployeeWorks custom agents built in Agent Studio.' },
+      { name: 'Data Privacy', brief: 'Zero-retention inference architecture', detail: '<ul><li>LLM inference only (not training) at runtime; AmEx data never trains foundation models</li><li>Context windows anonymized before inference</li><li>No cross-customer data leakage; inference isolated per instance</li><li>US instance inference runs in US regions</li><li>Context window data not retained after response generation</li></ul>' }
+    ]
+  },
+  {
+    id: 'hrsd', name: 'HRSD Application', icon: '\uD83D\uDC65', cssClass: 'layer-hrsd', accentClass: 'accent-hrsd',
+    subtitle: 'HR Service Delivery \u2014 Hire to Retire Suite (Australia Release)',
+    tooltip: 'HR Service Delivery application modules \u2014 Australia release docs',
+    desc: 'HR Service Delivery is a suite of applications that drive employee productivity from hire to retire by connecting the systems and experiences across HR and the enterprise. Built natively on the Now Platform, HRSD inherits all platform capabilities (CMDB, workflow, integration, AI). Deploy Case and Knowledge Management, Employee Center, and Lifecycle Events for Enterprise as core applications, with supporting apps for AI, documents, analytics, and more. <a href="https://www.servicenow.com/docs/r/employee-service-management/hr-service-delivery/hr-service-delivery.html" target="_blank" class="cite-link">[Australia Docs \u2197]</a>',
+    components: [
+      { name: 'Case & Knowledge Management', brief: 'Standardize documentation, interaction, and fulfillment of employee inquiries', detail: 'The core HRSD application. Standardizes the documentation, interaction, and fulfillment of employee inquiries and requests, improving HR efficiency over time. Cases are typed by category (benefits, payroll, onboarding, employee relations, policy) with configurable SLA definitions per type. Auto-routing via assignment rules based on case type, location, business unit, and HR team availability. Escalation workflows trigger on SLA breach. All interactions logged immutably for audit. COE security policies restrict access via configuration\u2014the underlying implementations are ServiceNow ACLs. Fields containing possibly sensitive or personally identifiable information should be reviewed by navigating to System Definition > Tables and filtering on <code>sn_hr_</code>.<br><br><strong>Key tables:</strong> <code>sn_hr_core_case</code> (base + 9 COE child tables), <code>sn_hr_core_task</code>, <code>sys_audit</code><br><div class="cite-section"><strong style="color:var(--text-muted);">Sources:</strong><br><a href="https://www.servicenow.com/docs/r/employee-service-management/hr-service-delivery/case-knowledge-management-landing-page.html" target="_blank" class="cite-link">Case and Knowledge Management \u2197</a><br><a href="https://www.servicenow.com/docs/r/employee-service-management/hr-service-delivery/hr-service-delivery-overview.html" target="_blank" class="cite-link">Supporting information for HR Service Delivery \u2197</a></div>' },
+      { name: 'Employee Journey Management', brief: 'Lifecycle events, journey designer, and journey accelerator', detail: 'Integrates HR Service Delivery features and applications to enable employees, managers, and the organization to initiate and manage journeys that drive employee engagement and productivity. Three core capabilities:<ul><li><strong>Journey Designer</strong> \u2014 Personalize employee journeys to enhance their experience. Automate new hire onboarding and other complex processes.</li><li><strong>Journey Accelerator</strong> \u2014 Create and publish customized plans for key employee transitions such as career growth, internal mobility, and promotions using templates.</li><li><strong>Lifecycle Events</strong> \u2014 Automate complex processes across the enterprise and create great employee experiences during moments that matter. Standard onboarding coordinates HR (welcome, I-9, policy), IT (device, access provisioning), Facilities (badge, parking, workspace), Payroll (direct deposit). All activities tracked on a single timeline with configurable dependencies.</li></ul><strong>Key table:</strong> <code>sn_hr_le_case</code><br><div class="cite-section"><strong style="color:var(--text-muted);">Source:</strong> <a href="https://www.servicenow.com/docs/r/employee-service-management/employee-journey-management/employee-journey-management.html" target="_blank" class="cite-link">Employee Journey Management \u2197</a></div>' },
+      { name: 'Now Assist for HRSD', brief: 'Generative AI skills for case summarization, resolution, and chat', detail: 'Uses generative AI to summarize case information, generate resolution notes, and summarize chat interactions. Enables agents to understand case and chat context so they can propose quicker resolutions. Key capabilities:<ul><li><strong>Case Summarization</strong> \u2014 Generates structured summaries of HR case history on transfer/escalation</li><li><strong>Resolution Note Generation</strong> \u2014 AI-generated resolution notes from case context</li><li><strong>Chat Summarization</strong> \u2014 Summarizes chat interactions for agent handoff</li><li><strong>KB Article Generation</strong> \u2014 Drafts knowledge articles from resolved cases</li><li><strong>Agent Collection</strong> \u2014 AI agent use cases specific to HRSD</li></ul><strong>Data handling:</strong> Data transferred to centralized ServiceNow environment for inference. Handled per ServiceNow internal policies via CORE Compliance Portal. Customers can opt out of data collection at any time. AI outputs require human oversight\u2014not for sole decision-making in consequential areas.<br><br><strong>Note:</strong> Some features unavailable for FedRAMP, NSC DOD IL5, or Australia IRAP-Protected data centers.<br><div class="cite-section"><strong style="color:var(--text-muted);">Source:</strong> <a href="https://www.servicenow.com/docs/r/employee-service-management/now-assist-for-hrsd/now-assist-hrsd.html" target="_blank" class="cite-link">Now Assist for HR Service Delivery (HRSD) \u2197</a></div>' },
+      { name: 'Hiring Experiences', brief: 'End-to-end hiring suite for managers, recruiters, interviewers, and applicants', detail: 'A suite of applications designed to streamline and enhance the entire hiring journey. Includes:<ul><li><strong>Hiring Tab</strong> \u2014 Central hiring management view</li><li><strong>Recruitment Workspace</strong> \u2014 Recruiter-focused workspace</li><li><strong>Interview Management</strong> \u2014 Schedule, track, and manage interviews</li><li><strong>Applicant Center</strong> \u2014 Candidate-facing application portal</li><li><strong>Opportunity Marketplace</strong> \u2014 Internal mobility and opportunity matching</li><li><strong>Talent Profile</strong> \u2014 Unified employee talent information</li></ul><div class="cite-section"><strong style="color:var(--text-muted);">Source:</strong> <a href="https://www.servicenow.com/docs/r/employee-service-management/hr-service-delivery/hiring-experiences-landing.html" target="_blank" class="cite-link">Hiring Experiences \u2197</a></div>' },
+      { name: 'Growth Experiences', brief: 'AI-driven talent development, skills intelligence, and career growth', detail: 'A suite of products to help employees develop, grow, and deliver on critical business outcomes:<ul><li><strong>Talent Development Core</strong> \u2014 End-to-end process for individuals and managers to take control of career growth and development plans</li><li><strong>Skills Intelligence</strong> \u2014 AI-driven platform for building a workforce based on skills</li><li><strong>Career Conversations</strong> \u2014 End-to-end process for creating and managing career growth conversations</li><li><strong>Learning</strong> \u2014 Discover and engage with career development content</li><li><strong>Mentoring</strong> \u2014 Connect individuals seeking mentorship with experienced mentors</li><li><strong>Employee Goals</strong> \u2014 View and track career goals aligned with company strategic objectives</li><li><strong>Talent Feedback</strong> \u2014 Request feedback on employee skills from collaborators</li></ul><div class="cite-section"><strong style="color:var(--text-muted);">Source:</strong> <a href="https://www.servicenow.com/docs/r/employee-service-management/talent-development-core/egd-employee-growth-developemnt-suite.html" target="_blank" class="cite-link">Growth Experiences \u2197</a></div>' },
+      { name: 'Agent Workspace', brief: 'Configurable Next Experience workspace for HR agents', detail: 'Agent Workspace for HR Case Management (Configurable) uses the Next Experience UI, built on configurable UI Builder. Puts all tools in one place so agents can interact with employees, respond to inquiries, and resolve issues quickly. Key capabilities:<ul><li>Personalize landing, record, list, and case creation pages</li><li>Single-pane and multi-tab views</li><li>Integrated communication channels and agent chat</li><li>Agent assist with ML-driven personalizations</li><li>Bulk case creation and checklists</li><li>Contextual side panel for related info</li><li>Document templates and response templates</li><li>SLA visibility and email integration</li><li>Employee document management support</li><li>Conversational SMS service channel</li></ul><strong>Note:</strong> The Classic Agent Workspace is deprecated. New customers should activate Agent Workspace for HR Case Management (Configurable) from the ServiceNow Store.<br><div class="cite-section"><strong style="color:var(--text-muted);">Source:</strong> <a href="https://www.servicenow.com/docs/r/employee-service-management/agent-workspace-for-hr-case-management/agent-ws-hr-case-mgmt-landing-page.html" target="_blank" class="cite-link">Agent Workspace for HR Case Management \u2197</a></div>' },
+      { name: 'Manager Hub', brief: 'Self-service, team insights, and proactive engagement for managers', detail: 'Increases manager self-service and proactive engagement with their team by providing insights and recommended actions. Key features:<ul><li><strong>Engage with your team</strong> \u2014 Approve requests, act on tasks, stay informed on upcoming events (birthdays, work anniversaries, new hire dates). View global time zones for scheduling awareness.</li><li><strong>Focus on your team needs</strong> \u2014 Manage globally dispersed teams with direct reports and sub-managers. View data for all worker types including employees, interns, and contingent workers. Create customized transition plans using Journey Accelerator templates.</li><li><strong>Team insights</strong> \u2014 View historical trends and statistics. Data visualizations about team service requests, journeys, and learnings. Insight-based suggestions for improving processes.</li><li><strong>Grow as a people leader</strong> \u2014 Access Manager Library resources on career development, leader enablement, hiring, performance evaluation, and managerial tools.</li></ul>Administrators can configure fields, display text, and icons to suit organizational requirements.<br><div class="cite-section"><strong style="color:var(--text-muted);">Source:</strong> <a href="https://www.servicenow.com/docs/r/employee-service-management/hr-service-delivery/manager-hub-overview.html" target="_blank" class="cite-link">Manager Hub \u2197</a></div>' },
+      { name: 'HR Documents', brief: 'Employee document management, templates, and eSigning', detail: 'Multiple apps support documents in HR:<ul><li><strong>Employee Document Management (EDM)</strong> \u2014 Organize, secure, and track documents with access control and retention policies. Metadata in <code>sn_hr_core_document</code>, binaries in <code>sys_attachment</code> (object-storage backed). Retention policies configurable per document type.</li><li><strong>Document Templates</strong> \u2014 Provides embedded signature capability for HTML and PDF document templates. The current recommended approach.</li><li><strong>HR e-signature</strong> \u2014 Non-embedded signature capability for managed documents and knowledge articles attached to HR tasks. Supports three signing types (Acknowledgment, Credential, Signature) and two document types (Managed Documents, Knowledge Articles).</li></ul><strong>Note:</strong> HR e-signature must be used for internal, non-legal acknowledgment use cases only. It is a legacy product with no active development. HR document templates is being prepared for deprecation\u2014use Document Templates instead.<br><div class="cite-section"><strong style="color:var(--text-muted);">Source:</strong> <a href="https://www.servicenow.com/docs/r/employee-service-management/hr-service-delivery/hr-esigning-app.html" target="_blank" class="cite-link">HR Documents \u2197</a></div>' },
+      { name: 'Employee Center & Mobile', brief: 'Unified self-service portal and NowMobile app access', detail: 'Employee Center provides a single, unified portal for employees to get all information, services, and help they need. Fully configurable branded layouts with personalized content tiles and department-specific catalogs. Surfaces HR, IT, Legal, and Facilities requests based on employee profile.<br><br>The HR Service Delivery for mobile plugin enables employees to access HRSD features from mobile devices via the NowMobile app:<ul><li><strong>View HR requests</strong> \u2014 From the Home tab via My Requests</li><li><strong>Request help</strong> \u2014 Read knowledge articles and submit HR requests via Help center tab</li><li><strong>Complete HR tasks</strong> \u2014 HR tasks (signing documents, uploading attachments, watching videos), lifecycle event tasks, integration tasks (SuccessFactors, DocuSign, Adobe Acrobat Sign), and content tasks</li><li><strong>Virtual Agent chat</strong> \u2014 If enabled, employees can chat with a virtual agent</li><li><strong>Hiring manager onboarding</strong> \u2014 Track new hire onboarding progress in a consolidated section</li></ul>HR Service Delivery for mobile is automatically activated with Case and Knowledge Management.<br><div class="cite-section"><strong style="color:var(--text-muted);">Sources:</strong><br><a href="https://www.servicenow.com/docs/r/employee-service-management/hr-service-delivery-for-mobile/mobile-employee-experience-for-hr-service-delivery.html" target="_blank" class="cite-link">HR Service Delivery for mobile \u2197</a><br><a href="https://www.servicenow.com/docs/r/employee-service-management/hr-service-delivery/hr-service-delivery-overview.html" target="_blank" class="cite-link">Supporting information for HR Service Delivery \u2197</a></div>' },
+      { name: 'Alumni Center', brief: 'Post-employment services for former employees, volunteers, and contractors', detail: 'A dedicated hub for staying connected with the organization after tenure. Benefits for alumni: self-service payroll information, tax documents, and employment verification letters. Tailored job recommendations with application tracking. Profile management with public/private visibility controls. Access to company news, knowledge resources, and announcements.<br><br>Benefits for the organization: maintain relationships for rehiring, reduce recruitment costs and onboarding time, enhance employer brand through structured alumni experience, access a broader pre-qualified talent pool.<br><br><strong>Licensing:</strong> When employees transition to alumni under Unrestricted User (UU) licensing, records must be inactivated in <code>sys_user</code> to avoid inflating UU counts. The offboarding workflow creates a new record in the Alumni Users <code>sn_asc_user</code> table. Roles required: <code>sn_asc.admin</code> or <code>sn_asc.manager</code>.<br><div class="cite-section"><strong style="color:var(--text-muted);">Source:</strong> <a href="https://www.servicenow.com/docs/r/employee-service-management/alumni-center/alumni-service-center.html" target="_blank" class="cite-link">Alumni Center \u2197</a></div>' },
+      { name: 'Issue Auto Resolution', brief: 'AI-powered near real-time auto-resolution for routine HR inquiries', detail: 'Uses AI to provide near real-time responses to routine employee inquiries. Identifies critical or sensitive cases and routes them to agents for timely assistance. Key benefits:<ul><li><strong>Omni-channel experience</strong> \u2014 Employees ask for help through any channel (email, SMS, Teams) and receive responses on their preferred channel</li><li><strong>Near real-time response</strong> \u2014 Often 3\u20135 seconds for routine inquiries vs. 3\u20135 day agent turnaround</li><li><strong>Cost savings</strong> \u2014 50\u201380% of employee requests are routine/non-critical and submitted through unstructured formats. Automates high-volume, low-value case resolution.</li><li><strong>Dashboard</strong> \u2014 Monitor success metrics including auto-resolved cases, estimated cost savings, and time savings</li></ul><strong>Note:</strong> Supported only in English. Does not support bringing in your own model.<br><div class="cite-section"><strong style="color:var(--text-muted);">Source:</strong> <a href="https://www.servicenow.com/docs/r/employee-service-management/issue-auto-resolution-for-hr/issue-auto-resolution-hr.html" target="_blank" class="cite-link">Issue Auto Resolution for HR \u2197</a></div>' },
+      { name: 'Workforce Optimization', brief: 'Scheduling, coaching, performance KPIs, and demand forecasting', detail: 'Simplifies the daily routine of HR Agent Managers to develop high-performing teams. Manage and maintain workforce productivity from a single application:<ul><li><strong>Real-time visibility</strong> \u2014 Monitor work items, escalations, and KPIs by channel for optimal performance</li><li><strong>Scheduling</strong> \u2014 Manage normal and on-call shifts from one centralized experience. Track shift coverage, swaps, and time-off requests. Create shift plans, schedule plans, assign agents, and publish schedules.</li><li><strong>Demand forecasting</strong> \u2014 Precision modeling of demand scenarios to analyze impact on agent schedules and properly staff for demand surges</li><li><strong>Skills & coaching</strong> \u2014 Empower agents with skills they need using internal/external learning platforms. Assess performance, set coaching plans, automate agent recommendations based on skills, provide mentoring.</li><li><strong>Team performance</strong> \u2014 Organize teams into assignment groups. Define KPIs to analyze group, agent, and incident-level performance.</li></ul><div class="cite-section"><strong style="color:var(--text-muted);">Source:</strong> <a href="https://www.servicenow.com/docs/r/employee-service-management/workforce-optimization-for-hr/wfo-hr-overview.html" target="_blank" class="cite-link">Workforce Optimization for HR \u2197</a></div>' },
+      { name: 'Leader Hub & Learning Core', brief: 'Organizational talent insights and integrated learning repository', detail: '<strong>Leader Hub</strong> empowers organizational leaders to understand team strengths, identify skill gaps, and facilitate changes conducive to workforce growth and business outcomes. View and analyze talent data to drive performance and foster growth. Integrates with the Talent Development suite.<br><br><strong>Learning Core</strong> enables building a learning content repository by integrating with third-party Learning Management Systems: Cornerstone OnDemand, Udemy, PluralSight, Sumtotal, and Saba. Configure learning catalogs containing course items from both external and internal learning systems. Provides base tables, content, learning bases, roles, and access configuration used by Learning Posts and coaching applications.<br><div class="cite-section"><strong style="color:var(--text-muted);">Sources:</strong><br><a href="https://www.servicenow.com/docs/r/employee-service-management/hr-service-delivery/td-lh-landing.html" target="_blank" class="cite-link">Leader Hub \u2197</a><br><a href="https://www.servicenow.com/docs/r/employee-service-management/learning-core/learning-core_overview.html" target="_blank" class="cite-link">Learning Core \u2197</a></div>' },
+      { name: 'Proactive Prompts & HR Dashboard', brief: 'Contextual engagement and HR performance analytics', detail: '<strong>Proactive Prompts</strong> enable contextual and proactive engagement for managers and employees by delivering actionable insights as prompts into their flow of work. Drive positive habit formation through continuous micro-actions from messaging channels (e.g., Microsoft Teams). Define timely bite-sized insights for managers on Manager Hub portal. Create reminders in Employee Journey Management to keep employees on task.<br><br><strong>HR Success Dashboard</strong> provides service and performance insights to HR leadership and process owners. Measure the performance of HR implementation using different KPIs. Available as a ServiceNow Store app.<br><div class="cite-section"><strong style="color:var(--text-muted);">Sources:</strong><br><a href="https://www.servicenow.com/docs/r/employee-service-management/proactive-prompts/proactive-prompts-for-hrsd.html" target="_blank" class="cite-link">Proactive Prompts \u2197</a><br><a href="https://www.servicenow.com/docs/r/employee-service-management/hr-service-delivery/success-dashboard-landing.html" target="_blank" class="cite-link">HR Success Dashboard indicators \u2197</a></div>' },
+      { name: 'Integrations & Platform', brief: 'Third-party systems, SN apps, domain separation, multi-instance, and healthcare', detail: '<strong>Third-party integrations:</strong> Oracle Cloud HCM (Standard + Advanced), Workday (Standard + Advanced + Learning), SuccessFactors, UKG, Cornerstone OnDemand, Magnit, AdobeSign, DocuSign, Navex EthicsPoint.<br><br><strong>ServiceNow app integrations:</strong> Universal Request, AI Search, Virtual Agent, Performance Analytics, Machine Learning Solutions, HR Predictive Intelligence Workbench, ServiceNow Voice for HR, Employee Center.<br><br><strong>Domain Separation:</strong> Supports basic level (data separation). Separates data, processes, and admin tasks into logical domains within a single instance. Users see data in their home domain and child domains only. Hierarchical structure and sharing of data/configurations is not supported by default.<br><br><strong>Multi-Instance Integration:</strong> Centralizes HR service delivery in a shared services model, enabling consumers and providers to connect instances to securely build business workflows across the ServiceNow ecosystem.<br><br><strong>Healthcare (New in Australia):</strong> Creates standardized, digitized, and automated physician onboarding workflows using the Healthcare Professional data model.<br><div class="cite-section"><strong style="color:var(--text-muted);">Sources:</strong><br><a href="https://www.servicenow.com/docs/r/employee-service-management/hr-service-delivery/integrate-third-party-systems.html" target="_blank" class="cite-link">Third-party integrations \u2197</a><br><a href="https://www.servicenow.com/docs/r/employee-service-management/hr-service-delivery/integrate-hr-platform-apps.html" target="_blank" class="cite-link">ServiceNow app integrations \u2197</a><br><a href="https://www.servicenow.com/docs/r/employee-service-management/hr-service-delivery/hr-domain-separation.html" target="_blank" class="cite-link">Domain Separation \u2197</a><br><a href="https://www.servicenow.com/docs/r/employee-service-management/hr-service-delivery/multi-instance-int.html" target="_blank" class="cite-link">Multi-Instance Integration \u2197</a><br><a href="https://www.servicenow.com/docs/r/employee-service-management/hr-service-delivery-for-healthcare/healthcare-hr.html" target="_blank" class="cite-link">HR Service Delivery for Healthcare \u2197</a></div>' }
+    ]
+  },
+  {
+    id: 'hub', name: 'Workflow Data Fabric', icon: '\uD83D\uDD17', cssClass: 'layer-hub', accentClass: '',
+    subtitle: 'iPaaS Layer \u2014 Spokes, Flows, MID Server',
+    tooltip: 'Native integration platform \u2014 all third-party connections route through here',
+    desc: 'The native iPaaS (Integration Platform as a Service) embedded in the Now Platform. All third-party integrations are managed through the Workflow Data Fabric. Consumes licensed Integration Hub Transactions for each outbound API call.',
+    components: [
+      { name: 'Spokes', brief: 'Pre-built certified connectors (250+)', detail: 'Spokes are packaged connectors for specific third-party systems (e.g., Oracle HCM Cloud Spoke, ADP Spoke). Each spoke packages one or more Actions (discrete API calls) and Flows. Certified spokes available on the ServiceNow Store. Custom spokes can be built for systems without OOTB connectors.' },
+      { name: 'Actions', brief: 'Individual outbound API calls as reusable steps', detail: 'Discrete API calls wrapped in reusable steps (e.g., "Get Employee by ID", "Create Background Check Order"). Actions are the building blocks of Flows. Each action consumes one Integration Hub Transaction.' },
+      { name: 'Flow Designer', brief: 'No-code workflow orchestration', detail: 'Orchestrated sequences of Actions and logic. Triggered by ServiceNow events, scheduled jobs, inbound webhooks, or user interactions. Supports conditions, branching, error handling, and parallel execution. Subflows enable reusable flow components.' },
+      { name: 'MID Server', brief: 'On-prem agent for private network access', detail: 'Java agent deployed inside AmEx network perimeter. Communicates outbound-only over HTTPS (no inbound firewall rules required). Handles LDAP queries, JDBC connections, and file-based integrations that cannot traverse public internet. SFTP/file-based imports through MID Server consume no Integration Hub transactions.' },
+      { name: 'Transaction Metering', brief: 'Licensed transaction capacity', detail: 'Every outbound call from Integration Hub, Flow Designer, Remote Tables, or Orchestration consumes a transaction. HRSD Enterprise includes base entitlement. High-volume integrations (daily HCM sync, HireRight volume) may require additional packs. Remote Instance Spoke transactions (SN-to-SN) are NOT counted.' },
+      { name: 'Data Pipeline', brief: 'Import Sets, Transform Maps, Target Tables', detail: 'All inbound data follows: <strong>Import Set</strong> (staging table for validation) \u2192 <strong>Transform Map</strong> (field-by-field mapping rules) \u2192 <strong>Target Table</strong> (permanent HRSD storage in MariaDB). Attachments go to <code>sys_attachment</code> (object storage). Every field change recorded in <code>sys_audit</code>.' }
+    ]
+  },
+  {
+    id: 'core', name: 'Now Platform Core', icon: '\u2699\uFE0F', cssClass: 'layer-core', accentClass: 'accent-core',
+    subtitle: 'Glide Runtime, MariaDB, CMDB, ACL Engine',
+    tooltip: 'Core platform runtime and data layer',
+    desc: 'All ServiceNow business logic runs through the Glide platform, a proprietary Java-based runtime. Custom scripts run in a restricted JavaScript sandbox with no file system access, no OS command execution, and no network calls except via approved APIs.',
+    components: [
+      { name: 'Glide Runtime', brief: 'Java-based application platform', detail: 'Server-side JavaScript engine (ES5 compatible) with GlideRecord ORM, GlideSystem, and GlideUser APIs. Business rules execute as database triggers (before/after insert/update/delete). All custom scripts run in restricted sandbox: no file system access, no OS commands, no arbitrary network calls.' },
+      { name: 'MariaDB (Raptor DB)', brief: 'Isolated database per customer', detail: 'MySQL-compatible with InnoDB storage engine. Schema per customer (no shared tables between customers). Table inheritance model: child tables store only extended columns, joining to parent via sys_id. Full-text search via Apache Lucene index maintained alongside MariaDB.' },
+      { name: 'CMDB / CSDM 5.0', brief: 'Foundational data model for all applications', detail: 'Common Service Data Model v5.0 hierarchy: <strong>Business Capability</strong> (e.g., Workforce Management) \u2192 <strong>Business Service</strong> (e.g., HR Self-Service Portal) \u2192 <strong>Technical Service</strong> (infrastructure cluster) \u2192 <strong>Configuration Item</strong> (individual component). For HRSD: Employee \u2192 HR Cases \u2192 Business Service "HR Service Delivery" \u2192 Business Capability "Colleague Experience".' },
+      { name: 'ACL Engine', brief: 'Table, row, and field-level access control', detail: 'Every database read/write passes through the ACL engine before execution. Enforces field-level, row-level, and table-level controls. HRSD ACLs restrict case visibility to assigned HR agent and the employee. Even HR managers see only their department\'s cases by default. Agentic AI actions scoped by same ACL framework as human users.' },
+      { name: 'Workflow Engine', brief: 'State machine with parallel activities', detail: 'State machine-based execution supporting parallel activities, approvals, timers, and conditions. Powers all HRSD case routing, Lifecycle Event orchestration, and escalation workflows.' },
+      { name: 'Session Management', brief: 'Hazelcast distributed cache', detail: 'Distributed session cache managed by Hazelcast. Sessions survive individual node failures. Application tier is stateless by design; all state persists in database or cache. Nodes can be terminated and replaced without data loss.' }
+    ]
+  },
+  {
+    id: 'security', name: 'Security & Compliance', icon: '\uD83D\uDD12', cssClass: 'layer-security', accentClass: 'accent-security',
+    subtitle: '7-Layer Defense-in-Depth | Certifications',
+    tooltip: 'Seven-layer security model and compliance certifications',
+    desc: 'ServiceNow applies a seven-layer defense-in-depth model. Each layer operates independently \u2014 a failure at one layer does not compromise the layers beneath it. A Shared Responsibility Model governs the division of security accountability between ServiceNow and AmEx.',
+    components: [
+      { name: 'Network Perimeter (L1)', brief: 'Cloudflare DDoS, WAF, IDS/IPS', detail: 'All inbound traffic through Cloudflare DDoS scrubbing. WAF inspects for OWASP Top 10 attack patterns. BGP route filtering prevents route hijacking. IDS/IPS with daily signature updates.' },
+      { name: 'Network Segmentation (L2)', brief: 'Dedicated VPC per customer', detail: 'Each customer instance in dedicated VPC with private subnets. Security groups enforce least-privilege ingress/egress. No direct routing between customer VPCs. Cross-VPC only through ServiceNow internal management plane (separately segmented).' },
+      { name: 'Host Hardening (L3)', brief: 'CIS L2 baselines, immutable images', detail: 'OS images built from CIS Benchmark Level 2 hardened baselines. Nodes rebuilt from image on every deploy (not patched in place). No persistent SSH access to production. All access through PAM gateway. Antivirus and EDR on all nodes with real-time SOC alerting.' },
+      { name: 'Application Security (L4)', brief: 'OWASP mitigations, sandboxed JS', detail: 'CSRF tokens on all state-changing requests. CSP headers prevent XSS. Input validation and output encoding at Glide runtime layer. Custom scripts in sandboxed JS engine (no OS command execution). All file uploads virus-scanned.' },
+      { name: 'Data Security (L5)', brief: 'AES-256, TLS 1.3, field-level encryption', detail: 'AES-256 encryption at rest (DB volumes, attachments, backups). TLS 1.3 for all external connections (1.2 fallback for legacy). Internal node-to-node also TLS-encrypted. Field-level encryption available for PII fields (SSN, salary) using separate key independent of volume key.' },
+      { name: 'IAM (L6)', brief: 'MFA, PAM, JIT access, session recording', detail: 'MFA enforced for all admin access. PAM for ServiceNow support: recorded sessions, 8-hour max, dual approval for production. JIT access for emergencies with auto-expiry. All admin access logged immutably (Security Log Monitoring plugin).' },
+      { name: 'Monitoring (L7)', brief: '24/7 SOC, Splunk SIEM, <15min MTTD', detail: '24/7 SOC monitoring via Splunk SIEM. Behavioral analytics for anomalous access, data exfiltration, insider threat. MTTD target <15 minutes for critical events. Customer notification within 72 hours of confirmed incident (GDPR Art. 33).' },
+      { name: 'Certifications', brief: 'SOC 2, PCI DSS L1, ISO 27001, FedRAMP', detail: '<table class="data-table"><tr><th>Certification</th><th>Relevance</th></tr><tr><td>SOC 1/2 Type II</td><td>Annual Big 4 audit; covers all production infrastructure</td></tr><tr><td>PCI DSS Level 1</td><td>Full cardholder data compliance (v4.0); AOC available</td></tr><tr><td>ISO 27001/17/18</td><td>InfoSec, cloud security, PII processing in cloud</td></tr><tr><td>FedRAMP Moderate</td><td>NIST 800-53 controls for regulated FS institutions</td></tr><tr><td>HITRUST CSF</td><td>Healthcare/FS controls; relevant for benefits data</td></tr><tr><td>GDPR / CCPA</td><td>DPAs with SCCs; right-to-erasure workflows included</td></tr></table>' }
+    ]
+  },
+  {
+    id: 'infra', name: 'Cloud Infrastructure', icon: '\u2601\uFE0F', cssClass: 'layer-infra', accentClass: 'accent-infra',
+    subtitle: 'Dedicated Instance | AWS/GCP | DR',
+    tooltip: 'Physical and cloud infrastructure foundation',
+    desc: 'ServiceNow operates a dedicated instance model \u2014 each customer receives a fully isolated instance with separate compute, database, network, and encryption keys. This is architecturally distinct from multi-tenant SaaS and has direct implications for data residency, security boundaries, and audit scope.',
+    components: [
+      { name: 'Dedicated Instance', brief: 'Fully isolated per-customer environment', detail: '<ul><li>Separate virtual machines with separate OS images</li><li>Separate Raptor DB schemas (no cross-customer joins)</li><li>Separate application node pools</li><li>Separate encryption keys (ServiceNow KMS or CMEK)</li><li>Separate network security groups and VPC rules</li></ul>AmEx receives named instance (e.g., americanexpress.service-now.com). Sub-production instances (dev, UAT, pre-prod) provisioned separately \u2014 no shared infrastructure with production.' },
+      { name: 'Cloud Providers', brief: 'AWS & GCP with ServiceNow network overlay', detail: 'Global infrastructure runs on AWS and GCP. ServiceNow operates its own network overlay \u2014 customers do not interact directly with hyperscalers. Includes: BGP routing, Cloudflare DDoS peering, Kubernetes for stateless services, dedicated VMs for DB nodes, SAN-attached block storage, object storage for attachments.' },
+      { name: 'Data Center Regions', brief: '14+ primary regions with DR pairs', detail: '<table class="data-table"><tr><th>Region</th><th>Primary</th><th>DR Pair</th></tr><tr><td>US East</td><td>N. Virginia (AWS us-east-1)</td><td>US West (Oregon)</td></tr><tr><td>US West</td><td>Oregon (AWS us-west-2)</td><td>US East (Virginia)</td></tr><tr><td>EU West</td><td>Amsterdam / Frankfurt</td><td>EU Central</td></tr><tr><td>APAC South</td><td>Sydney / Singapore</td><td>Cross-APAC</td></tr></table>' },
+      { name: 'Availability Architecture', brief: 'Active-active/passive, auto-failover', detail: '<ul><li><strong>Active-active:</strong> Traffic distributed across nodes; automatic failover within seconds on health check failure</li><li><strong>Active-passive:</strong> Primary node handles all traffic; passive promoted on failure detection</li><li><strong>DB replication:</strong> Synchronous within AZ; asynchronous to DR region</li></ul>' },
+      { name: 'DR & Business Continuity', brief: 'Bronze / Silver / Gold tiers', detail: '<table class="data-table"><tr><th>Tier</th><th>RTO</th><th>RPO</th><th>For</th></tr><tr><td>Bronze</td><td>Best effort</td><td>Best effort</td><td>Dev/test</td></tr><tr><td>Silver</td><td>8 hours</td><td>1 hour</td><td>Standard business apps</td></tr><tr><td><strong>Gold</strong></td><td><strong>4 hours</strong></td><td><strong>30 min</strong></td><td><strong>Mission-critical HRSD</strong></td></tr></table>DB snapshots every 8 hours, 7-day rolling retention. BCP tested annually; results at trust.servicenow.com.' },
+      { name: 'Instance Topology', brief: 'PROD, Pre-PROD, DEV, PDI', detail: '<ul><li><strong>Production:</strong> Live customer-facing; change control; backed up every 8 hours</li><li><strong>Pre-PROD (Clone):</strong> Periodic clone of PROD with data masking; for regression testing</li><li><strong>Development:</strong> Isolated sandbox; no PROD data; for custom app development</li><li><strong>PDI:</strong> Optional individual developer environments</li></ul>Full clone provisioning: 4\u20138 hours with PII masking applied.' }
+    ]
+  }
+];
+
+const INTEGRATIONS = [
+  { id: 'oracle-hcm', name: 'Oracle HCM Cloud', _target: 'hub', category: 'HCM', ootb: 'ootb',
+    method: 'Integration Hub Spoke + Atom Feeds', direction: 'Bi-directional', auth: 'JWT with keystore configuration',
+    dataInSN: ['sys_user (identity fields)', 'sn_hr_core_profile (HR-sensitive fields)', 'Advanced data (Total Rewards, Time Off) displayed in-session only \u2014 NOT stored'],
+    dataExternal: ['Total Rewards / Direct Deposit data remains in Oracle', 'In-session fetch via Employee Center widgets'],
+    flowSteps: ['Oracle HCM', 'IH Spoke (Atom Feeds)', 'Import Set', 'Transform Map', 'sys_user + sn_hr_core_profile'],
+    notes: 'Most architecturally capable OOTB integration for HRSD. Standard + Advanced packages provide near-complete employee data sync.' },
+  { id: 'adp', name: 'ADP', _target: 'hrsd', category: 'Payroll', ootb: 'ootb',
+    method: 'Certified Store App (SAML / B2C tokens)', direction: 'Bi-directional', auth: 'SAML SSO + B2C token (in-session)',
+    dataInSN: ['Identity data in sys_user (name, dept, job code, status)', 'ADP eService case metadata'],
+    dataExternal: ['Pay stubs, tax forms, W-2s retrieved in-session via tokenized access', 'Payroll data flows directly to employee browser \u2014 never touches ServiceNow storage'],
+    flowSteps: ['ADP', 'Certified Store App', 'SAML/B2C Auth', 'sys_user (identity sync)'],
+    notes: 'In-session token architecture for payroll data materially reduces PCI scope within ServiceNow. Three connectors available: Global Payroll, Workforce Now, eService.' },
+  { id: 'ceridian', name: 'Ceridian Dayforce', _target: 'hrsd', category: 'HCM/Payroll', ootb: 'custom',
+    method: 'Custom REST Action or SFTP Import', direction: 'Inbound (employee data)', auth: 'OAuth 2.0 client credentials',
+    dataInSN: ['Employee identity and HR profile via Import Set transforms', 'sys_user + sn_hr_core_profile'],
+    dataExternal: ['Payroll data not natively surfaced without custom development'],
+    flowSteps: ['Ceridian Dayforce', 'Custom REST / SFTP', 'MID Server (if SFTP)', 'Import Set', 'Transform Map', 'sys_user + sn_hr_core_profile'],
+    notes: 'No native certified spoke as of April 2026. SFTP/file-based is lower-risk starting point (no IH transaction cost). Hire2Retire by RoboMQ offers pre-built connector.' },
+  { id: 'peopledoc', name: 'PeopleDoc (UKG)', _target: 'hrsd', category: 'Documents', ootb: 'custom',
+    method: 'Custom REST Action (Integration Hub)', direction: 'Bi-directional', auth: 'REST API credentials',
+    dataInSN: ['Document metadata + deep link in sn_hr_core_document', 'Document binaries NOT stored in ServiceNow'],
+    dataExternal: ['All document binaries stored in PeopleDoc (UKG) cloud', 'Access control enforced at both SN and PeopleDoc layers'],
+    flowSteps: ['HRSD Case/Lifecycle', 'Custom IH Action', 'PeopleDoc REST API', 'sn_hr_core_document (metadata only)'],
+    notes: 'Alternative: use ServiceNow native EDM instead. Recommended for new implementations. PeopleDoc integration only if AmEx has existing document inventory.' },
+  { id: 'hireright', name: 'HireRight', _target: 'hrsd', category: 'Screening', ootb: 'ootb',
+    method: 'Certified Store App (REST API)', direction: 'Outbound trigger / Inbound results', auth: 'HireRight account credentials (REST API)',
+    dataInSN: ['Check metadata in HR Case (order ID, status, candidate)', 'Completed report PDFs in sys_attachment'],
+    dataExternal: ['Raw screening data remains in HireRight', 'Only report PDF and status metadata persist in ServiceNow'],
+    flowSteps: ['HRSD Case/Lifecycle', 'HireRight Store App', 'HireRight API', 'Status Updates', 'sys_attachment (report PDF)'],
+    notes: 'Direct API-to-API, no MID Server required. Includes Change Tracker audit trail and duplicate detection.' },
+  { id: 'hirevue', name: 'HireVue', _target: 'hrsd', category: 'Assessment', ootb: 'custom',
+    method: 'Custom REST Action (Integration Hub)', direction: 'Outbound invite / Inbound status', auth: 'SAML 2.0 (SSO) + REST API keys',
+    dataInSN: ['Completion status and aggregate scores as HR Case variables', 'Interview invitation records'],
+    dataExternal: ['Video recordings and detailed assessment reports remain in HireVue (AWS)', 'Only metadata and outcome data stored in ServiceNow'],
+    flowSteps: ['HRSD Lifecycle Event', 'Custom IH Action', 'HireVue REST API', 'Webhook/Poll', 'sn_hr_core_case (variables)'],
+    notes: 'No pre-built ServiceNow Store spoke. ATS-mediated integration possible via Oracle Talent spoke. Validate AI assessment EEOC compliance independently.' },
+  { id: 'alight', name: 'Alight Worklife', _target: 'hrsd', category: 'Benefits', ootb: 'partial',
+    method: 'REST API + Deep Link SSO', direction: 'Outbound (case) / In-session (benefits)', auth: 'SAML SSO for deep links / REST API credentials',
+    dataInSN: ['Benefits case metadata in sn_hr_core_case_benefits', 'Enrollment data, leave balances, 401(k) \u2014 in-session only, NOT stored'],
+    dataExternal: ['All benefits enrollment data authoritative in Alight', 'Transaction completion happens in Alight portal'],
+    flowSteps: ['Employee Center', 'Deep Link SSO', 'Alight Worklife', 'API Data Pull (in-session)', 'sn_hr_core_case_benefits (metadata)'],
+    notes: 'Deep link model: benefits transactions completed in Alight, not ServiceNow. Alight remains system of record for all benefits data.' },
+];
+
+const EW_DATA = {
+  name: 'EmployeeWorks',
+  icon: '\uD83E\uDDE0',
+  subtitle: 'AI Front Door \u2014 Separate Architecture',
+  desc: 'EmployeeWorks operates as an independent AI orchestration layer outside the ServiceNow platform. It receives natural-language requests, classifies intent, checks the unified employee roster, and orchestrates resolution\u2014routing to ServiceNow HRSD or directly to third-party systems via its own plugin library.',
+  components: [
+    { name: 'Reasoning Engine', brief: 'Intent classification, entity extraction, and agent routing', detail: 'Core AI orchestration for EmployeeWorks. Determines employee intent from natural language input across all channels. Routes to specialized agents from a catalog of 792+ pre-built plugins across 111 integrated systems. Checks the unified roster (identity, role, permissions) before executing any action. Plans multi-step sequences with configurable human approval gates at any step. Supports disambiguation when intent is ambiguous.' },
+    { name: 'Agent Studio', brief: 'No-code builder for custom AI agents', detail: 'Build AmEx-specific assistants for custom processes (e.g., AmEx benefit enrollment, internal policy lookups, travel policy questions). Agents are packaged as plugins and can call ServiceNow APIs to trigger HRSD workflows, read CMDB, or create catalog items.' },
+    { name: 'Enterprise Search', brief: 'Unified search across knowledge, policies, and documents', detail: 'Provides a unified search experience across ServiceNow Knowledge Base articles, company policies, HR documents, and connected enterprise content. Surfaces contextually relevant results based on employee role, department, and location.' },
+    { name: 'Unified Employee Roster', brief: 'Identity, role, and permissions graph for all actions', detail: 'Maintains a consolidated view of every employee\u2019s identity, role, department, manager hierarchy, and permission set. Every EmployeeWorks action is scoped against this roster before execution. Syncs from Oracle HCM and other HR systems of record.' },
+    { name: 'Conversational Interface', brief: 'Natural-language processing across Slack, web, and mobile', detail: 'Provides the conversational AI interface that powers all employee interactions. Handles multi-turn dialogue, context carryover between messages, and seamless escalation to live HR agents when the AI cannot resolve.' }
+  ]
+};
+
+// ═══════════════════════════════════════════
+// MARKETPLACE DATA -- 792 plugins / 111 systems
+// Source: marketplace.moveworks.com (scraped April 2026)
+// ═══════════════════════════════════════════
+
+const EW_PLUGIN_GROUPS = {
+  'HR & People': [
+    { name: 'Workday', count: 121, cats: 'Benefits, Records, L&D, Onboarding, Performance, Recruiting, Time & Absence, Payroll' },
+    { name: 'ServiceNow', count: 83, cats: 'Onboarding, Records, Recruiting, Facilities, IT, Ticketing' },
+    { name: 'SAP SuccessFactors', count: 56, cats: 'Benefits, Records, L&D, Onboarding, Performance, Recruiting, Payroll' },
+    { name: 'Greenhouse', count: 17, cats: 'Recruiting & Talent' },
+    { name: 'UKG Pro WFM', count: 13, cats: 'Records, Onboarding, Time & Absence, Payroll' },
+    { name: 'ADP', count: 13, cats: 'Records, L&D, Onboarding, Performance, Payroll, Recruiting' },
+    { name: 'Google Calendar', count: 9, cats: 'Productivity, IT, HR, Sales' },
+    { name: 'Outlook', count: 9, cats: 'Productivity, Time & Absence, HR' },
+    { name: 'DocuSign', count: 7, cats: 'Legal, Onboarding, Records, Data Analysis' },
+    { name: 'Oracle Fusion Cloud HCM', count: 3, cats: 'Onboarding, Time & Absence, Approvals' },
+    { name: 'Dayforce (Ceridian)', count: 2, cats: 'Time & Absence, HR' },
+    { name: 'Mindtickle', count: 2, cats: 'L&D, Sales' },
+    { name: 'HiBob', count: 1, cats: 'Time & Absence' },
+    { name: 'Lattice', count: 1, cats: 'L&D' },
+    { name: 'Awardco', count: 1, cats: 'Workplace Culture' },
+    { name: 'Bravo', count: 1, cats: 'Workplace Culture' },
+    { name: 'Staffbase', count: 1, cats: 'Workplace Culture' },
+    { name: 'Polygon.io', count: 1, cats: 'Benefits, Finance' },
+  ],
+  'Finance & Procurement': [
+    { name: 'Coupa', count: 23, cats: 'Expense Mgmt, Procurement, Approvals' },
+    { name: 'SAP Concur', count: 23, cats: 'Expense Mgmt, Procurement, Approvals' },
+    { name: 'SAP Ariba', count: 12, cats: 'Procurement, Expense Mgmt, Approvals' },
+    { name: 'Oracle Fusion Cloud ERP', count: 8, cats: 'Expense Mgmt, Procurement, Approvals' },
+    { name: 'NetSuite', count: 5, cats: 'Procurement, Finance' },
+    { name: 'Stripe', count: 2, cats: 'Expense Mgmt, Finance' },
+  ],
+  'IT & Access': [
+    { name: 'Jira', count: 37, cats: 'Engineering, Ticketing, Project Mgmt, Approvals' },
+    { name: 'Jamf', count: 25, cats: 'Access Mgmt, IT, Device Mgmt' },
+    { name: 'SailPoint iNow', count: 11, cats: 'Access Mgmt, Approvals, IT' },
+    { name: 'Freshservice', count: 9, cats: 'IT, Ticketing' },
+    { name: 'Ivanti Service Desk', count: 9, cats: 'IT, Ticketing' },
+    { name: 'ManageEngine', count: 9, cats: 'IT, Ticketing, Approvals' },
+    { name: 'Zendesk', count: 9, cats: 'IT, Ticketing' },
+    { name: 'BMC Helix', count: 8, cats: 'IT, Ticketing' },
+    { name: 'SolarWinds', count: 8, cats: 'IT, Ticketing, Troubleshoot' },
+    { name: 'Wolken', count: 8, cats: 'IT' },
+    { name: 'Cherwell', count: 7, cats: 'IT, Ticketing' },
+    { name: 'Freshdesk', count: 7, cats: 'IT' },
+    { name: 'SysAid', count: 7, cats: 'IT, Ticketing' },
+    { name: 'Okta', count: 6, cats: 'Access Mgmt, IT' },
+    { name: 'BMC Helix DWP', count: 6, cats: 'IT' },
+    { name: 'GitHub', count: 6, cats: 'Engineering, IT, Productivity' },
+    { name: 'Microsoft Graph', count: 5, cats: 'IT, Productivity' },
+    { name: 'PagerDuty', count: 5, cats: 'Engineering, IT' },
+    { name: 'Palo Alto Networks', count: 3, cats: 'IT, Security' },
+    { name: 'Snowflake', count: 3, cats: 'IT, Productivity' },
+    { name: 'Duo', count: 2, cats: 'Access Mgmt, IT' },
+    { name: 'Nexthink', count: 2, cats: 'IT, DEX' },
+    { name: 'Confluence', count: 2, cats: 'IT, Knowledge' },
+    { name: 'SailPoint IdentityIQ', count: 1, cats: 'Access Mgmt, Approvals' },
+    { name: 'Microsoft Entra', count: 1, cats: 'Identity' },
+    { name: 'Microsoft Intune', count: 1, cats: 'Device Mgmt' },
+    { name: 'Power Automate', count: 1, cats: 'Automation' },
+    { name: 'Ping Identity', count: 1, cats: 'Identity' },
+    { name: 'BeyondTrust', count: 1, cats: 'Privileged Access' },
+    { name: 'Datadog', count: 1, cats: 'Observability' },
+    { name: 'LaunchDarkly', count: 1, cats: 'Feature Flags' },
+    { name: 'Linear', count: 1, cats: 'Engineering' },
+  ],
+  'Productivity': [
+    { name: 'Asana', count: 10, cats: 'Project Mgmt, Marketing' },
+    { name: 'Slack', count: 7, cats: 'Collaboration, Project Mgmt' },
+    { name: 'Gong', count: 5, cats: 'Sales, Marketing, Productivity' },
+    { name: 'Zoom', count: 5, cats: 'Meetings, Collaboration' },
+    { name: 'SharePoint', count: 5, cats: 'Documents, Collaboration' },
+    { name: 'Stack Overflow', count: 3, cats: 'Knowledge, Engineering' },
+    { name: 'Smartsheet', count: 3, cats: 'Project Mgmt, Marketing' },
+    { name: 'Databricks', count: 2, cats: 'Data Analysis' },
+    { name: 'Perplexity', count: 2, cats: 'AI Search, Sales' },
+    { name: 'Notion', count: 1, cats: 'Knowledge, Docs' },
+    { name: 'Box', count: 1, cats: 'File Storage' },
+    { name: 'Google Drive', count: 1, cats: 'File Storage' },
+    { name: 'Quip', count: 1, cats: 'Docs' },
+  ],
+  'Sales & CRM': [
+    { name: 'Salesforce', count: 76, cats: 'Sales, Marketing, Support, Approvals, Customer Success' },
+    { name: 'Highspot', count: 5, cats: 'Sales Enablement' },
+    { name: 'HubSpot', count: 2, cats: 'CRM, Marketing' },
+    { name: 'Clari', count: 2, cats: 'Revenue Intelligence' },
+    { name: 'Gainsight', count: 2, cats: 'Customer Success' },
+    { name: 'Tableau', count: 2, cats: 'Analytics, Visualization' },
+    { name: 'Marketo', count: 1, cats: 'Marketing Automation' },
+    { name: 'Pendo', count: 1, cats: 'Product Analytics' },
+    { name: 'Dropbox', count: 1, cats: 'Sales, IT' },
+  ],
+  'Facilities & Other': [
+    { name: 'OfficeSpace', count: 4, cats: 'Facilities, Space Mgmt' },
+    { name: 'ZeroCater', count: 2, cats: 'Facilities, Catering' },
+    { name: 'JLL Technologies', count: 1, cats: 'Facilities' },
+    { name: 'Dovetail', count: 1, cats: 'Product Mgmt' },
+    { name: 'Moveworks Analytics', count: 1, cats: 'AI Analytics' },
+  ],
+};
+
+const EW_PLUGIN_TOTAL = 792;
+const EW_SYSTEM_TOTAL = 111;
+
+// ═══════════════════════════════════════════
+// FEATURED -- AmEx Architecture Integrations
+// ═══════════════════════════════════════════
+
+const FEATURED_INTEGRATIONS = [
+  { system: 'Oracle Fusion Cloud HCM', archName: 'Oracle HCM Cloud', plugins: [
+    { name: 'Approve Timesheet', cats: 'Approvals, Time & Absence' },
+    { name: 'Submit Timesheet', cats: 'Onboarding, Time & Absence' },
+    { name: 'Look up Timesheet Information', cats: 'Time & Absence' },
+  ]},
+  { system: 'ADP', archName: 'ADP', plugins: [
+    { name: 'View Payslips', cats: 'Payroll' },
+    { name: 'Request Time Off', cats: 'Time & Absence' },
+    { name: 'View Time Off Balance', cats: 'Time & Absence' },
+    { name: 'Look up Team Members', cats: 'Records, Onboarding' },
+    { name: 'Update Legal Name', cats: 'Employee Records' },
+    { name: 'Update Preferred Name', cats: 'Records, Onboarding' },
+    { name: 'Update Pronouns', cats: 'Employee Records' },
+    { name: 'View Open Jobs', cats: 'Recruiting & Talent' },
+    { name: 'Add Personal Goals', cats: 'Onboarding, Performance' },
+    { name: 'View Personal Goals', cats: 'Onboarding, Performance' },
+    { name: 'Set Goals for Direct Reports', cats: 'Performance Mgmt' },
+    { name: 'Enroll in L&D Course', cats: 'Learning & Dev' },
+    { name: 'Send Sentiment Surveys', cats: 'Workplace Culture' },
+  ]},
+  { system: 'Dayforce (Ceridian)', archName: 'Ceridian Dayforce', plugins: [
+    { name: 'Approve or Reject Time Off Requests', cats: 'Time & Absence' },
+    { name: 'Request Time Off', cats: 'Time & Absence' },
+  ]},
+  { system: 'UKG Pro WFM', archName: 'PeopleDoc (UKG)', plugins: [
+    { name: 'Submit PTO Request', cats: 'Time & Absence' },
+    { name: 'Approve or Reject PTO', cats: 'Time & Absence' },
+    { name: 'Cancel PTO Request', cats: 'Time & Absence' },
+    { name: 'Check PTO Balance', cats: 'Time & Absence' },
+    { name: 'View PTO Requests & Calendar', cats: 'Time & Absence' },
+    { name: 'Notify on PTO Decision', cats: 'Time & Absence' },
+    { name: 'Notify on PTO Submission', cats: 'Time & Absence' },
+    { name: 'Approve Timesheet', cats: 'Approvals, Time & Absence' },
+    { name: 'Submit Timesheet', cats: 'Onboarding, Time & Absence' },
+    { name: 'Check Clock-In Time', cats: 'Time & Absence' },
+    { name: 'Update Preferred Name', cats: 'Records, Onboarding' },
+    { name: 'Update Pronouns', cats: 'Employee Records' },
+    { name: 'View Payslips', cats: 'Payroll' },
+  ]},
+  { system: 'HireRight', archName: 'HireRight', plugins: [] },
+  { system: 'HireVue', archName: 'HireVue', plugins: [] },
+  { system: 'Alight Worklife', archName: 'Alight Worklife', plugins: [] },
+];
+
+// ═══════════════════════════════════════════
+// DERIVED LAYERS FOR V2 LAYOUT
+// ═══════════════════════════════════════════
+
+const ENGAGEMENT_LAYER = {
+  id: 'engagement', name: 'Employee Channels', icon: '\uD83D\uDCF1',
+  subtitle: 'User Touchpoints',
+  tooltip: 'How employees access the platform',
+  desc: 'All employee-facing entry points into the ServiceNow ecosystem. Employees interact through these channels to access HR services, submit requests, and receive support.',
+  components: [
+    ...LAYERS[0].components,
+    LAYERS[2].components[6],
+    { name: 'Virtual Agent', brief: 'Conversational AI entry point across all channels', detail: LAYERS[1].components[0].detail }
+  ]
+};
+
+const AI_LAYER = {
+  ...LAYERS[1],
+  id: 'ai-layer', name: 'Now Assist & Agentic AI',
+  subtitle: 'ServiceNow GenAI \u2014 Now Assist, Agentic AI (Yokohama)',
+};
+
+const APP_LAYER = {
+  ...LAYERS[2],
+  id: 'app-layer', name: 'HRSD Application',
+  subtitle: 'HR Service Delivery \u2014 Hire to Retire Suite (Australia Release)',
+  components: LAYERS[2].components.filter(c => c.name !== 'Manager Hub')
+};
+
+const APP_CAROUSEL_ITEMS = [
+  {
+    id: 'hrsd',
+    layer: APP_LAYER,
+    cssClass: 'layer-hrsd',
+    active: true,
+  },
+  {
+    id: 'itsm',
+    scaffold: true,
+    name: 'ITSM',
+    icon: '\uD83D\uDEE0\uFE0F',
+    subtitle: 'IT Service Management',
+    modules: ['Incident Management', 'Change Management', 'Problem Management', 'Request Management', 'CMDB', 'Service Catalog', 'Knowledge Management', 'Asset Management'],
+  },
+  {
+    id: 'csm',
+    scaffold: true,
+    name: 'CSM',
+    icon: '\uD83E\uDD1D',
+    subtitle: 'Customer Service Management',
+    modules: ['Case Management', 'Agent Workspace', 'Customer Portal', 'Field Service', 'Communities', 'Proactive Service', 'Self-Service'],
+  },
+];
+
+const INTEGRATION_LAYER = {
+  id: 'integration-layer', name: 'Workflow Data Fabric',
+  icon: '\uD83D\uDD17',
+  subtitle: 'iPaaS Layer \u2014 Spokes, Flows, MID Server',
+  tooltip: 'Native integration platform and all third-party connections',
+  desc: LAYERS[3].desc,
+  hubComponents: LAYERS[3].components,
+  thirdParty: INTEGRATIONS
+};
+
+const FOUNDATION_SECTIONS = [
+  { ...LAYERS[4], title: 'Now Platform Core', icon: '\u2699\uFE0F' },
+  { ...LAYERS[5], title: 'Security & Compliance', icon: '\uD83D\uDD12' },
+  { ...LAYERS[6], title: 'Cloud Infrastructure', icon: '\u2601\uFE0F' },
+];
+
+// ═══════════════════════════════════════════
+// RENDERING -- Compact Main View
+// ═══════════════════════════════════════════
+
+function renderEWCompact() {
+  const container = document.getElementById('ew-compact');
+  container.innerHTML = `
+    <div class="v2-layer layer-ew" data-tooltip="EmployeeWorks AI Front Door" style="animation-delay: 0.1s">
+      <div class="layer-accent"></div>
+      <div class="layer-icon">${EW_DATA.icon}</div>
+      <div class="layer-info">
+        <div class="layer-name">${EW_DATA.name}</div>
+        <div class="layer-sub">AI Front Door &mdash; Separate Architecture</div>
+        <div class="ew-sub-stats">
+          <span class="ew-sub-stat"><strong>${EW_DATA.components.length}</strong> components</span>
+          <span class="ew-sub-stat"><strong>${EW_PLUGIN_TOTAL}</strong> plugins</span>
+          <span class="ew-sub-stat"><strong>${EW_SYSTEM_TOTAL}</strong> systems</span>
+        </div>
+      </div>
+      <div class="layer-badge">${EW_DATA.components.length} components</div>
+      <div class="layer-arrow">\u203A</div>
+    </div>
+  `;
+  container.querySelector('.v2-layer').addEventListener('click', () => openEWPanel());
+}
+
+function renderEngagementCompact() {
+  const container = document.getElementById('engagement-compact');
+  const comps = ENGAGEMENT_LAYER.components;
+  const channelNames = comps.map(c => c.name);
+  container.innerHTML = `
+    <div class="v2-layer layer-engage-thin" data-tooltip="${ENGAGEMENT_LAYER.tooltip}" style="animation-delay: 0.15s">
+      <div class="layer-accent"></div>
+      <div class="layer-icon">\uD83D\uDCF1</div>
+      <div class="layer-info">
+        <div class="layer-name">Employee Channels</div>
+      </div>
+      <div class="engage-channels-thin">
+        ${channelNames.map(n => `<span>${n}</span>`).join('')}
+      </div>
+      <div class="needs-review-tag">NEEDS REVIEW</div>
+      <div class="layer-badge">${comps.length} channels</div>
+      <div class="layer-arrow">\u203A</div>
+    </div>
+  `;
+  container.querySelector('.v2-layer').addEventListener('click', () => openLayerPanel(ENGAGEMENT_LAYER));
+}
+
+function renderLayerRow(layer, containerId, cssClass, animDelay) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = `
+    <div class="v2-layer ${cssClass}" data-tooltip="${layer.tooltip || ''}" style="animation-delay: ${animDelay}s">
+      <div class="layer-accent"></div>
+      <div class="layer-icon">${layer.icon}</div>
+      <div class="layer-info">
+        <div class="layer-name">${layer.name}</div>
+        <div class="layer-sub">${layer.subtitle}</div>
+      </div>
+      <div class="layer-badge">${layer.components.length} components</div>
+      <div class="layer-arrow">\u203A</div>
+    </div>
+  `;
+  container.querySelector('.v2-layer').addEventListener('click', () => openLayerPanel(layer));
+}
+
+// ═══════════════════════════════════════════
+// APP CAROUSEL (Swipeable)
+// ═══════════════════════════════════════════
+
+let appCarouselIndex = 0;
+
+function renderAppCarousel() {
+  const container = document.getElementById('app-row');
+
+  const slidesHTML = APP_CAROUSEL_ITEMS.map((item, i) => {
+    if (item.scaffold) {
+      return `
+        <div class="app-carousel-slide scaffold" data-slide="${i}">
+          <div class="v2-layer" style="position:relative;">
+            <div class="layer-accent" style="background: rgba(255,255,255,0.06);"></div>
+            <div class="layer-icon">${item.icon}</div>
+            <div class="layer-info">
+              <div class="layer-name" style="color: var(--text-muted);">${item.name}</div>
+              <div class="layer-sub">${item.subtitle}</div>
+              <div class="app-scaffold-modules">
+                ${item.modules.map(m => `<span>${m}</span>`).join('')}
+              </div>
+            </div>
+            <div class="app-scaffold-badge">Coming Soon</div>
+          </div>
+        </div>`;
+    } else {
+      const layer = item.layer;
+      return `
+        <div class="app-carousel-slide" data-slide="${i}">
+          <div class="v2-layer ${item.cssClass}" data-tooltip="${layer.tooltip || ''}" id="app-layer-card">
+            <div class="layer-accent"></div>
+            <div class="layer-icon">${layer.icon}</div>
+            <div class="layer-info">
+              <div class="layer-name">${layer.name}</div>
+              <div class="layer-sub">${layer.subtitle}</div>
+            </div>
+            <div class="layer-badge">${layer.components.length} components</div>
+            <div class="layer-arrow">\u203A</div>
+          </div>
+        </div>`;
+    }
+  }).join('');
+
+  const dotsHTML = APP_CAROUSEL_ITEMS.map((item, i) =>
+    `<button class="app-carousel-dot${i === 0 ? ' active' : ''}" data-slide="${i}" title="${item.scaffold ? item.name : item.layer.name}"></button>`
+  ).join('');
+
+  container.innerHTML = `
+    <div class="app-carousel-wrapper">
+      <div class="app-carousel-scroll" id="app-carousel-scroll">
+        ${slidesHTML}
+      </div>
+      <div class="app-carousel-dots" id="app-carousel-dots">
+        ${dotsHTML}
+      </div>
+    </div>
+  `;
+
+  // HRSD card click
+  document.getElementById('app-layer-card').addEventListener('click', () => openLayerPanel(APP_LAYER));
+
+  // Dot clicks
+  const scrollEl = document.getElementById('app-carousel-scroll');
+  document.querySelectorAll('.app-carousel-dot').forEach(dot => {
+    dot.addEventListener('click', () => {
+      const idx = parseInt(dot.dataset.slide);
+      scrollEl.scrollTo({ left: idx * scrollEl.offsetWidth, behavior: 'smooth' });
+    });
+  });
+
+  // Update dots on scroll — debounce redraw so it fires after snap settles
+  let scrollTimer;
+  scrollEl.addEventListener('scroll', () => {
+    const idx = Math.round(scrollEl.scrollLeft / scrollEl.offsetWidth);
+    document.querySelectorAll('.app-carousel-dot').forEach((d, i) => {
+      d.classList.toggle('active', i === idx);
+    });
+    if (idx !== appCarouselIndex) {
+      appCarouselIndex = idx;
+    }
+    clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(() => {
+      drawConnections();
+      drawEWConnections();
+    }, 350);
+  });
+}
+
+function renderIntegRow() {
+  const container = document.getElementById('integ-row');
+  const hubComps = INTEGRATION_LAYER.hubComponents;
+  const thirdParty = INTEGRATION_LAYER.thirdParty;
+  const totalCount = hubComps.length + thirdParty.length;
+
+  container.innerHTML = `
+    <div class="v2-layer layer-integ" data-tooltip="${INTEGRATION_LAYER.tooltip}" id="integ-layer-main" style="animation-delay: 0.4s">
+      <div class="layer-accent"></div>
+      <div class="layer-icon">${INTEGRATION_LAYER.icon}</div>
+      <div class="layer-info">
+        <div class="layer-name">${INTEGRATION_LAYER.name}</div>
+        <div class="layer-sub">${INTEGRATION_LAYER.subtitle} + ${thirdParty.length} Third-Party Systems</div>
+      </div>
+      <div class="layer-badge">${totalCount} components</div>
+      <div class="layer-arrow">\u203A</div>
+    </div>
+  `;
+
+  document.getElementById('integ-layer-main').addEventListener('click', () => {
+    openLayerPanel({
+      id: 'integration-hub',
+      name: 'Workflow Data Fabric',
+      icon: '\uD83D\uDD17',
+      subtitle: 'iPaaS Layer \u2014 Spokes, Flows, MID Server',
+      desc: LAYERS[3].desc,
+      components: hubComps
+    });
+  });
+}
+
+function renderFoundation() {
+  const container = document.getElementById('foundation-stack');
+  const cssClasses = ['layer-core', 'layer-security', 'layer-infra'];
+  const delays = [0.5, 0.6, 0.7];
+
+  FOUNDATION_SECTIONS.forEach((section, i) => {
+    // Add flow indicator between foundation layers
+    if (i > 0) {
+      const fi = document.createElement('div');
+      fi.className = 'flow-indicator';
+      fi.style.animationDelay = `${1.5 + i * 0.5}s`;
+      fi.innerHTML = '&#9662; &#9662; &#9662;';
+      container.appendChild(fi);
+    }
+
+    const el = document.createElement('div');
+    el.className = `v2-layer ${cssClasses[i]}`;
+    el.style.opacity = '0';
+    el.style.animation = `layer-enter 0.6s var(--ease-out) ${delays[i]}s forwards`;
+    el.setAttribute('data-tooltip', section.tooltip || section.subtitle);
+    el.innerHTML = `
+      <div class="layer-accent"></div>
+      <div class="layer-icon">${section.icon}</div>
+      <div class="layer-info">
+        <div class="layer-name">${section.name}</div>
+        <div class="layer-sub">${section.subtitle}</div>
+      </div>
+      <div class="layer-badge">${section.components.length} components</div>
+      <div class="layer-arrow">\u203A</div>
+    `;
+    el.addEventListener('click', () => openLayerPanel(section));
+    container.appendChild(el);
+  });
+}
+
+// ═══════════════════════════════════════════
+// EW PLUGIN GROUPS FOR LEFT SIDEBAR
+// ═══════════════════════════════════════════
+
+const EW_SIDEBAR_PLUGINS = [
+  { id: 'ew-hr', name: 'HR & People', icon: '👥', count: Object.values(EW_PLUGIN_GROUPS['HR & People'] || []).reduce((s,p) => s + p.count, 0), systems: (EW_PLUGIN_GROUPS['HR & People'] || []).length, topSystems: (EW_PLUGIN_GROUPS['HR & People'] || []).map(p => p.name).slice(0,3).join(', ') },
+  { id: 'ew-finance', name: 'Finance & Procurement', icon: '💰', count: Object.values(EW_PLUGIN_GROUPS['Finance & Procurement'] || []).reduce((s,p) => s + p.count, 0), systems: (EW_PLUGIN_GROUPS['Finance & Procurement'] || []).length, topSystems: (EW_PLUGIN_GROUPS['Finance & Procurement'] || []).map(p => p.name).slice(0,3).join(', ') },
+  { id: 'ew-it', name: 'IT & Access', icon: '🔐', count: Object.values(EW_PLUGIN_GROUPS['IT & Access'] || []).reduce((s,p) => s + p.count, 0), systems: (EW_PLUGIN_GROUPS['IT & Access'] || []).length, topSystems: (EW_PLUGIN_GROUPS['IT & Access'] || []).map(p => p.name).slice(0,3).join(', ') },
+  { id: 'ew-productivity', name: 'Productivity', icon: '⚡', count: Object.values(EW_PLUGIN_GROUPS['Productivity'] || []).reduce((s,p) => s + p.count, 0), systems: (EW_PLUGIN_GROUPS['Productivity'] || []).length, topSystems: (EW_PLUGIN_GROUPS['Productivity'] || []).map(p => p.name).slice(0,3).join(', ') },
+  { id: 'ew-sales', name: 'Sales & CRM', icon: '📊', count: Object.values(EW_PLUGIN_GROUPS['Sales & CRM'] || []).reduce((s,p) => s + p.count, 0), systems: (EW_PLUGIN_GROUPS['Sales & CRM'] || []).length, topSystems: (EW_PLUGIN_GROUPS['Sales & CRM'] || []).map(p => p.name).slice(0,3).join(', ') },
+  { id: 'ew-facilities', name: 'Facilities & Other', icon: '🏢', count: Object.values(EW_PLUGIN_GROUPS['Facilities & Other'] || []).reduce((s,p) => s + p.count, 0), systems: (EW_PLUGIN_GROUPS['Facilities & Other'] || []).length, topSystems: (EW_PLUGIN_GROUPS['Facilities & Other'] || []).map(p => p.name).slice(0,3).join(', ') },
+];
+
+function renderEWSidebar() {
+  const container = document.getElementById('ew-sidebar');
+  container.innerHTML = '<div class="ew-sidebar-label">EmployeeWorks Plugin Library</div>';
+
+  EW_SIDEBAR_PLUGINS.forEach((plugin, i) => {
+    const el = document.createElement('div');
+    el.className = 'ew-node';
+    el.id = `ew-${plugin.id}`;
+    el.style.animationDelay = `${0.3 + i * 0.08}s`;
+    el.setAttribute('data-tooltip', `${plugin.count} plugins across ${plugin.systems} systems`);
+    el.innerHTML = `
+      <div class="ew-node-dot"></div>
+      <div class="ew-node-info">
+        <div class="ew-node-name">${plugin.name}</div>
+        <div class="ew-node-cat">${plugin.topSystems}</div>
+      </div>
+      <div class="ew-node-count">${plugin.count}</div>
+      <div class="ew-node-arrow">\u2192</div>
+    `;
+    el.addEventListener('click', () => openEWPluginDetail(plugin));
+    container.appendChild(el);
+  });
+}
+
+function openEWPluginDetail(plugin) {
+  const groupKey = plugin.name;
+  const systems = EW_PLUGIN_GROUPS[groupKey] || [];
+  const layer = {
+    id: `ew-plugin-${plugin.id}`,
+    name: `${plugin.name}`,
+    icon: plugin.icon,
+    subtitle: `EmployeeWorks \u2014 ${plugin.count} plugins across ${plugin.systems} systems`,
+    desc: `Pre-built plugin category within the EmployeeWorks marketplace. These plugins enable automated actions across ${plugin.systems} integrated systems in the ${plugin.name} domain.`,
+    components: systems.map(s => ({
+      name: s.name,
+      brief: `${s.count} plugins \u2014 ${s.cats}`,
+      detail: `<strong>${s.count} pre-built plugins</strong> covering: ${s.cats}. These plugins are available in the EmployeeWorks marketplace and can be activated without custom development.`
+    }))
+  };
+  openLayerPanel(layer);
+}
+
+function drawEWConnections() {
+  const svg = document.getElementById('conn-svg');
+  const container = document.getElementById('diagram');
+  const cRect = container.getBoundingClientRect();
+
+  const ewLayerEl = document.querySelector('#ew-compact .v2-layer');
+  if (!ewLayerEl) return;
+
+  EW_SIDEBAR_PLUGINS.forEach((plugin) => {
+    const nodeEl = document.getElementById(`ew-${plugin.id}`);
+    if (!nodeEl) return;
+
+    const nR = nodeEl.getBoundingClientRect();
+    const tR = ewLayerEl.getBoundingClientRect();
+    const color = '#A78BFA';
+
+    // From right edge of node to left edge of EmployeeWorks layer
+    const x1 = nR.right - cRect.left;
+    const y1 = nR.top + nR.height / 2 - cRect.top;
+    const x2 = tR.left - cRect.left;
+    const y2 = tR.top + tR.height / 2 - cRect.top;
+
+    const midX = (x1 + x2) / 2;
+    const cpOffset = (y1 - y2) * 0.15;
+    const d = `M ${x1} ${y1} C ${midX - cpOffset} ${y1}, ${midX + cpOffset} ${y2}, ${x2} ${y2}`;
+
+    const path = document.createElementNS(SVG_NS, 'path');
+    const pathId = `conn-ew-${plugin.id}`;
+    path.setAttribute('id', pathId);
+    path.setAttribute('d', d);
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke', color);
+    path.setAttribute('stroke-width', '2');
+    path.setAttribute('opacity', '0.4');
+    path.setAttribute('filter', 'url(#glow)');
+    path.classList.add('conn-path', 'conn-ew');
+    path.style.pointerEvents = 'stroke';
+    path.style.cursor = 'pointer';
+    path.style.transition = 'opacity 0.4s ease, stroke-width 0.4s ease';
+    path.addEventListener('click', (e) => { e.stopPropagation(); openEWPluginDetail(plugin); });
+    svg.appendChild(path);
+
+    const dur1 = 2.2 + Math.random() * 1.2;
+    addParticle(svg, pathId, color, 0, dur1, 2.8);
+    addParticle(svg, pathId, color, dur1 * 0.45, dur1 + 0.6, 2);
+  });
+}
+
+function renderIntegSidebar() {
+  const container = document.getElementById('integ-sidebar');
+  container.innerHTML = '<div class="integ-sidebar-label">Third-Party Integrations</div>';
+
+  INTEGRATIONS.forEach((integ, i) => {
+    const el = document.createElement('div');
+    el.className = 'int-node';
+    el.id = `int-${integ.id}`;
+    el.style.animationDelay = `${0.3 + i * 0.08}s`;
+    el.setAttribute('data-tooltip', `${integ.category} \u2014 ${integ.method}`);
+    el.innerHTML = `
+      <div class="int-node-dot ${integ.ootb}"></div>
+      <div class="int-node-info">
+        <div class="int-node-name">${integ.name}</div>
+        <div class="int-node-cat">${integ.category}</div>
+      </div>
+      <div class="int-node-arrow">\u2190</div>
+    `;
+    el.addEventListener('click', () => openIntegModal(integ));
+    container.appendChild(el);
+  });
+}
+
+// ═══════════════════════════════════════════
+// SVG CONNECTIONS
+// ═══════════════════════════════════════════
+
+function getColor(ootb) {
+  if (ootb === 'ootb') return '#63DF4E';
+  if (ootb === 'partial') return '#F0B429';
+  return '#FF6B4A';
+}
+
+function drawConnections() {
+  const svg = document.getElementById('conn-svg');
+  const container = document.getElementById('diagram');
+  const cRect = container.getBoundingClientRect();
+
+  const defs = svg.querySelector('defs');
+  svg.innerHTML = '';
+  svg.appendChild(defs);
+  svg.setAttribute('width', cRect.width);
+  svg.setAttribute('height', cRect.height);
+  svg.setAttribute('viewBox', `0 0 ${cRect.width} ${cRect.height}`);
+
+  const hrsdLayerEl = document.getElementById('app-layer-card');
+  if (!hrsdLayerEl || appCarouselIndex !== 0) return;
+
+  const totalIntegs = INTEGRATIONS.length;
+  INTEGRATIONS.forEach((integ, idx) => {
+    const nodeEl = document.getElementById(`int-${integ.id}`);
+    if (!nodeEl) return;
+
+    const nR = nodeEl.getBoundingClientRect();
+    const tR = hrsdLayerEl.getBoundingClientRect();
+    const color = getColor(integ.ootb);
+
+    // From left edge of node to right edge of HRSD layer, spread along the edge
+    const x1 = nR.left - cRect.left;
+    const y1 = nR.top + nR.height / 2 - cRect.top;
+    const x2 = tR.right - cRect.left;
+    const padY = 8;
+    const spreadRange = tR.height - padY * 2;
+    const y2 = tR.top + padY + (totalIntegs > 1 ? (idx / (totalIntegs - 1)) * spreadRange : spreadRange / 2) - cRect.top;
+
+    const midX = (x1 + x2) / 2;
+    const cpOffset = (y1 - y2) * 0.15;
+    const d = `M ${x1} ${y1} C ${midX + cpOffset} ${y1}, ${midX - cpOffset} ${y2}, ${x2} ${y2}`;
+
+    const path = document.createElementNS(SVG_NS, 'path');
+    const pathId = `conn-${integ.id}`;
+    path.setAttribute('id', pathId);
+    path.setAttribute('d', d);
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke', color);
+    path.setAttribute('stroke-width', '2');
+    path.setAttribute('opacity', '0.5');
+    path.setAttribute('filter', 'url(#glow)');
+    path.classList.add('conn-path');
+    path.setAttribute('data-integ', integ.id);
+    path.style.pointerEvents = 'stroke';
+    path.style.cursor = 'pointer';
+    path.style.transition = 'opacity 0.4s ease, stroke-width 0.4s ease';
+    path.addEventListener('click', (e) => { e.stopPropagation(); openIntegModal(integ); });
+    svg.appendChild(path);
+
+    const dur1 = 2.2 + Math.random() * 1.2;
+    addParticle(svg, pathId, color, 0, dur1, 2.8);
+    addParticle(svg, pathId, color, dur1 * 0.45, dur1 + 0.6, 2);
+  });
+}
+
+function addParticle(svg, pathId, color, beginDelay, dur, radius, inlinePath) {
+  const circle = document.createElementNS(SVG_NS, 'circle');
+  circle.setAttribute('r', radius);
+  circle.setAttribute('fill', color);
+  circle.setAttribute('opacity', '0.8');
+  circle.setAttribute('filter', 'url(#glow-soft)');
+  circle.classList.add('conn-particle');
+  if (pathId) circle.setAttribute('data-integ', pathId.replace('conn-', ''));
+
+  const anim = document.createElementNS(SVG_NS, 'animateMotion');
+  anim.setAttribute('dur', `${dur}s`);
+  anim.setAttribute('repeatCount', 'indefinite');
+  if (beginDelay > 0) anim.setAttribute('begin', `${beginDelay}s`);
+
+  if (inlinePath) {
+    anim.setAttribute('path', inlinePath);
+  } else if (pathId) {
+    const mpath = document.createElementNS(SVG_NS, 'mpath');
+    mpath.setAttribute('href', `#${pathId}`);
+    anim.appendChild(mpath);
+  }
+
+  circle.appendChild(anim);
+  svg.appendChild(circle);
+}
+
+// ═══════════════════════════════════════════
+// EMPLOYEEWORKS DRILL-DOWN PANEL
+// ═══════════════════════════════════════════
+
+function openEWPanel() {
+  closeIntegModal();
+
+  const groupNames = Object.keys(EW_PLUGIN_GROUPS);
+  const featuredTotal = FEATURED_INTEGRATIONS.reduce((s, i) => s + i.plugins.length, 0);
+
+  const card = document.getElementById('lp-card');
+  card.innerHTML = `
+    <div class="lp-header">
+      <span class="lp-icon">${EW_DATA.icon}</span>
+      <div style="flex:1">
+        <h2>${EW_DATA.name}</h2>
+        <div class="lp-sub">AI Front Door &mdash; Separate Architecture &nbsp;|&nbsp; <a href="https://www.moveworks.com/us/en/platform/ai-assistant" target="_blank" class="cite-link">Platform Docs \u2197</a></div>
+      </div>
+      <button class="close-btn" onclick="closeLayerPanel()">\u00D7</button>
+    </div>
+    <div class="lp-body">
+      <div class="lp-desc">${EW_DATA.desc}</div>
+
+      <!-- Navigation Tabs -->
+      <div class="ew-platform-nav" id="ew-nav">
+        <div class="ew-nav-btn active" data-section="overview">Platform Overview</div>
+        <div class="ew-nav-btn" data-section="capabilities">AI Capabilities</div>
+        <div class="ew-nav-btn" data-section="components">Core Components</div>
+        <div class="ew-nav-btn" data-section="marketplace">Plugin Marketplace</div>
+        <div class="ew-nav-btn" data-section="governance">Governance & Security</div>
+      </div>
+
+      <!-- SECTION: Platform Overview -->
+      <div class="ew-panel-section active" id="ew-sec-overview">
+        <div class="ew-modal-section-title">AI Assistant Platform</div>
+        <p style="font-size:13px; color:var(--text-secondary); line-height:1.7; font-weight:300; margin-bottom:16px;">Most assistants stop at search. EmployeeWorks goes beyond, working across enterprise apps for fast, accurate, and context-aware search with end-to-end task automation. It personalizes responses with business context and individual permissions, routing requests to the right applications and learning continuously from each interaction.</p>
+
+        <div class="ew-arch-diagram">
+          <div class="ew-arch-label">EmployeeWorks Request Flow Architecture</div>
+          <div class="ew-arch-flow">
+            <div class="ew-arch-node primary">Employee Request</div>
+            <div class="ew-arch-arrow">\u2192</div>
+            <div class="ew-arch-node secondary">Channels (Slack / Web / Mobile)</div>
+            <div class="ew-arch-arrow">\u2192</div>
+            <div class="ew-arch-node secondary">Reasoning Engine</div>
+            <div class="ew-arch-arrow">\u2192</div>
+            <div class="ew-arch-node secondary">Intent + Entity Extraction</div>
+            <div class="ew-arch-arrow">\u2192</div>
+            <div class="ew-arch-node accent">Plugin Execution</div>
+            <div class="ew-arch-arrow">\u2192</div>
+            <div class="ew-arch-node primary">Resolution</div>
+          </div>
+        </div>
+
+        <img src="https://www.moveworks.com/adobe/dynamicmedia/deliver/dm-aid--4761c2be-d17a-498f-973f-fcfd954dfe08/moveworks-ai-assistant-travel-budget.png.webp" alt="EmployeeWorks AI Assistant" class="ew-screenshot">
+        <div class="ew-screenshot-caption">EmployeeWorks AI Assistant &mdash; Context-aware search and action in one interface</div>
+
+        <div class="ew-stat-grid">
+          <div class="ew-stat-cell"><div class="ew-stat-value">792</div><div class="ew-stat-label">Pre-built Plugins</div></div>
+          <div class="ew-stat-cell"><div class="ew-stat-value">111</div><div class="ew-stat-label">Integrated Systems</div></div>
+          <div class="ew-stat-cell"><div class="ew-stat-value">100+</div><div class="ew-stat-label">Languages Supported</div></div>
+        </div>
+
+        <div class="ew-modal-section-title">Enterprise Deployment Surfaces</div>
+        <div class="ew-arch-diagram">
+          <div class="ew-arch-label">Omnichannel Architecture</div>
+          <div class="ew-arch-flow">
+            <div class="ew-arch-node secondary">Slack</div>
+            <div class="ew-arch-node secondary">MS Teams</div>
+            <div class="ew-arch-node secondary">Web App</div>
+            <div class="ew-arch-node secondary">NowMobile</div>
+            <div class="ew-arch-node secondary">Intranet Portals</div>
+            <div class="ew-arch-node secondary">Conversations API</div>
+          </div>
+          <div style="margin-top:8px; font-size:10px; color:var(--text-muted);">All channels \u2192 Unified Reasoning Engine \u2192 Plugin Execution \u2192 Contextual Response</div>
+        </div>
+
+        <div class="ew-screenshot-grid">
+          <div><img src="https://www.moveworks.com/adobe/dynamicmedia/deliver/dm-aid--7fce52e4-ce63-4e38-a247-87d4aec904cd/ai-assistant-access-points.png.webp" alt="Access Points"><div class="ew-screenshot-caption">Multi-surface access points</div></div>
+          <div><img src="https://www.moveworks.com/adobe/dynamicmedia/deliver/dm-aid--116aa7ef-b74e-4c0e-913b-cc7dc5e516d6/ai-assistant-conversations-api.png.webp" alt="Conversations API"><div class="ew-screenshot-caption">Conversations API extensibility</div></div>
+        </div>
+
+        <div class="ew-modal-section-title">Business Domain Coverage</div>
+        <div class="ew-domain-grid">
+          <div class="ew-domain-card"><div class="ew-domain-title">\uD83D\uDCBB IT Automation</div><div class="ew-domain-desc">Resolve issues, reset access, and provision tools automatically. <a href="https://www.moveworks.com/us/en/solutions/ai-for-it" target="_blank" class="cite-link">Learn more \u2197</a></div></div>
+          <div class="ew-domain-card"><div class="ew-domain-title">\uD83D\uDC65 HR Self-Service</div><div class="ew-domain-desc">Instant answers and self-service for HR needs, from hire to retire. <a href="https://www.moveworks.com/us/en/solutions/ai-for-hr" target="_blank" class="cite-link">Learn more \u2197</a></div></div>
+          <div class="ew-domain-card"><div class="ew-domain-title">\uD83D\uDCC8 Sales Enablement</div><div class="ew-domain-desc">Update CRM data, summarize deals, surface insights for closing. <a href="https://www.moveworks.com/us/en/solutions/sales-automation" target="_blank" class="cite-link">Learn more \u2197</a></div></div>
+          <div class="ew-domain-card"><div class="ew-domain-title">\uD83D\uDCB0 Finance Operations</div><div class="ew-domain-desc">Automate expenses, purchase requests, and approvals. <a href="https://www.moveworks.com/us/en/solutions/ai-for-finance" target="_blank" class="cite-link">Learn more \u2197</a></div></div>
+        </div>
+
+        <div style="margin-top:16px;">
+          <div class="ew-modal-section-title">Customer Impact</div>
+          <div class="ew-testimonial">
+            <div class="ew-testimonial-quote">"In less than one year, we reduced the number of calls by 44% to our support teams and gave back more than 16,000 hours globally to our employees per month."</div>
+            <div class="ew-testimonial-source">&mdash; Head of Digital Workplace Services, Amadeus</div>
+            <div class="ew-testimonial-metric">44% call reduction &middot; 16,000+ hours returned/month</div>
+          </div>
+          <div class="ew-testimonial">
+            <div class="ew-testimonial-quote">"We've seen a 50% reduction in live agent chats in less than 30 days after launching."</div>
+            <div class="ew-testimonial-source">&mdash; AVP, Digital Workplace, CVS Health</div>
+            <div class="ew-testimonial-metric">50% chat reduction in 30 days</div>
+          </div>
+          <div class="ew-testimonial">
+            <div class="ew-testimonial-quote">"Within five months of partnering with Moveworks, we built and launched a custom AI Assistant that now supports end users across the globe."</div>
+            <div class="ew-testimonial-source">&mdash; Technical Lead, Goodyear</div>
+            <div class="ew-testimonial-metric">5 months to global launch</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION: AI Capabilities -->
+      <div class="ew-panel-section" id="ew-sec-capabilities">
+        <div class="ew-modal-section-title">Key AI Capabilities</div>
+        <p style="font-size:12px; color:var(--text-muted); margin-bottom:14px; line-height:1.6; font-weight:300;">Powered by a sophisticated Reasoning Engine that understands intent, nuance, and your organization\u2019s unique workflows. <a href="https://www.moveworks.com/us/en/platform/reasoning-engine" target="_blank" class="cite-link">Reasoning Engine Docs \u2197</a></p>
+
+        <div class="ew-capability-card">
+          <div class="ew-cap-title">\uD83E\uDDE0 Advanced Reasoning</div>
+          <div class="ew-cap-desc">Reasons for you and shows its work \u2014 no prompt engineering needed. The agentic Reasoning Engine enables turnkey, enterprise-wide automation \u2014 planning, executing, and adapting on the fly to complete any request.</div>
+          <img src="https://www.moveworks.com/adobe/dynamicmedia/deliver/dm-aid--84eb67b3-f029-4206-88fd-55b24599859b/ai-assistant-reasons-for-you.png.webp" alt="Advanced Reasoning" class="ew-screenshot" style="margin-top:10px;">
+          <a href="https://www.moveworks.com/us/en/platform/reasoning-engine" target="_blank" class="ew-cap-link">Reasoning Engine \u2197</a>
+        </div>
+        <div class="ew-capability-card">
+          <div class="ew-cap-title">\uD83D\uDD0D Extended Thinking</div>
+          <div class="ew-cap-desc">Goes in-depth on complex asks for higher accuracy and stronger outcomes. Decomposes multi-step requests into sequential or parallel execution plans with real-time adaptation.</div>
+          <img src="https://www.moveworks.com/adobe/dynamicmedia/deliver/dm-aid--e744bf68-e802-4c6b-abc7-779332e8a69d/ai-assistant-extended-thinking.png.webp" alt="Extended Thinking" class="ew-screenshot" style="margin-top:10px;">
+        </div>
+        <div class="ew-capability-card">
+          <div class="ew-cap-title">\uD83D\uDD17 System Integration</div>
+          <div class="ew-cap-desc">Connected to every system and content source that matters. From Workday and Coupa to ServiceNow and Salesforce, unifies hundreds of enterprise systems under one intelligent layer.</div>
+          <img src="https://www.moveworks.com/adobe/dynamicmedia/deliver/dm-aid--f8b33e7d-17e5-4a00-8176-c21e34419813/ai-assistant-connected-to-every-system.png.webp" alt="System Integration" class="ew-screenshot" style="margin-top:10px;">
+          <a href="https://www.moveworks.com/us/en/platform/integrations" target="_blank" class="ew-cap-link">See all integrations \u2197</a>
+        </div>
+        <div class="ew-capability-card">
+          <div class="ew-cap-title">\u26A1 Action Automation</div>
+          <div class="ew-cap-desc">Linked to thousands of action plugins that turn intent into results. Each plugin wraps a specific API call or workflow step, enabling end-to-end task completion without human handoff.</div>
+          <img src="https://www.moveworks.com/adobe/dynamicmedia/deliver/dm-aid--3a0cfe8c-42ca-470e-898d-d262996541b9/ai-assistant-linked-to-action-plugins.png.webp" alt="Action Plugins" class="ew-screenshot" style="margin-top:10px;">
+          <a href="https://marketplace.moveworks.com/" target="_blank" class="ew-cap-link">AI Agent Marketplace \u2197</a>
+        </div>
+        <div class="ew-capability-card">
+          <div class="ew-cap-title">\uD83D\uDD14 Proactive Intelligence</div>
+          <div class="ew-cap-desc">Anticipates what\u2019s next, sending proactive nudges for recurring or time-sensitive tasks. Drives positive habit formation through continuous micro-actions across messaging channels.</div>
+          <img src="https://www.moveworks.com/adobe/dynamicmedia/deliver/dm-aid--bb1f43bc-c7df-4dc6-81c5-c8015e8c74e6/ai-assistant-proactive-nudges.png.webp" alt="Proactive Intelligence" class="ew-screenshot" style="margin-top:10px;">
+        </div>
+        <div class="ew-capability-card">
+          <div class="ew-cap-title">\uD83C\uDF10 Enterprise Search</div>
+          <div class="ew-cap-desc">Delivers instant, context-aware answers across business apps, tailored to role, region, language, and access level without relying on exact keywords or rigid filters. Supports 100+ languages.</div>
+          <a href="https://www.moveworks.com/us/en/platform/enterprise-search" target="_blank" class="ew-cap-link">Enterprise Search \u2197</a>
+        </div>
+
+        <div class="ew-arch-diagram">
+          <div class="ew-arch-label">Reasoning Engine Architecture</div>
+          <div class="ew-arch-flow">
+            <div class="ew-arch-node primary">User Intent</div>
+            <div class="ew-arch-arrow">\u2192</div>
+            <div class="ew-arch-node secondary">NLU + Entity Extraction</div>
+            <div class="ew-arch-arrow">\u2192</div>
+            <div class="ew-arch-node secondary">Unified Roster Check</div>
+            <div class="ew-arch-arrow">\u2192</div>
+            <div class="ew-arch-node secondary">Plan Generation</div>
+            <div class="ew-arch-arrow">\u2192</div>
+            <div class="ew-arch-node accent">Multi-Step Execution</div>
+            <div class="ew-arch-arrow">\u2192</div>
+            <div class="ew-arch-node primary">Verified Output</div>
+          </div>
+        </div>
+
+        <div style="margin-top:16px;">
+          <div class="ew-modal-section-title">Specialized AI Assistants <span style="font-size:8px; background:rgba(167,139,250,0.1); color:#A78BFA; padding:2px 6px; border-radius:4px; margin-left:6px;">Coming Soon</span></div>
+          <p style="font-size:12px; color:var(--text-secondary); line-height:1.6; font-weight:300;">Enable employees to build task- or domain-specific AI assistants that master granular terminology, workflows, and decision-making. Tailor assistants by content sources and tools, specify user lists, and tune pre-suggested prompts.</p>
+        </div>
+      </div>
+
+      <!-- SECTION: Core Components -->
+      <div class="ew-panel-section" id="ew-sec-components">
+        <div class="ew-modal-section-title">Core Components</div>
+        <div class="comp-grid" id="ew-panel-comps">
+          ${EW_DATA.components.map(c => `
+            <div class="comp-card" onclick="toggleComp(this)">
+              <div class="cc-title">${c.name}<span class="cc-toggle">\u25B6</span></div>
+              <div class="cc-brief">${c.brief}</div>
+              <div class="cc-detail">${c.detail}</div>
+            </div>
+          `).join('')}
+        </div>
+
+        <div class="ew-modal-section-title" style="margin-top:20px;">Product Screenshots</div>
+        <div class="ew-screenshot-grid">
+          <div><img src="https://www.moveworks.com/content/dam/images/internal/product-shots/product-tab-component-reasoning-engine.png" alt="Reasoning Engine"><div class="ew-screenshot-caption">Reasoning Engine</div></div>
+          <div><img src="https://www.moveworks.com/content/dam/images/internal/product-shots/product-tab-component-enterprise-search.png" alt="Enterprise Search"><div class="ew-screenshot-caption">Enterprise Search</div></div>
+          <div><img src="https://www.moveworks.com/content/dam/images/internal/product-shots/product-tab-component-agent-studio.png" alt="Agent Studio"><div class="ew-screenshot-caption">Agent Studio</div></div>
+          <div><img src="https://www.moveworks.com/content/dam/images/internal/product-shots/product-tab-component-ai-agent-marketplace.png" alt="AI Agent Marketplace"><div class="ew-screenshot-caption">AI Agent Marketplace</div></div>
+        </div>
+
+        <div style="margin-top:20px;">
+          <div class="ew-modal-section-title">Platform Tools & Interfaces</div>
+          <div class="ew-domain-grid">
+            <div class="ew-domain-card"><div class="ew-domain-title">Agent Studio</div><div class="ew-domain-desc">Build and deploy AI agents that plan, reason, and securely execute actions across enterprise systems. <a href="https://www.moveworks.com/us/en/platform/ai-agent-builder" target="_blank" class="cite-link">Docs \u2197</a></div></div>
+            <div class="ew-domain-card"><div class="ew-domain-title">Knowledge Studio</div><div class="ew-domain-desc">Generate grounded knowledge articles to fill content gaps and improve self-service for FAQs. <a href="https://www.moveworks.com/us/en/platform/ai-knowledge-management" target="_blank" class="cite-link">Docs \u2197</a></div></div>
+            <div class="ew-domain-card"><div class="ew-domain-title">EX Insights</div><div class="ew-domain-desc">Identify issues, track metrics, and enhance assistant efficacy with robust governance and analytics. <a href="https://www.moveworks.com/us/en/platform/employee-experience-insights" target="_blank" class="cite-link">Docs \u2197</a></div></div>
+            <div class="ew-domain-card"><div class="ew-domain-title">Moveworks Setup</div><div class="ew-domain-desc">Configure, secure, and monitor everything in one centralized, self-service admin console. <a href="https://help.moveworks.com/" target="_blank" class="cite-link">Help Docs \u2197</a></div></div>
+          </div>
+        </div>
+
+        <div style="margin-top:20px;">
+          <div class="ew-modal-section-title">Developer Resources</div>
+          <div class="ew-domain-grid">
+            <div class="ew-domain-card"><div class="ew-domain-title">Conversations API</div><div class="ew-domain-desc">Extend the AI Assistant via REST API for custom channel integrations and embedded experiences. <a href="https://help.moveworks.com/reference/get-api-keys" target="_blank" class="cite-link">API Reference \u2197</a></div></div>
+            <div class="ew-domain-card"><div class="ew-domain-title">DSL & Rules</div><div class="ew-domain-desc">Configure transformation rules and business logic using the declarative scripting language. <a href="https://help.moveworks.com/docs/dsl-and-mapper-playground" target="_blank" class="cite-link">DSL Docs \u2197</a></div></div>
+            <div class="ew-domain-card"><div class="ew-domain-title">Community</div><div class="ew-domain-desc">Join the developer community for best practices, templates, and peer support. <a href="https://community.moveworks.com/" target="_blank" class="cite-link">Community \u2197</a></div></div>
+            <div class="ew-domain-card"><div class="ew-domain-title">Academy</div><div class="ew-domain-desc">Self-paced training and certification for building and managing AI assistants. <a href="https://academy.moveworks.com/" target="_blank" class="cite-link">Academy \u2197</a></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION: Plugin Marketplace -->
+      <div class="ew-panel-section" id="ew-sec-marketplace">
+        <div class="plugin-section" style="border-top:none; padding-top:0; margin-top:0;">
+          <div class="plugin-section-title">\uD83D\uDD0C AI Agent Marketplace</div>
+          <p style="font-size:12px; color:var(--text-secondary); line-height:1.6; font-weight:300; margin-bottom:12px;">Speeds up time-to-deploy with a curated library of ready-to-use, pre-built, production-proof AI agents that are customizable and free to install. <a href="https://marketplace.moveworks.com/" target="_blank" class="cite-link">Browse Marketplace \u2197</a></p>
+          <div class="plugin-stats">
+            <span class="plugin-stat"><strong>${EW_PLUGIN_TOTAL}</strong> plugins</span>
+            <span class="plugin-stat"><strong>${EW_SYSTEM_TOTAL}</strong> systems</span>
+            <span class="plugin-stat"><strong>${groupNames.length}</strong> categories</span>
+          </div>
+          <div class="featured-label">AmEx Integrations &mdash; ${featuredTotal} plugins</div>
+          <div class="featured-grid" id="ew-panel-featured"></div>
+          <div class="library-toggle" id="ew-panel-lib-toggle">
+            <span>Browse Full Library</span>
+            <span class="library-toggle-arrow">\u25BC</span>
+          </div>
+          <div class="library-body" id="ew-panel-lib-body">
+            <div class="plugin-tabs" id="ew-panel-tabs"></div>
+            <div class="plugin-grid" id="ew-panel-plugins"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION: Governance & Security -->
+      <div class="ew-panel-section" id="ew-sec-governance">
+        <div class="ew-modal-section-title">Enterprise Governance</div>
+        <p style="font-size:12px; color:var(--text-secondary); line-height:1.6; font-weight:300; margin-bottom:14px;">Give every team flexibility to adapt enterprise AI around their unique workflows. Empower developers to build, employees to self-serve, and admins to govern within a highly secure, enterprise-grade ecosystem.</p>
+
+        <div class="ew-arch-diagram">
+          <div class="ew-arch-label">Governance Model</div>
+          <div class="ew-arch-flow">
+            <div class="ew-arch-node secondary">Program Owners</div>
+            <div class="ew-arch-node secondary">Developers</div>
+            <div class="ew-arch-node secondary">Admins</div>
+            <div class="ew-arch-node secondary">Knowledge Mgrs</div>
+            <div class="ew-arch-node secondary">Comms Teams</div>
+          </div>
+          <div style="margin-top:8px; font-size:10px; color:var(--text-muted);">Each role has dedicated tools for their governance responsibilities</div>
+        </div>
+
+        <div class="ew-modal-section-title" style="margin-top:16px;">Role-Based Interfaces</div>
+        <div class="ew-screenshot-grid">
+          <div><img src="https://www.moveworks.com/adobe/dynamicmedia/deliver/dm-aid--7da966df-23b7-4ede-b98f-446a051969f3/ai-assistant-for-program-owners.png.webp" alt="Program Owners"><div class="ew-screenshot-caption">Program Owners &mdash; Governance & Analytics</div></div>
+          <div><img src="https://www.moveworks.com/adobe/dynamicmedia/deliver/dm-aid--c655581a-74cc-4027-8adb-3ee76ddac25b/ai-assistant-for-developers.png.webp" alt="Developers"><div class="ew-screenshot-caption">Developers &mdash; Agent Studio</div></div>
+          <div><img src="https://www.moveworks.com/adobe/dynamicmedia/deliver/dm-aid--97294d02-8039-4052-9ea7-63850093cf8d/ai-assistant-for-admins.png.webp" alt="Admins"><div class="ew-screenshot-caption">Admins &mdash; Centralized Console</div></div>
+          <div><img src="https://www.moveworks.com/adobe/dynamicmedia/deliver/dm-aid--8cf06fda-02b6-4348-8383-d8854e98d750/ai-assistant-for-knowledge-managers.png.webp" alt="Knowledge Managers"><div class="ew-screenshot-caption">Knowledge Managers &mdash; Knowledge Studio</div></div>
+        </div>
+
+        <div class="ew-modal-section-title" style="margin-top:20px;">Security Architecture <span style="font-size:9px; color:var(--text-muted); font-weight:300; text-transform:none; letter-spacing:0;">&mdash; <a href="https://www.moveworks.com/us/en/platform/security" target="_blank" class="cite-link">Security Docs \u2197</a></span></div>
+        <div class="ew-security-grid">
+          <div class="ew-security-cell"><div class="ew-security-title">Data Minimization</div><div class="ew-security-desc">Collects only what\u2019s needed to deliver value. You control which sources to connect \u2014 ensuring privacy, protection, and compliance from data ingestion to deployment.</div></div>
+          <div class="ew-security-cell"><div class="ew-security-title">Zero-Trust Architecture</div><div class="ew-security-desc">Every access request is verified, regardless of origin. \u201CNever trust, always verify.\u201D Least-privilege access ensures users and systems are granted only what\u2019s required.</div></div>
+          <div class="ew-security-cell"><div class="ew-security-title">Auditable Transparency</div><div class="ew-security-desc">Every system access and data event is logged for full visibility. Supports compliance and incident response with accountability and faster response.</div></div>
+          <div class="ew-security-cell"><div class="ew-security-title">Certifications</div><div class="ew-security-desc">ISO 27001, SOC 2, HIPAA, GDPR, and FedRAMP. Enterprise-grade security engineered into every layer by design.</div></div>
+        </div>
+
+        <div style="margin-top:20px;">
+          <div class="ew-modal-section-title">Competitive Advantages</div>
+          <div class="ew-capability-card"><div class="ew-cap-title">Superior Agentic AI Reasoning</div><div class="ew-cap-desc">Turnkey, enterprise-wide automation \u2014 planning, executing, and adapting on the fly to complete any request.</div></div>
+          <div class="ew-capability-card"><div class="ew-cap-title">Faster Time to Value</div><div class="ew-cap-desc">Built-in capabilities deliver value on day one \u2014 no model tuning, prompt chaining, or advanced engineering required, with substantial ROI in just weeks.</div></div>
+          <div class="ew-capability-card"><div class="ew-cap-title">Easy-to-Build AI Agents</div><div class="ew-cap-desc">Customizable AI agents supercharge the Assistant for every employee and team, across every business application. <a href="https://www.moveworks.com/us/en/platform/ai-agent-builder" target="_blank" class="ew-cap-link">Agent Studio \u2197</a></div></div>
+          <div class="ew-capability-card"><div class="ew-cap-title">Omnichannel & Multilingual</div><div class="ew-cap-desc">Works where employees do \u2014 chat, browsers, intranets, service portals \u2014 and speaks their language fluently across 100+ languages.</div></div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Tab navigation
+  document.querySelectorAll('#ew-nav .ew-nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#ew-nav .ew-nav-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.ew-panel-section').forEach(s => s.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('ew-sec-' + btn.getAttribute('data-section')).classList.add('active');
+    });
+  });
+
+  // Render featured integrations
+  const featuredGrid = document.getElementById('ew-panel-featured');
+  FEATURED_INTEGRATIONS.forEach(integ => {
+    const hasPlugins = integ.plugins.length > 0;
+    const el = document.createElement('div');
+    el.className = 'featured-item' + (hasPlugins ? '' : ' no-plugins');
+    let pluginsHTML = '';
+    if (hasPlugins) {
+      pluginsHTML = `<div class="featured-plugins">${
+        integ.plugins.map(p => `<div class="fp-row"><div class="fp-dot"></div><div class="fp-name">${p.name}</div><div class="fp-cats">${p.cats}</div></div>`).join('')
+      }</div>`;
+    }
+    el.innerHTML = `
+      <div class="featured-header">
+        <div class="featured-name">${integ.archName}</div>
+        <div class="featured-badge ${hasPlugins ? 'has-plugins' : 'no-plugins-badge'}">${hasPlugins ? integ.plugins.length + ' plugin' + (integ.plugins.length > 1 ? 's' : '') : 'Custom'}</div>
+        ${hasPlugins ? '<div class="featured-arrow">\u203A</div>' : ''}
+      </div>
+      ${pluginsHTML}
+    `;
+    if (hasPlugins) {
+      el.addEventListener('click', () => el.classList.toggle('expanded'));
+    }
+    featuredGrid.appendChild(el);
+  });
+
+  // Library toggle
+  const toggle = document.getElementById('ew-panel-lib-toggle');
+  const body = document.getElementById('ew-panel-lib-body');
+  toggle.addEventListener('click', () => {
+    toggle.classList.toggle('open');
+    body.classList.toggle('open');
+  });
+
+  // Render category tabs
+  const tabContainer = document.getElementById('ew-panel-tabs');
+  groupNames.forEach((group, i) => {
+    const systems = EW_PLUGIN_GROUPS[group];
+    const total = systems.reduce((s, p) => s + p.count, 0);
+    const tab = document.createElement('div');
+    tab.className = 'plugin-tab' + (i === 0 ? ' active' : '');
+    tab.innerHTML = `${group}<span class="plugin-tab-count">${total}</span>`;
+    tab.addEventListener('click', () => {
+      tabContainer.querySelectorAll('.plugin-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      renderPluginGroupInPanel(group);
+    });
+    tabContainer.appendChild(tab);
+  });
+
+  renderPluginGroupInPanel(groupNames[0]);
+
+  showBackdrop();
+  document.getElementById('layer-panel').classList.add('open');
+}
+
+function renderPluginGroupInPanel(group) {
+  const grid = document.getElementById('ew-panel-plugins');
+  grid.innerHTML = '';
+  const systems = EW_PLUGIN_GROUPS[group];
+  systems.forEach(sys => {
+    const el = document.createElement('div');
+    el.className = 'plugin-item';
+    el.innerHTML = `<div class="plugin-name">${sys.name}</div><div class="plugin-count">${sys.count} plugin${sys.count > 1 ? 's' : ''}</div><div class="plugin-cats">${sys.cats}</div>`;
+    grid.appendChild(el);
+  });
+}
+
+// ═══════════════════════════════════════════
+// LAYER DETAIL PANEL
+// ═══════════════════════════════════════════
+
+function openEWModal(comp) {
+  closeIntegModal();
+  const card = document.getElementById('lp-card');
+  card.innerHTML = `
+    <div class="lp-header">
+      <span class="lp-icon">\uD83E\uDDE0</span>
+      <div style="flex:1">
+        <h2>${comp.name}</h2>
+        <div class="lp-sub">EmployeeWorks \u2014 ${comp.brief}</div>
+      </div>
+      <button class="close-btn" onclick="closeLayerPanel()">\u00D7</button>
+    </div>
+    <div class="lp-body">
+      <div class="lp-desc">${comp.detail}</div>
+    </div>
+  `;
+  showBackdrop();
+  document.getElementById('layer-panel').classList.add('open');
+}
+
+function openLayerPanel(layer) {
+  closeIntegModal();
+
+  const card = document.getElementById('lp-card');
+  card.innerHTML = `
+    <div class="lp-header">
+      <span class="lp-icon">${layer.icon}</span>
+      <div style="flex:1">
+        <h2>${layer.name || layer.title}</h2>
+        <div class="lp-sub">${layer.subtitle}</div>
+      </div>
+      <button class="close-btn" onclick="closeLayerPanel()">\u00D7</button>
+    </div>
+    <div class="lp-body">
+      <div class="lp-desc">${layer.desc}</div>
+      <div class="comp-grid">
+        ${layer.components.map((c, i) => `
+          <div class="comp-card" onclick="toggleComp(this)">
+            <div class="cc-title">${c.name}<span class="cc-toggle">\u25B6</span></div>
+            <div class="cc-brief">${c.brief}</div>
+            <div class="cc-detail">${c.detail}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+
+  showBackdrop();
+  document.getElementById('layer-panel').classList.add('open');
+}
+
+function closeLayerPanel() {
+  document.getElementById('layer-panel').classList.remove('open');
+  hideBackdrop();
+}
+
+function toggleComp(el) {
+  const wasExpanded = el.classList.contains('expanded');
+  el.closest('.comp-grid').querySelectorAll('.comp-card').forEach(c => {
+    c.classList.remove('expanded');
+    c.querySelector('.cc-toggle').textContent = '\u25B6';
+  });
+  if (!wasExpanded) {
+    el.classList.add('expanded');
+    el.querySelector('.cc-toggle').textContent = '\u25BC';
+  }
+}
+
+// ═══════════════════════════════════════════
+// INTEGRATION MODAL
+// ═══════════════════════════════════════════
+
+function openIntegModal(integ) {
+  closeLayerPanel();
+  highlightConnection(integ.id);
+
+  const statusLabel = integ.ootb === 'ootb' ? 'OOTB Certified' : integ.ootb === 'partial' ? 'Partial OOTB' : 'Custom Build Required';
+  const statusIcon = integ.ootb === 'ootb' ? '\u2705' : integ.ootb === 'partial' ? '\u26A0\uFE0F' : '\uD83D\uDD27';
+
+  const flowHTML = integ.flowSteps.map((step, i) => {
+    const isFirst = i === 0;
+    const isLast = i === integ.flowSteps.length - 1;
+    const cls = isFirst ? 'source' : isLast ? 'target' : '';
+    return (i > 0 ? '<span class="flow-arrow">\u2192</span>' : '') +
+      `<span class="flow-step ${cls}">${step}</span>`;
+  }).join('');
+
+  const card = document.getElementById('im-card');
+  card.innerHTML = `
+    <div class="im-header">
+      <div class="im-header-info">
+        <h3>${integ.name}</h3>
+        <div class="im-category">${integ.category}</div>
+        <div class="im-status ${integ.ootb}">${statusIcon} ${statusLabel}</div>
+      </div>
+      <button class="close-btn" onclick="closeIntegModal()">\u00D7</button>
+    </div>
+    <div class="im-body">
+      <div class="info-grid">
+        <div class="info-cell">
+          <div class="info-cell-label">Method</div>
+          <div class="info-cell-value">${integ.method}</div>
+        </div>
+        <div class="info-cell">
+          <div class="info-cell-label">Direction</div>
+          <div class="info-cell-value">${integ.direction}</div>
+        </div>
+        <div class="info-cell">
+          <div class="info-cell-label">Authentication</div>
+          <div class="info-cell-value">${integ.auth}</div>
+        </div>
+      </div>
+
+      <hr class="im-divider">
+
+      <div class="im-section">
+        <div class="im-section-title">Data Stored in ServiceNow</div>
+        <div class="im-section-content"><ul>${integ.dataInSN.map(d => `<li>${d}</li>`).join('')}</ul></div>
+      </div>
+      <div class="im-section">
+        <div class="im-section-title">Data Remains External</div>
+        <div class="im-section-content"><ul>${integ.dataExternal.map(d => `<li>${d}</li>`).join('')}</ul></div>
+      </div>
+
+      <hr class="im-divider">
+
+      <div class="flow-box">
+        <div class="flow-box-title">Data Flow Path</div>
+        <div class="flow-steps">${flowHTML}</div>
+      </div>
+
+      ${integ.notes ? `<hr class="im-divider"><div class="im-section"><div class="im-section-title">Architecture Notes</div><div class="im-notes">${integ.notes}</div></div>` : ''}
+    </div>
+  `;
+
+  showBackdrop();
+  document.getElementById('integ-modal').classList.add('open');
+}
+
+function closeIntegModal() {
+  document.getElementById('integ-modal').classList.remove('open');
+  clearHighlights();
+  hideBackdrop();
+}
+
+function highlightConnection(integId) {
+  clearHighlights();
+
+  // Dim all connections
+  document.querySelectorAll('.conn-path').forEach(p => {
+    p.setAttribute('opacity', '0.08');
+    p.setAttribute('stroke-width', '1.5');
+  });
+  document.querySelectorAll('.conn-particle').forEach(p => {
+    p.setAttribute('opacity', '0.08');
+  });
+
+  // Brighten selected
+  document.querySelectorAll(`[data-integ="${integId}"]`).forEach(el => {
+    if (el.classList.contains('conn-path')) {
+      el.setAttribute('opacity', '1');
+      el.setAttribute('stroke-width', '3');
+    }
+    if (el.classList.contains('conn-particle')) {
+      el.setAttribute('opacity', '1');
+    }
+  });
+
+  // Highlight node
+  document.querySelectorAll('.int-node').forEach(n => n.classList.remove('active'));
+  const node = document.getElementById(`int-${integId}`);
+  if (node) node.classList.add('active');
+}
+
+function clearHighlights() {
+  document.querySelectorAll('.conn-path').forEach(p => {
+    p.setAttribute('opacity', p.classList.contains('conn-ew') ? '0.4' : '0.5');
+    p.setAttribute('stroke-width', '2');
+  });
+  document.querySelectorAll('.conn-particle').forEach(p => {
+    p.setAttribute('opacity', '0.8');
+  });
+  document.querySelectorAll('.int-node').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.ew-node').forEach(n => n.classList.remove('active'));
+}
+
+// ═══════════════════════════════════════════
+// BACKDROP
+// ═══════════════════════════════════════════
+
+function showBackdrop() {
+  document.getElementById('overlay-backdrop').classList.add('open');
+}
+function hideBackdrop() {
+  document.getElementById('overlay-backdrop').classList.remove('open');
+}
+
+// ═══════════════════════════════════════════
+// TOOLTIPS
+// ═══════════════════════════════════════════
+
+function initTooltips() {
+  const tip = document.getElementById('tooltip');
+  document.addEventListener('mouseover', e => {
+    const t = e.target.closest('[data-tooltip]');
+    if (t) { tip.textContent = t.getAttribute('data-tooltip'); tip.classList.add('visible'); }
+  });
+  document.addEventListener('mousemove', e => {
+    if (tip.classList.contains('visible')) {
+      tip.style.left = (e.clientX + 14) + 'px';
+      tip.style.top = (e.clientY - 32) + 'px';
+    }
+  });
+  document.addEventListener('mouseout', e => {
+    const t = e.target.closest('[data-tooltip]');
+    if (t) tip.classList.remove('visible');
+  });
+}
+
+// ═══════════════════════════════════════════
+// BACKGROUND PARALLAX
+// ═══════════════════════════════════════════
+
+function initParallax() {
+  const mesh = document.getElementById('bg-mesh');
+  document.addEventListener('mousemove', e => {
+    const x = (e.clientX / window.innerWidth - 0.5) * 16;
+    const y = (e.clientY / window.innerHeight - 0.5) * 16;
+    mesh.style.transform = `translate(${x}px, ${y}px)`;
+  });
+}
+
+// ═══════════════════════════════════════════
+// GLOBAL HANDLERS
+// ═══════════════════════════════════════════
+
+document.getElementById('overlay-backdrop').addEventListener('click', () => {
+  closeLayerPanel();
+  closeIntegModal();
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeLayerPanel(); closeIntegModal(); }
+});
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+
+function init() {
+  renderEWSidebar();
+  renderEWCompact();
+  renderEngagementCompact();
+  renderLayerRow(AI_LAYER, 'ai-row', 'layer-ai', 0.2);
+  renderAppCarousel();
+  renderIntegRow();
+  renderFoundation();
+  renderIntegSidebar();
+  initTooltips();
+  initParallax();
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => { drawConnections(); drawEWConnections(); });
+  });
+
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => { drawConnections(); drawEWConnections(); }, 200);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
