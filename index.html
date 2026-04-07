@@ -1359,8 +1359,8 @@ const INTEGRATIONS = [
 
 const EW_DATA = {
   name: 'EmployeeWorks',
-  icon: '\uD83E\uDDE0',
-  subtitle: 'AI Front Door \u2014 Separate Architecture',
+  icon: '\uD83D\uDEAA',
+  subtitle: 'AI Front Door',
   desc: 'EmployeeWorks operates as an independent AI orchestration layer outside the ServiceNow platform. It receives natural-language requests, classifies intent, checks the unified employee roster, and orchestrates resolution\u2014routing to ServiceNow HRSD or directly to third-party systems via its own plugin library.',
   components: [
     { name: 'Reasoning Engine', brief: 'Intent classification, entity extraction, and agent routing', detail: 'Core AI orchestration for EmployeeWorks. Determines employee intent from natural language input across all channels. Routes to specialized agents from a catalog of 792+ pre-built plugins across 111 integrated systems. Checks the unified roster (identity, role, permissions) before executing any action. Plans multi-step sequences with configurable human approval gates at any step. Supports disambiguation when intent is ambiguous.' },
@@ -1608,7 +1608,7 @@ function renderEWCompact() {
       <div class="layer-icon">${EW_DATA.icon}</div>
       <div class="layer-info">
         <div class="layer-name">${EW_DATA.name}</div>
-        <div class="layer-sub">AI Front Door &mdash; Separate Architecture</div>
+        <div class="layer-sub">AI Front Door</div>
         <div class="ew-sub-stats">
           <span class="ew-sub-stat"><strong>${EW_DATA.components.length}</strong> components</span>
           <span class="ew-sub-stat"><strong>${EW_PLUGIN_TOTAL}</strong> plugins</span>
@@ -1826,12 +1826,13 @@ function renderFoundation() {
 // ═══════════════════════════════════════════
 
 const EW_SIDEBAR_PLUGINS = [
-  { id: 'ew-hr', name: 'HR & People', icon: '👥', count: Object.values(EW_PLUGIN_GROUPS['HR & People'] || []).reduce((s,p) => s + p.count, 0), systems: (EW_PLUGIN_GROUPS['HR & People'] || []).length, topSystems: (EW_PLUGIN_GROUPS['HR & People'] || []).map(p => p.name).slice(0,3).join(', ') },
-  { id: 'ew-finance', name: 'Finance & Procurement', icon: '💰', count: Object.values(EW_PLUGIN_GROUPS['Finance & Procurement'] || []).reduce((s,p) => s + p.count, 0), systems: (EW_PLUGIN_GROUPS['Finance & Procurement'] || []).length, topSystems: (EW_PLUGIN_GROUPS['Finance & Procurement'] || []).map(p => p.name).slice(0,3).join(', ') },
-  { id: 'ew-it', name: 'IT & Access', icon: '🔐', count: Object.values(EW_PLUGIN_GROUPS['IT & Access'] || []).reduce((s,p) => s + p.count, 0), systems: (EW_PLUGIN_GROUPS['IT & Access'] || []).length, topSystems: (EW_PLUGIN_GROUPS['IT & Access'] || []).map(p => p.name).slice(0,3).join(', ') },
-  { id: 'ew-productivity', name: 'Productivity', icon: '⚡', count: Object.values(EW_PLUGIN_GROUPS['Productivity'] || []).reduce((s,p) => s + p.count, 0), systems: (EW_PLUGIN_GROUPS['Productivity'] || []).length, topSystems: (EW_PLUGIN_GROUPS['Productivity'] || []).map(p => p.name).slice(0,3).join(', ') },
-  { id: 'ew-sales', name: 'Sales & CRM', icon: '📊', count: Object.values(EW_PLUGIN_GROUPS['Sales & CRM'] || []).reduce((s,p) => s + p.count, 0), systems: (EW_PLUGIN_GROUPS['Sales & CRM'] || []).length, topSystems: (EW_PLUGIN_GROUPS['Sales & CRM'] || []).map(p => p.name).slice(0,3).join(', ') },
-  { id: 'ew-facilities', name: 'Facilities & Other', icon: '🏢', count: Object.values(EW_PLUGIN_GROUPS['Facilities & Other'] || []).reduce((s,p) => s + p.count, 0), systems: (EW_PLUGIN_GROUPS['Facilities & Other'] || []).length, topSystems: (EW_PLUGIN_GROUPS['Facilities & Other'] || []).map(p => p.name).slice(0,3).join(', ') },
+  { id: 'ew-hr', name: 'Oracle HCM Cloud', icon: '\uD83D\uDC65', count: Object.values(EW_PLUGIN_GROUPS['HR & People'] || []).reduce((s,p) => s + p.count, 0), systems: (EW_PLUGIN_GROUPS['HR & People'] || []).length, topSystems: 'HCM' },
+  { id: 'ew-finance', name: 'ADP', icon: '\uD83D\uDCB0', count: Object.values(EW_PLUGIN_GROUPS['Finance & Procurement'] || []).reduce((s,p) => s + p.count, 0), systems: (EW_PLUGIN_GROUPS['Finance & Procurement'] || []).length, topSystems: 'Payroll' },
+  { id: 'ew-it', name: 'Ceridian Dayforce', icon: '\uD83D\uDD10', count: Object.values(EW_PLUGIN_GROUPS['IT & Access'] || []).reduce((s,p) => s + p.count, 0), systems: (EW_PLUGIN_GROUPS['IT & Access'] || []).length, topSystems: 'HCM/Payroll' },
+  { id: 'ew-productivity', name: 'PeopleDoc (UKG)', icon: '\u26A1', count: Object.values(EW_PLUGIN_GROUPS['Productivity'] || []).reduce((s,p) => s + p.count, 0), systems: (EW_PLUGIN_GROUPS['Productivity'] || []).length, topSystems: 'Documents' },
+  { id: 'ew-sales', name: 'HireRight', icon: '\uD83D\uDCCA', count: Object.values(EW_PLUGIN_GROUPS['Sales & CRM'] || []).reduce((s,p) => s + p.count, 0), systems: (EW_PLUGIN_GROUPS['Sales & CRM'] || []).length, topSystems: 'Screening' },
+  { id: 'ew-facilities', name: 'HireVue', icon: '\uD83C\uDFE2', count: Object.values(EW_PLUGIN_GROUPS['Facilities & Other'] || []).reduce((s,p) => s + p.count, 0), systems: (EW_PLUGIN_GROUPS['Facilities & Other'] || []).length, topSystems: 'Assessment' },
+  { id: 'ew-benefits', name: 'Alight Worklife', icon: '\uD83D\uDC9A', count: 15, systems: 3, topSystems: 'Benefits' },
 ];
 
 function renderEWSidebar() {
@@ -2061,7 +2062,7 @@ function openEWPanel() {
       <span class="lp-icon">${EW_DATA.icon}</span>
       <div style="flex:1">
         <h2>${EW_DATA.name}</h2>
-        <div class="lp-sub">AI Front Door &mdash; Separate Architecture &nbsp;|&nbsp; <a href="https://www.moveworks.com/us/en/platform/ai-assistant" target="_blank" class="cite-link">Platform Docs \u2197</a></div>
+        <div class="lp-sub">AI Front Door &nbsp;|&nbsp; <a href="https://www.moveworks.com/us/en/platform/ai-assistant" target="_blank" class="cite-link">Platform Docs \u2197</a></div>
       </div>
       <button class="close-btn" onclick="closeLayerPanel()">\u00D7</button>
     </div>
