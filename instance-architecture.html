@@ -222,7 +222,7 @@ body { font-family:var(--font-sans); background:var(--bg-deep); color:#fff; }
 .conn-path.er-is { stroke:rgba(191,113,242,0.5); }
 
 /* Instance positioning (percentage-based inside diagram) */
-.inst.ew { left:5%; top:1%; width:90%; height:32%; }
+.inst.ew { left:14%; top:1%; width:72%; height:30%; }
 .inst.ew:hover { border-color:rgba(99,223,78,0.25); }
 .inst.ew .inst-accent { background:var(--ew-color); box-shadow:0 0 8px rgba(99,223,78,0.3); }
 .inst.ew .inst-dot { background:var(--ew-color); box-shadow:0 0 6px rgba(99,223,78,0.4); }
@@ -439,8 +439,7 @@ body { font-family:var(--font-sans); background:var(--bg-deep); color:#fff; }
     <div class="legend-item"><div class="legend-dot er"></div>Enterprise Risk</div>
     <div class="legend-item"><div class="legend-dot is"></div>Info Sec / COG</div>
     <div class="legend-line"></div>
-    <div class="legend-item" style="gap:.2rem;"><svg width="20" height="6"><line x1="0" y1="3" x2="20" y2="3" stroke="rgba(191,113,242,0.5)" stroke-width="1.5" stroke-dasharray="4,3"/></svg> Zero Copy Connect</div>
-    <div class="legend-item" style="gap:.2rem;"><svg width="20" height="6"><line x1="0" y1="3" x2="20" y2="3" stroke="rgba(99,223,78,0.3)" stroke-width="1.5"/></svg> Data Flow</div>
+    <div class="legend-item" style="gap:.2rem;"><svg width="20" height="6"><line x1="0" y1="3" x2="20" y2="3" stroke="rgba(191,113,242,0.5)" stroke-width="2"/></svg> Zero Copy Connect</div>
   </div>
 
   <div class="ftr">&copy; 2026 ServiceNow, Inc. All rights reserved.</div>
@@ -490,30 +489,35 @@ function drawConnections() {
   }
 
   // ════════════════════════════════════════════════
-  // Zero Copy Connect: horizontal bidirectional arrow between ER and IS
-  // Sits in the gap between the two bottom boxes
+  // Zero Copy Connect: upside-down T connecting all three instances
+  // Vertical from EW → horizontal bar between ER and IS → drops into each
   // ════════════════════════════════════════════════
 
-  var zcY = er.cy;  // Vertically centered on the bottom boxes
-  var zcLeft = er.right + 6;
-  var zcRight = is_.left - 6;
-  var zcMidX = (zcLeft + zcRight) / 2;
+  var midGapX = (er.right + is_.left) / 2;  // Center of horizontal gap
+  var barY = gapTop + (gapBot - gapTop) * 0.4;
 
-  // Bidirectional horizontal line (ER → IS and IS → ER)
-  makeLine(zcLeft, zcY, zcRight, zcY, 'er-is', 'arr-zc');
-  // Reverse arrowhead on the left end
-  makeLine(zcRight, zcY, zcLeft, zcY, 'er-is', 'arr-zc-rev');
+  // Vertical stem: EW bottom center down to the bar
+  makeLine(ew.cx, gapTop, midGapX, barY, 'er-is', null);
+
+  // Horizontal bar: from ER right edge across to IS left edge
+  makeLine(er.right + 6, barY, is_.left - 6, barY, 'er-is', null);
+
+  // Left drop: bar down to ER (enters from top-right area)
+  makeLine(er.right + 6, barY, er.right + 6, er.top + er.h * 0.35, 'er-is', 'arr-zc');
+
+  // Right drop: bar down to IS (enters from top-left area)
+  makeLine(is_.left - 6, barY, is_.left - 6, is_.top + is_.h * 0.35, 'er-is', 'arr-zc');
 
   // Hide unused labels
   document.getElementById('lbl-ew-er').style.display = 'none';
   document.getElementById('lbl-ew-is').style.display = 'none';
 
-  // Zero Copy Connect label: centered below the arrow in the gap
+  // Zero Copy Connect label: centered below the horizontal bar
   var lblErIs = document.getElementById('lbl-er-is');
   lblErIs.style.display = 'block';
-  lblErIs.style.left = Math.round(zcMidX) + 'px';
+  lblErIs.style.left = Math.round(midGapX) + 'px';
   lblErIs.style.transform = 'translateX(-50%)';
-  lblErIs.style.top = Math.round(zcY + 8) + 'px';
+  lblErIs.style.top = Math.round(barY + 6) + 'px';
 }
 
 window.addEventListener('load', function() { setTimeout(drawConnections, 120); });
