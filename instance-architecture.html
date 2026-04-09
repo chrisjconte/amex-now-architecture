@@ -192,10 +192,14 @@ body { font-family:var(--font-sans); background:var(--bg-deep); color:#fff; }
 /* ====== FLOW LABELS ====== */
 .flow-label {
   position:absolute; z-index:5; pointer-events:none;
-  font-size:.6rem; font-family:var(--font-mono); letter-spacing:.02em;
-  color:rgba(255,255,255,0.35); text-transform:uppercase;
-  white-space:nowrap;
-  background:rgba(7,14,26,0.85); padding:.15rem .45rem; border-radius:4px;
+  font-size:.55rem; font-family:var(--font-mono); letter-spacing:.03em;
+  color:rgba(255,255,255,0.45); text-transform:uppercase;
+  white-space:nowrap; line-height:1.5;
+}
+.flow-label.zcc-label {
+  background:rgba(7,14,26,0.9); padding:.2rem .6rem; border-radius:4px;
+  border:1px solid rgba(191,113,242,0.2); color:rgba(191,113,242,0.7);
+  font-size:.6rem; font-weight:500; letter-spacing:.06em;
 }
 
 /* ====== LEGEND ====== */
@@ -214,10 +218,10 @@ body { font-family:var(--font-sans); background:var(--bg-deep); color:#fff; }
 .legend-line { width:1px; height:10px; background:rgba(255,255,255,0.08); }
 
 /* ====== SVG STYLES ====== */
-.conn-path { fill:none; stroke-width:2; }
-.conn-path.ew-er { stroke:rgba(99,223,78,0.25); }
-.conn-path.ew-is { stroke:rgba(82,184,255,0.25); }
-.conn-path.er-is { stroke:rgba(191,113,242,0.25); stroke-dasharray:6,4; }
+.conn-path { fill:none; stroke-width:1.5; }
+.conn-path.ew-er { stroke:rgba(99,223,78,0.3); stroke-dasharray:6,4; }
+.conn-path.ew-is { stroke:rgba(82,184,255,0.3); stroke-dasharray:6,4; }
+.conn-path.er-is { stroke:rgba(191,113,242,0.35); stroke-dasharray:6,4; }
 
 .flow-particle { fill:none; stroke-width:2; stroke-linecap:round; }
 .flow-particle.ew-er { stroke:var(--ew-color); }
@@ -430,8 +434,8 @@ body { font-family:var(--font-sans); background:var(--bg-deep); color:#fff; }
 
       <!-- Flow labels (positioned by JS) -->
       <div class="flow-label" id="lbl-ew-er" style="display:none;">WSD + ITSM + ITAM Tickets/Tasks<br>HRSD + ITSM Tickets/Tasks</div>
-      <div class="flow-label" id="lbl-ew-is" style="display:none;">Security Events + Asset Data</div>
-      <div class="flow-label" id="lbl-er-is" style="display:none;">Zero Copy Connect</div>
+      <div class="flow-label" id="lbl-ew-is" style="display:none;">HRSD + ITSM Tickets/Tasks</div>
+      <div class="flow-label zcc-label" id="lbl-er-is" style="display:none;">Zero Copy Connect</div>
 
     </div>
   </div>
@@ -451,16 +455,16 @@ body { font-family:var(--font-sans); background:var(--bg-deep); color:#fff; }
 
 <script>
 function drawConnections() {
-  const svg = document.getElementById('connSvg');
-  const diagram = document.getElementById('diagram');
-  const dRect = diagram.getBoundingClientRect();
+  var svg = document.getElementById('connSvg');
+  var diagram = document.getElementById('diagram');
+  var dRect = diagram.getBoundingClientRect();
   svg.setAttribute('width', dRect.width);
   svg.setAttribute('height', dRect.height);
 
   function getBox(id) {
-    const el = document.getElementById(id);
+    var el = document.getElementById(id);
     if (!el) return null;
-    const r = el.getBoundingClientRect();
+    var r = el.getBoundingClientRect();
     return {
       left: r.left - dRect.left, top: r.top - dRect.top,
       right: r.right - dRect.left, bottom: r.bottom - dRect.top,
@@ -470,152 +474,106 @@ function drawConnections() {
     };
   }
 
-  const ew = getBox('instEW');
-  const er = getBox('instER');
-  const is_ = getBox('instIS');
-
+  var ew = getBox('instEW');
+  var er = getBox('instER');
+  var is_ = getBox('instIS');
   if (!ew || !er || !is_) return;
 
-  // Preserve defs
-  const defs = svg.querySelector('defs');
+  // Preserve defs, clear everything else
+  var defs = svg.querySelector('defs');
   svg.innerHTML = '';
   svg.appendChild(defs);
 
-  // Helper: create curved SVG path (cubic bezier)
-  function makeCurvedPath(x1, y1, x2, y2, cls, markerId, curveFactor) {
-    curveFactor = curveFactor || 0.4;
-    const dx = x2 - x1;
-    const dy = y2 - y1;
-    // Control points for vertical-dominant curves
-    const cp1x = x1;
-    const cp1y = y1 + dy * curveFactor;
-    const cp2x = x2;
-    const cp2y = y2 - dy * curveFactor;
-    const d = 'M ' + x1 + ',' + y1 + ' C ' + cp1x + ',' + cp1y + ' ' + cp2x + ',' + cp2y + ' ' + x2 + ',' + y2;
+  // The gap between EW bottom and ER/IS top
+  var gapTop = ew.bottom;
+  var gapBot = Math.min(er.top, is_.top);
+  var gapMid = (gapTop + gapBot) / 2;
 
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d', d);
-    path.setAttribute('class', 'conn-path ' + cls);
-    if (markerId) path.setAttribute('marker-end', 'url(#' + markerId + ')');
-    svg.appendChild(path);
-    return d;
+  // ── Helper: straight line ──
+  function makeLine(x1, y1, x2, y2, cls, markerId) {
+    var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+    line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+    line.setAttribute('class', 'conn-path ' + cls);
+    if (markerId) line.setAttribute('marker-end', 'url(#' + markerId + ')');
+    svg.appendChild(line);
+    return line;
   }
 
-  // Helper: create horizontal curved path for ER <-> IS
-  function makeHCurvedPath(x1, y1, x2, y2, cls, markerId, offset) {
-    offset = offset || 0;
-    var midX = (x1 + x2) / 2;
-    var curveY = Math.min(y1, y2) - 25 + offset;
-    var d = 'M ' + x1 + ',' + y1 + ' C ' + midX + ',' + curveY + ' ' + midX + ',' + curveY + ' ' + x2 + ',' + y2;
-
-    var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d', d);
-    path.setAttribute('class', 'conn-path ' + cls);
-    if (markerId) path.setAttribute('marker-end', 'url(#' + markerId + ')');
-    svg.appendChild(path);
-    return d;
-  }
-
-  // Helper: animated flow particle along a path
-  function makeFlowParticle(pathD, cls, duration, reverse) {
-    var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d', pathD);
-    path.setAttribute('class', 'flow-particle ' + cls);
-    path.setAttribute('fill', 'none');
-
-    // Get path length
-    svg.appendChild(path);
-    var len = path.getTotalLength();
-    var dashLen = len * 0.12;
-    var gapLen = len - dashLen;
-
-    path.setAttribute('stroke-dasharray', dashLen + ',' + gapLen);
-
+  // ── Helper: animated particle on a straight line ──
+  function makeParticle(x1, y1, x2, y2, cls, dur) {
+    var len = Math.sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
+    var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+    line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+    line.setAttribute('class', 'flow-particle ' + cls);
+    line.setAttribute('stroke-dasharray', (len * 0.15) + ',' + (len * 0.85));
     var anim = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
     anim.setAttribute('attributeName', 'stroke-dashoffset');
-    if (reverse) {
-      anim.setAttribute('from', (-len).toString());
-      anim.setAttribute('to', '0');
-    } else {
-      anim.setAttribute('from', '0');
-      anim.setAttribute('to', (-len).toString());
-    }
-    anim.setAttribute('dur', (duration || 2) + 's');
+    anim.setAttribute('from', '0');
+    anim.setAttribute('to', String(-len));
+    anim.setAttribute('dur', dur + 's');
     anim.setAttribute('repeatCount', 'indefinite');
-    path.appendChild(anim);
+    line.appendChild(anim);
+    svg.appendChild(line);
   }
 
-  // ════ THREE-PRONG JUNCTION ════
-  // Central hub point between all three instances
-  var hubX = (er.right + is_.left) / 2;
-  var hubY = (ew.bottom + Math.min(er.top, is_.top)) / 2;
+  // ═══ EW → ER: two straight dashed lines (left side) ═══
+  // Line 1: from EW ~30% across bottom, down to ER ~40% across top
+  var ew_er_x1 = ew.left + ew.w * 0.22;
+  var er_x1 = er.left + er.w * 0.35;
+  makeLine(ew_er_x1, gapTop, er_x1, gapBot, 'ew-er', 'arr-ew');
+  makeParticle(ew_er_x1, gapTop, er_x1, gapBot, 'ew-er', 2.0);
 
-  // Hub dot (small circle at junction)
-  var hubDot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-  hubDot.setAttribute('cx', hubX); hubDot.setAttribute('cy', hubY);
-  hubDot.setAttribute('r', 4);
-  hubDot.setAttribute('fill', 'rgba(191,113,242,0.6)');
-  hubDot.setAttribute('stroke', 'rgba(191,113,242,0.3)');
-  hubDot.setAttribute('stroke-width', '6');
-  // Pulsing glow
-  var hubAnim = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
-  hubAnim.setAttribute('attributeName', 'stroke-width');
-  hubAnim.setAttribute('values', '6;10;6');
-  hubAnim.setAttribute('dur', '2s');
-  hubAnim.setAttribute('repeatCount', 'indefinite');
-  hubDot.appendChild(hubAnim);
-  svg.appendChild(hubDot);
+  // Line 2: offset right, from EW ~38% to ER ~65%
+  var ew_er_x2 = ew.left + ew.w * 0.32;
+  var er_x2 = er.left + er.w * 0.65;
+  makeLine(ew_er_x2, gapTop, er_x2, gapBot, 'ew-er', 'arr-ew');
+  makeParticle(ew_er_x2, gapTop, er_x2, gapBot, 'ew-er', 2.3);
 
-  // ── Prong 1: EW down to hub ──
-  var ewStartX = ew.cx;
-  var ewStartY = ew.bottom;
-  var pathEwHub = makeCurvedPath(ewStartX, ewStartY, hubX, hubY, 'ew-er', null, 0.5);
-  makeFlowParticle(pathEwHub, 'ew-er', 1.8, false);
+  // ═══ EW → IS: two straight dashed lines (right side) ═══
+  // Line 1: from EW ~68% to IS ~35%
+  var ew_is_x1 = ew.left + ew.w * 0.68;
+  var is_x1 = is_.left + is_.w * 0.3;
+  makeLine(ew_is_x1, gapTop, is_x1, gapBot, 'ew-is', 'arr-is');
+  makeParticle(ew_is_x1, gapTop, is_x1, gapBot, 'ew-is', 2.1);
 
-  // ── Prong 2: hub left to ER ──
-  var erEndX = er.right;
-  var erEndY = er.top + er.h * 0.3;
-  var d2 = 'M ' + hubX + ',' + hubY + ' C ' + (hubX - (hubX - erEndX)*0.3) + ',' + hubY + ' ' + erEndX + ',' + (erEndY - (erEndY - hubY)*0.3) + ' ' + erEndX + ',' + erEndY;
-  var p2 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-  p2.setAttribute('d', d2);
-  p2.setAttribute('class', 'conn-path ew-er');
-  p2.setAttribute('marker-end', 'url(#arr-ew)');
-  svg.appendChild(p2);
-  makeFlowParticle(d2, 'ew-er', 1.6, false);
+  // Line 2: from EW ~78% to IS ~55%
+  var ew_is_x2 = ew.left + ew.w * 0.78;
+  var is_x2 = is_.left + is_.w * 0.55;
+  makeLine(ew_is_x2, gapTop, is_x2, gapBot, 'ew-is', 'arr-is');
+  makeParticle(ew_is_x2, gapTop, is_x2, gapBot, 'ew-is', 2.4);
 
-  // ── Prong 3: hub right to IS ──
-  var isEndX = is_.left;
-  var isEndY = is_.top + is_.h * 0.3;
-  var d3 = 'M ' + hubX + ',' + hubY + ' C ' + (hubX + (isEndX - hubX)*0.3) + ',' + hubY + ' ' + isEndX + ',' + (isEndY - (isEndY - hubY)*0.3) + ' ' + isEndX + ',' + isEndY;
-  var p3 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-  p3.setAttribute('d', d3);
-  p3.setAttribute('class', 'conn-path ew-is');
-  p3.setAttribute('marker-end', 'url(#arr-is)');
-  svg.appendChild(p3);
-  makeFlowParticle(d3, 'ew-is', 1.6, false);
+  // ═══ ER ↔ IS: Zero Copy Connect (horizontal between boxes) ═══
+  var zcY = er.top + er.h * 0.92;
+  var zcLeft = er.right + 4;
+  var zcRight = is_.left - 4;
+  // Bidirectional: forward
+  makeLine(zcLeft, zcY, zcRight, zcY, 'er-is', 'arr-zc');
+  makeParticle(zcLeft, zcY - 1.5, zcRight, zcY - 1.5, 'er-is', 2.5);
+  // Bidirectional: reverse
+  makeParticle(zcRight, zcY + 1.5, zcLeft, zcY + 1.5, 'er-is', 2.8);
 
-  // ── Zero Copy Connect: ER <-> IS (dashed, below hub) ──
-  var zcY = er.top + er.h * 0.55;
-  var zcPathF = makeHCurvedPath(er.right, zcY - 2, is_.left, zcY - 2, 'er-is', 'arr-zc', 0);
-  makeFlowParticle(zcPathF, 'er-is', 2.5, false);
-  var zcPathR = makeHCurvedPath(is_.left, zcY + 2, er.right, zcY + 2, 'er-is', 'arr-zc-rev', 10);
-  makeFlowParticle(zcPathR, 'er-is', 2.8, false);
-
-  // ── Position flow labels ──
+  // ═══ Position labels cleanly in the gap ═══
+  // EW→ER label: left side of the gap
   var lblEwEr = document.getElementById('lbl-ew-er');
   lblEwEr.style.display = 'block';
-  lblEwEr.style.left = (Math.min(hubX, erEndX) - 50) + 'px';
-  lblEwEr.style.top = ((hubY + erEndY) / 2 - 12) + 'px';
+  lblEwEr.style.left = Math.round(ew.left + ew.w * 0.04) + 'px';
+  lblEwEr.style.top = Math.round(gapMid - 10) + 'px';
 
+  // EW→IS label: right side of the gap
   var lblEwIs = document.getElementById('lbl-ew-is');
   lblEwIs.style.display = 'block';
-  lblEwIs.style.left = (Math.max(hubX, isEndX) + 8) + 'px';
-  lblEwIs.style.top = ((hubY + isEndY) / 2 - 8) + 'px';
+  lblEwIs.style.right = Math.round(dRect.width - ew.right + ew.w * 0.04) + 'px';
+  lblEwIs.style.left = 'auto';
+  lblEwIs.style.top = Math.round(gapMid - 5) + 'px';
 
+  // Zero Copy Connect label: centered between ER and IS, below the line
   var lblErIs = document.getElementById('lbl-er-is');
   lblErIs.style.display = 'block';
-  lblErIs.style.left = (hubX - 42) + 'px';
-  lblErIs.style.top = (zcY - 22) + 'px';
+  var zcMidX = (zcLeft + zcRight) / 2;
+  lblErIs.style.left = Math.round(zcMidX - 55) + 'px';
+  lblErIs.style.top = Math.round(zcY + 6) + 'px';
 }
 
 window.addEventListener('load', function() { setTimeout(drawConnections, 120); });
