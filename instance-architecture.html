@@ -218,28 +218,21 @@ body { font-family:var(--font-sans); background:var(--bg-deep); color:#fff; }
 .legend-line { width:1px; height:10px; background:rgba(255,255,255,0.08); }
 
 /* ====== SVG STYLES ====== */
-.conn-path { fill:none; stroke-width:1.5; }
-.conn-path.ew-er { stroke:rgba(99,223,78,0.3); stroke-dasharray:6,4; }
-.conn-path.ew-is { stroke:rgba(82,184,255,0.3); stroke-dasharray:6,4; }
-.conn-path.er-is { stroke:rgba(191,113,242,0.35); stroke-dasharray:6,4; }
-
-.flow-particle { fill:none; stroke-width:2; stroke-linecap:round; }
-.flow-particle.ew-er { stroke:var(--ew-color); }
-.flow-particle.ew-is { stroke:var(--is-color); }
-.flow-particle.er-is { stroke:var(--bright-purple); }
+.conn-path { fill:none; stroke-width:2; }
+.conn-path.er-is { stroke:rgba(191,113,242,0.5); }
 
 /* Instance positioning (percentage-based inside diagram) */
-.inst.ew { left:3%; top:2%; width:94%; height:40%; }
+.inst.ew { left:5%; top:1%; width:90%; height:32%; }
 .inst.ew:hover { border-color:rgba(99,223,78,0.25); }
 .inst.ew .inst-accent { background:var(--ew-color); box-shadow:0 0 8px rgba(99,223,78,0.3); }
 .inst.ew .inst-dot { background:var(--ew-color); box-shadow:0 0 6px rgba(99,223,78,0.4); }
 
-.inst.er { left:1%; top:52%; width:44%; height:46%; }
+.inst.er { left:2%; top:55%; width:44%; height:43%; }
 .inst.er:hover { border-color:rgba(118,97,255,0.25); }
 .inst.er .inst-accent { background:var(--er-color); box-shadow:0 0 8px rgba(118,97,255,0.3); }
 .inst.er .inst-dot { background:var(--er-color); box-shadow:0 0 6px rgba(118,97,255,0.4); }
 
-.inst.is { left:51%; top:52%; width:48%; height:46%; }
+.inst.is { left:52%; top:55%; width:46%; height:43%; }
 .inst.is:hover { border-color:rgba(82,184,255,0.25); }
 .inst.is .inst-accent { background:var(--is-color); box-shadow:0 0 8px rgba(82,184,255,0.3); }
 .inst.is .inst-dot { background:var(--is-color); box-shadow:0 0 6px rgba(82,184,255,0.4); }
@@ -496,50 +489,26 @@ function drawConnections() {
     svg.appendChild(line);
   }
 
-  function makeParticle(x1, y1, x2, y2, cls, dur) {
-    var len = Math.sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
-    if (len < 1) return;
-    var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    line.setAttribute('x1', x1); line.setAttribute('y1', y1);
-    line.setAttribute('x2', x2); line.setAttribute('y2', y2);
-    line.setAttribute('class', 'flow-particle ' + cls);
-    line.setAttribute('stroke-dasharray', (len * 0.15) + ',' + (len * 0.85));
-    var anim = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
-    anim.setAttribute('attributeName', 'stroke-dashoffset');
-    anim.setAttribute('from', '0');
-    anim.setAttribute('to', String(-len));
-    anim.setAttribute('dur', dur + 's');
-    anim.setAttribute('repeatCount', 'indefinite');
-    line.appendChild(anim);
-    svg.appendChild(line);
-  }
-
   // ════════════════════════════════════════════════
-  // UPSIDE-DOWN T: Zero Copy Connect
-  // Vertical stem from EW center bottom → horizontal bar → left to ER, right to IS
+  // UPSIDE-DOWN T: Zero Copy Connect (solid lines, no animation)
   // ════════════════════════════════════════════════
 
   var tCenterX = ew.cx;
-  var tBarY = gapMid;                        // Horizontal bar sits at gap midpoint
-  var tLeftX = er.left + er.w * 0.5;         // Left end: center of ER
-  var tRightX = is_.left + is_.w * 0.5;      // Right end: center of IS
+  var tBarY = gapTop + (gapBot - gapTop) * 0.45;  // Bar slightly above center of gap
+  var tLeftX = er.cx;
+  var tRightX = is_.cx;
 
   // Vertical stem: EW bottom center → bar
   makeLine(tCenterX, gapTop, tCenterX, tBarY, 'er-is', null);
-  makeParticle(tCenterX, gapTop, tCenterX, tBarY, 'er-is', 1.8);
 
   // Horizontal bar: left to right
   makeLine(tLeftX, tBarY, tRightX, tBarY, 'er-is', null);
-  makeParticle(tLeftX, tBarY, tRightX, tBarY, 'er-is', 2.2);
-  makeParticle(tRightX, tBarY, tLeftX, tBarY, 'er-is', 2.5);
 
   // Left drop: bar → ER top
   makeLine(tLeftX, tBarY, tLeftX, gapBot, 'er-is', 'arr-ew');
-  makeParticle(tLeftX, tBarY, tLeftX, gapBot, 'er-is', 1.2);
 
   // Right drop: bar → IS top
   makeLine(tRightX, tBarY, tRightX, gapBot, 'er-is', 'arr-is');
-  makeParticle(tRightX, tBarY, tRightX, gapBot, 'er-is', 1.2);
 
   // ════════════════════════════════════════════════
   // LABELS
