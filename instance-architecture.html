@@ -489,24 +489,19 @@ function drawConnections() {
   }
 
   // ════════════════════════════════════════════════
-  // Zero Copy Connect: upside-down T connecting all three instances
-  // Vertical from EW → horizontal bar between ER and IS → drops into each
+  // Zero Copy Connect — matching whiteboard exactly:
+  // Horizontal line at the BOTTOM connecting ER and IS
+  // Single vertical line going UP from midpoint to EW
   // ════════════════════════════════════════════════
 
-  var midGapX = (er.right + is_.left) / 2;  // Center of horizontal gap
-  var barY = gapTop + (gapBot - gapTop) * 0.4;
+  var midGapX = (er.right + is_.left) / 2;
+  var barY = er.bottom - 4;  // Horizontal bar at the bottom of ER/IS
 
-  // Vertical stem: EW bottom center down to the bar
-  makeLine(ew.cx, gapTop, midGapX, barY, 'er-is', null);
+  // Horizontal bar: bottom of ER across to bottom of IS
+  makeLine(er.right, barY, is_.left, barY, 'er-is', null);
 
-  // Horizontal bar: from ER right edge across to IS left edge
-  makeLine(er.right + 6, barY, is_.left - 6, barY, 'er-is', null);
-
-  // Left drop: bar down to ER (enters from top-right area)
-  makeLine(er.right + 6, barY, er.right + 6, er.top + er.h * 0.35, 'er-is', 'arr-zc');
-
-  // Right drop: bar down to IS (enters from top-left area)
-  makeLine(is_.left - 6, barY, is_.left - 6, is_.top + is_.h * 0.35, 'er-is', 'arr-zc');
+  // Single vertical line: midpoint of bar straight up to EW bottom
+  makeLine(midGapX, barY, midGapX, ew.bottom, 'er-is', null);
 
   // Hide unused labels
   document.getElementById('lbl-ew-er').style.display = 'none';
