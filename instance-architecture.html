@@ -215,9 +215,8 @@ body { font-family:var(--font-sans); background:var(--bg-deep); color:#fff; }
 
 /* ====== SVG STYLES ====== */
 .conn-path { fill:none; stroke-width:2; }
-.conn-path.ew-er { stroke:rgba(99,223,78,0.25); stroke-dasharray:8,5; }
+.conn-path.ew-er { stroke:rgba(99,223,78,0.25); }
 .conn-path.ew-is { stroke:rgba(82,184,255,0.25); }
-.conn-path.ew-is-dashed { stroke:rgba(82,184,255,0.2); stroke-dasharray:8,5; }
 .conn-path.er-is { stroke:rgba(191,113,242,0.25); stroke-dasharray:6,4; }
 
 .flow-particle { fill:none; stroke-width:2; stroke-linecap:round; }
@@ -431,7 +430,7 @@ body { font-family:var(--font-sans); background:var(--bg-deep); color:#fff; }
 
       <!-- Flow labels (positioned by JS) -->
       <div class="flow-label" id="lbl-ew-er" style="display:none;">WSD + ITSM + ITAM Tickets/Tasks<br>HRSD + ITSM Tickets/Tasks</div>
-      <div class="flow-label" id="lbl-ew-is" style="display:none;">HRSD + ITSM Tickets/Tasks</div>
+      <div class="flow-label" id="lbl-ew-is" style="display:none;">Security Events + Asset Data</div>
       <div class="flow-label" id="lbl-er-is" style="display:none;">Zero Copy Connect</div>
 
     </div>
@@ -554,22 +553,13 @@ function drawConnections() {
   var pathEwEr = makeCurvedPath(ewErStartX, ewErStartY, ewErEndX, ewErEndY, 'ew-er', 'arr-ew', 0.45);
   makeFlowParticle(pathEwEr, 'ew-er', 2.2, false);
 
-  // ---- Connection: EW -> IS (blue dashed, two lines matching whiteboard) ----
-  // Line 1: from EW right-center area down to IS
-  var ewIs1StartX = ew.left + ew.w * 0.72;
-  var ewIs1StartY = ew.bottom;
-  var ewIs1EndX = is_.left + is_.w * 0.4;
-  var ewIs1EndY = is_.top;
-  var pathEwIs1 = makeCurvedPath(ewIs1StartX, ewIs1StartY, ewIs1EndX, ewIs1EndY, 'ew-is-dashed', 'arr-is', 0.45);
-  makeFlowParticle(pathEwIs1, 'ew-is', 2.4, false);
-
-  // Line 2: offset slightly right
-  var ewIs2StartX = ew.left + ew.w * 0.78;
-  var ewIs2StartY = ew.bottom;
-  var ewIs2EndX = is_.left + is_.w * 0.6;
-  var ewIs2EndY = is_.top;
-  var pathEwIs2 = makeCurvedPath(ewIs2StartX, ewIs2StartY, ewIs2EndX, ewIs2EndY, 'ew-is-dashed', 'arr-is', 0.45);
-  makeFlowParticle(pathEwIs2, 'ew-is', 2.8, false);
+  // ---- Connection: EW -> IS (blue, right side) ----
+  var ewIsStartX = ew.left + ew.w * 0.75;
+  var ewIsStartY = ew.bottom;
+  var ewIsEndX = is_.cx;
+  var ewIsEndY = is_.top;
+  var pathEwIs = makeCurvedPath(ewIsStartX, ewIsStartY, ewIsEndX, ewIsEndY, 'ew-is', 'arr-is', 0.45);
+  makeFlowParticle(pathEwIs, 'ew-is', 2.4, false);
 
   // ---- Connection: ER <-> IS (purple dashed, bidirectional) ----
   var zcY = (er.cy + is_.cy) / 2;
@@ -590,8 +580,8 @@ function drawConnections() {
 
   var lblEwIs = document.getElementById('lbl-ew-is');
   lblEwIs.style.display = 'block';
-  lblEwIs.style.left = (Math.max(ewIs2StartX, ewIs2EndX) + 8) + 'px';
-  lblEwIs.style.top = ((ewIs1StartY + ewIs1EndY) / 2 - 4) + 'px';
+  lblEwIs.style.left = (Math.max(ewIsStartX, ewIsEndX) + 8) + 'px';
+  lblEwIs.style.top = ((ewIsStartY + ewIsEndY) / 2 - 4) + 'px';
 
   var lblErIs = document.getElementById('lbl-er-is');
   lblErIs.style.display = 'block';
