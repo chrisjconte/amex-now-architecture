@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>American Express ServiceNow Instance Architecture</title>
+<style>
+@font-face { font-family:'ServiceNow Sans'; src:url('https://www.servicenow.com/etc.clientlibs/ds/clientlibs/clientlib-arc-commons/resources/fonts/ServiceNowSans-Light.woff2') format('woff2'); font-weight:300; font-style:normal; font-display:swap; }
+@font-face { font-family:'ServiceNow Sans'; src:url('https://www.servicenow.com/etc.clientlibs/ds/clientlibs/clientlib-arc-commons/resources/fonts/ServiceNowSans-Regular.woff2') format('woff2'); font-weight:400; font-style:normal; font-display:swap; }
+@font-face { font-family:'ServiceNow Sans'; src:url('https://www.servicenow.com/etc.clientlibs/ds/clientlibs/clientlib-arc-commons/resources/fonts/ServiceNowSans-Medium.woff2') format('woff2'); font-weight:500; font-style:normal; font-display:swap; }
+@font-face { font-family:'ServiceNow Sans'; src:url('https://www.servicenow.com/etc.clientlibs/ds/clientlibs/clientlib-arc-commons/resources/fonts/ServiceNowSans-Bold.woff2') format('woff2'); font-weight:700; font-style:normal; font-display:swap; }
+@font-face { font-family:'ServiceNow Sans Mono'; src:url('https://www.servicenow.com/etc.clientlibs/ds/clientlibs/clientlib-arc-commons/resources/fonts/ServiceNowSansMono-Regular.woff2') format('woff2'); font-weight:400; font-style:normal; font-display:swap; }
+
+:root {
+  --bg-deep: #070E1A;
+  --wasabi: #63DF4E;
+  --bright-blue: #52B8FF;
+  --bright-indigo: #7661FF;
+  --bright-purple: #BF71F2;
+  --gray-400: #9CA3AF;
+  --gray-500: #6B7280;
+  --icon-bg: #2A4F62;
+  --font-sans: 'ServiceNow Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  --font-mono: 'ServiceNow Sans Mono', 'Consolas', monospace;
+  --ew-color: #63DF4E;
+  --er-color: #7661FF;
+  --is-color: #52B8FF;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { height:100%; overflow:hidden; }
+body { font-family:var(--font-sans); background:var(--bg-deep); color:#fff; }
+
+/* Background */
+.bg { position:fixed; inset:0; z-index:0; pointer-events:none; }
+.bg::before { content:''; position:absolute; inset:0;
+  background: radial-gradient(ellipse 800px 600px at 15% 30%, rgba(4,67,85,0.45) 0%, transparent 70%),
+              radial-gradient(ellipse 500px 400px at 85% 20%, rgba(99,223,78,0.03) 0%, transparent 55%),
+              radial-gradient(ellipse 900px 600px at 50% 95%, rgba(3,45,66,0.35) 0%, transparent 60%);
+}
+.bg::after { content:''; position:absolute; inset:0;
+  background-image:radial-gradient(circle, rgba(99,223,78,0.025) 1px, transparent 1px);
+  background-size:28px 28px;
+}
+
+/* Page */
+.page { position:relative; z-index:2; height:100vh; display:flex; flex-direction:column; padding:0 1.25rem; }
+
+/* Header */
+.hdr { display:flex; align-items:center; justify-content:space-between; padding:.6rem 0; flex-shrink:0; border-bottom:1px solid rgba(255,255,255,0.06); }
+.hdr-right { display:flex; gap:.6rem; align-items:center; }
+.pill { background:rgba(99,223,78,.1); color:var(--wasabi); padding:.18rem .55rem; border-radius:999px; font-size:.55rem; font-weight:600; font-family:var(--font-mono); text-transform:uppercase; letter-spacing:.03em; }
+
+.title-row { display:flex; align-items:baseline; gap:.75rem; padding:.35rem 0 .2rem; flex-shrink:0; }
+.title-row h1 { font-size:1rem; font-weight:700; }
+.title-row h1 span { color:var(--wasabi); }
+.title-row p { font-size:.65rem; color:var(--gray-400); font-weight:300; }
+
+/* ====== UNIFIED WRAPPER (large encompassing container) ====== */
+.unified-wrapper {
+  flex:1; min-height:0;
+  margin:.4rem 0;
+  border-radius:16px;
+  border:1.5px solid rgba(99,223,78,0.12);
+  background:linear-gradient(160deg, rgba(99,223,78,0.03) 0%, rgba(82,184,255,0.02) 50%, rgba(118,97,255,0.02) 100%);
+  backdrop-filter:blur(10px);
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  transition:border-color .3s, box-shadow .3s;
+}
+.unified-wrapper:hover { border-color:rgba(99,223,78,0.2); box-shadow:0 0 40px rgba(99,223,78,0.04); }
+
+/* Animated shimmer top border */
+.unified-wrapper::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:2px; z-index:10;
+  background:linear-gradient(90deg, var(--wasabi), var(--bright-blue), var(--bright-purple), var(--wasabi));
+  background-size:200% 100%;
+  animation:shimmer 3s linear infinite;
+}
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+/* Unified header area inside the wrapper */
+.unified-header {
+  padding:.45rem .85rem .35rem;
+  display:flex; align-items:center; gap:.75rem;
+  border-bottom:1px solid rgba(255,255,255,0.04);
+  flex-shrink:0;
+}
+.unified-title { font-size:.65rem; font-weight:700; white-space:nowrap; color:rgba(255,255,255,0.9); }
+.unified-chips { display:flex; gap:.3rem; flex-wrap:wrap; }
+.uchip {
+  font-size:.475rem; font-weight:450; padding:.14rem .4rem; border-radius:999px;
+  background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08);
+  color:var(--gray-400); transition:all .2s;
+}
+.uchip:hover { background:rgba(255,255,255,0.1); border-color:rgba(255,255,255,0.15); }
+
+/* ====== DIAGRAM AREA (inside unified wrapper) ====== */
+.diagram { flex:1; position:relative; min-height:0; }
+
+/* SVG connections layer */
+.connections { position:absolute; inset:0; z-index:1; pointer-events:none; }
+
+/* ====== INSTANCE CARDS ====== */
+.inst {
+  position:absolute; border-radius:12px; overflow:hidden;
+  border:1.5px solid rgba(255,255,255,0.07);
+  background:rgba(255,255,255,0.025);
+  backdrop-filter:blur(8px);
+  transition:border-color .35s var(--ease, ease), box-shadow .35s, transform .35s;
+  z-index:2;
+}
+.inst:hover { box-shadow:0 0 30px rgba(0,0,0,0.3); transform:translateY(-1px); }
+
+/* Instance accent bar */
+.inst-accent { position:absolute; left:0; top:0; bottom:0; width:3px; }
+
+/* Instance header */
+.inst-hdr {
+  padding:.4rem .65rem; display:flex; align-items:center; gap:.45rem; position:relative;
+}
+.inst-hdr::after { content:''; position:absolute; bottom:0; left:.65rem; right:.65rem; height:1px; background:rgba(255,255,255,0.05); }
+.inst-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; animation:pulse 2s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+.inst-name { font-size:.7rem; font-weight:700; }
+.inst-sub { font-size:.5rem; color:var(--gray-400); font-weight:300; }
+
+/* Instance body */
+.inst-body { padding:.3rem .55rem .4rem; }
+.inst-modules { display:flex; gap:.2rem; flex-wrap:wrap; margin-bottom:.25rem; }
+
+.mod {
+  font-size:.525rem; font-weight:500; padding:.17rem .4rem; border-radius:4px;
+  background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.06);
+  cursor:default; transition:all .2s; position:relative;
+}
+.mod:hover { background:rgba(255,255,255,0.1); border-color:rgba(255,255,255,0.15); }
+.mod .tip {
+  display:none; position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%);
+  background:#0a1929; border:1px solid rgba(255,255,255,0.15); border-radius:6px;
+  padding:.45rem .55rem; font-size:.55rem; font-weight:300; color:#ccc;
+  width:175px; z-index:200; line-height:1.35; pointer-events:none;
+  box-shadow:0 8px 24px rgba(0,0,0,0.5);
+}
+.mod .tip::after { content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%); border:5px solid transparent; border-top-color:rgba(255,255,255,0.15); }
+.mod:hover .tip { display:block; }
+
+.lyr {
+  display:flex; align-items:center; gap:.3rem; padding:.2rem .35rem;
+  border-radius:5px; margin-bottom:.15rem; font-size:.55rem; font-weight:400;
+  color:rgba(255,255,255,0.7);
+  background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.03);
+  transition:all .2s; cursor:default;
+}
+.lyr:hover { background:rgba(255,255,255,0.06); border-color:rgba(255,255,255,0.08); }
+.lyr-icon {
+  width:16px; height:16px; min-width:16px; border-radius:3px;
+  background:var(--icon-bg); display:flex; align-items:center; justify-content:center;
+}
+.lyr-icon img { width:9px; height:9px; display:block; }
+.lyr-label { font-size:.525rem; font-weight:500; color:rgba(255,255,255,0.85); }
+.lyr-tag { font-size:.4rem; font-family:var(--font-mono); text-transform:uppercase; color:var(--gray-500); margin-left:auto; letter-spacing:.03em; }
+.lyr-section { font-size:.4rem; font-family:var(--font-mono); text-transform:uppercase; color:rgba(255,255,255,0.2); letter-spacing:.06em; margin:.2rem 0 .1rem .1rem; }
+
+/* ====== CMDB (inside Info Sec) ====== */
+.cmdb-inner-box {
+  border-radius:8px; overflow:hidden;
+  border:1px solid rgba(82,184,255,0.12);
+  background:linear-gradient(135deg, rgba(82,184,255,0.05), rgba(118,97,255,0.03));
+  padding:.3rem .5rem;
+  margin-top:.2rem;
+  position:relative;
+  transition:border-color .3s, box-shadow .3s;
+}
+.cmdb-inner-box:hover { border-color:rgba(82,184,255,0.25); box-shadow:0 0 15px rgba(82,184,255,0.05); }
+.cmdb-inner-box::before {
+  content:''; position:absolute; bottom:0; left:0; right:0; height:1.5px;
+  background:linear-gradient(90deg, var(--bright-blue), var(--bright-indigo), var(--wasabi));
+  background-size:200% 100%; animation:shimmer 4s linear infinite;
+}
+.cmdb-hdr { display:flex; align-items:center; gap:.4rem; }
+.cmdb-label { font-size:.575rem; font-weight:700; }
+.cmdb-sub { font-size:.4rem; color:var(--gray-400); font-weight:300; margin-left:auto; }
+.cmdb-feeds { display:flex; gap:.15rem; margin-left:.3rem; }
+.cmdb-feed { font-size:.35rem; font-family:var(--font-mono); text-transform:uppercase; padding:.08rem .3rem; border-radius:999px; animation:pulse 2s ease-in-out infinite; }
+.cmdb-feed.ew { background:rgba(99,223,78,0.1); color:var(--wasabi); animation-delay:0s; }
+.cmdb-feed.er { background:rgba(118,97,255,0.1); color:var(--bright-indigo); animation-delay:.4s; }
+.cmdb-feed.is { background:rgba(82,184,255,0.1); color:var(--bright-blue); animation-delay:.8s; }
+
+/* ====== FLOW LABELS ====== */
+.flow-label {
+  position:absolute; z-index:5; pointer-events:none;
+  font-size:.425rem; font-family:var(--font-mono); letter-spacing:.02em;
+  color:rgba(255,255,255,0.3); text-transform:uppercase;
+  white-space:nowrap;
+  background:rgba(7,14,26,0.85); padding:.1rem .3rem; border-radius:3px;
+}
+
+/* ====== LEGEND ====== */
+.legend {
+  flex-shrink:0;
+  display:flex; gap:.8rem; align-items:center; justify-content:center;
+  font-size:.5rem; color:var(--gray-500);
+  padding:.3rem 0;
+  border-top:1px solid rgba(255,255,255,0.04);
+}
+.legend-item { display:flex; align-items:center; gap:.25rem; }
+.legend-dot { width:6px; height:6px; border-radius:50%; }
+.legend-dot.ew { background:var(--ew-color); }
+.legend-dot.er { background:var(--er-color); }
+.legend-dot.is { background:var(--is-color); }
+.legend-line { width:1px; height:10px; background:rgba(255,255,255,0.08); }
+
+/* ====== SVG STYLES ====== */
+.conn-path { fill:none; stroke-width:1.5; }
+.conn-path.ew-er { stroke:rgba(99,223,78,0.25); }
+.conn-path.ew-is { stroke:rgba(82,184,255,0.25); }
+.conn-path.er-is { stroke:rgba(191,113,242,0.25); stroke-dasharray:6,4; }
+
+.flow-particle { fill:none; stroke-width:2; stroke-linecap:round; }
+.flow-particle.ew-er { stroke:var(--ew-color); }
+.flow-particle.ew-is { stroke:var(--is-color); }
+.flow-particle.er-is { stroke:var(--bright-purple); }
+
+/* Instance positioning (percentage-based inside diagram) */
+.inst.ew { left:3%; top:2%; width:94%; height:40%; }
+.inst.ew:hover { border-color:rgba(99,223,78,0.25); }
+.inst.ew .inst-accent { background:var(--ew-color); box-shadow:0 0 8px rgba(99,223,78,0.3); }
+.inst.ew .inst-dot { background:var(--ew-color); box-shadow:0 0 6px rgba(99,223,78,0.4); }
+
+.inst.er { left:1%; top:52%; width:44%; height:46%; }
+.inst.er:hover { border-color:rgba(118,97,255,0.25); }
+.inst.er .inst-accent { background:var(--er-color); box-shadow:0 0 8px rgba(118,97,255,0.3); }
+.inst.er .inst-dot { background:var(--er-color); box-shadow:0 0 6px rgba(118,97,255,0.4); }
+
+.inst.is { left:51%; top:52%; width:48%; height:46%; }
+.inst.is:hover { border-color:rgba(82,184,255,0.25); }
+.inst.is .inst-accent { background:var(--is-color); box-shadow:0 0 8px rgba(82,184,255,0.3); }
+.inst.is .inst-dot { background:var(--is-color); box-shadow:0 0 6px rgba(82,184,255,0.4); }
+
+/* Footer */
+.ftr { flex-shrink:0; text-align:center; padding:.2rem; font-size:.45rem; color:rgba(255,255,255,0.12); }
+</style>
+</head>
+<body>
+<div class="bg"></div>
+
+<div class="page">
+  <div class="hdr">
+    <svg xmlns="http://www.w3.org/2000/svg" width="110" height="17" viewBox="0 0 132 20"><path d="M32.022,6.391a5.626,5.626,0,0,0-3.61,1.3V6.523H25.119V19.35h3.425v-8.2a4.073,4.073,0,0,1,3.109-1.588,3.494,3.494,0,0,1,1.374.206V6.479a5.851,5.851,0,0,0-1.005-.088" fill="#ffffff" fill-rule="evenodd"/><path d="M2.16,15.436a5.369,5.369,0,0,0,3.5,1.269c.922,0,1.633-.45,1.633-1.084,0-1.931-6.191-1.243-6.191-5.369,0-2.459,2.371-3.993,4.9-3.993a7.9,7.9,0,0,1,4.32,1.3L8.72,10.04a4.3,4.3,0,0,0-2.45-.872c-.948,0-1.739.37-1.739,1.031,0,1.666,6.192,1.005,6.192,5.448,0,2.46-2.4,3.967-5.085,3.967A8.815,8.815,0,0,1,.5,17.9Z" fill="#ffffff" fill-rule="evenodd"/><path d="M23.657,12.817c0-3.57-2.5-6.558-6.034-6.558-3.794,0-6.218,3.12-6.218,6.691A6.4,6.4,0,0,0,18.1,19.614a6.919,6.919,0,0,0,5.243-2.3l-1.95-1.957a4.515,4.515,0,0,1-3.214,1.481A3.36,3.36,0,0,1,14.725,13.8h8.853A5.735,5.735,0,0,0,23.657,12.817Zm-8.774-1.533a2.775,2.775,0,0,1,2.74-2.248,2.552,2.552,0,0,1,2.53,2.248Z" fill="#ffffff" fill-rule="evenodd"/><polygon points="41.19 14.351 44.694 6.523 48.252 6.523 42.376 19.35 40.005 19.35 34.129 6.523 37.686 6.523 41.19 14.351" fill="#ffffff" fill-rule="evenodd"/><path d="M51.128.5A2.2,2.2,0,1,1,48.888,2.7,2.2,2.2,0,0,1,51.128.5" fill="#ffffff" fill-rule="evenodd"/><rect x="49.415" y="6.523" width="3.425" height="12.827" fill="#ffffff"/><path d="M67,16.731a6.766,6.766,0,0,1-5.8,2.883,6.68,6.68,0,1,1,.026-13.355,6.808,6.808,0,0,1,5.375,2.565l-2.424,2.142a3.7,3.7,0,0,0-2.951-1.534A3.433,3.433,0,0,0,57.78,12.95a3.383,3.383,0,0,0,3.531,3.49,3.741,3.741,0,0,0,3.056-1.692Z" fill="#ffffff" fill-rule="evenodd"/><path d="M79.442,17.313a6.918,6.918,0,0,1-5.243,2.3,6.4,6.4,0,0,1-6.692-6.664c0-3.571,2.424-6.691,6.218-6.691,3.53,0,6.033,2.988,6.033,6.558a5.635,5.635,0,0,1-.079.979H70.826a3.36,3.36,0,0,0,3.452,3.041,4.52,4.52,0,0,0,3.215-1.481Zm-3.188-6.029a2.551,2.551,0,0,0-2.529-2.248,2.774,2.774,0,0,0-2.74,2.248Z" fill="#ffffff" fill-rule="evenodd"/><path d="M81.12,19.35V6.523h3.293V7.554a5.625,5.625,0,0,1,3.609-1.295,5.747,5.747,0,0,1,4.427,2.063,6.482,6.482,0,0,1,1.317,4.5V19.35H90.341v-6.8a3.11,3.11,0,0,0-.764-2.407,2.69,2.69,0,0,0-1.923-.714,4.076,4.076,0,0,0-3.109,1.587V19.35Z" fill="#ffffff" fill-rule="evenodd"/><path d="M102.586,6.259A7.5,7.5,0,0,0,97.419,19.21a1.481,1.481,0,0,0,1.926.1,5.355,5.355,0,0,1,6.394,0,1.485,1.485,0,0,0,1.937-.113,7.5,7.5,0,0,0-5.09-12.94M102.542,17.5a3.637,3.637,0,0,1-3.734-3.733,3.734,3.734,0,1,1,7.468,0,3.637,3.637,0,0,1-3.734,3.733" fill="#62d84e" fill-rule="evenodd"/><polygon points="116.788 19.35 114.237 19.35 109.15 6.523 112.57 6.523 115.359 13.853 118.094 6.523 120.952 6.523 123.662 13.853 126.475 6.523 129.896 6.523 124.809 19.35 122.258 19.35 119.523 12.046 116.788 19.35" fill="#ffffff" fill-rule="evenodd"/><path d="M129.935,17.9h-.289v.543H129.4V16.957h.6a.476.476,0,0,1,.478.478.469.469,0,0,1-.295.432l.338.579h-.268Zm-.289-.219H130a.249.249,0,0,0,0-.5h-.351Z" fill="#ffffff"/><path d="M129.9,16.348a1.379,1.379,0,1,1-1.378,1.379,1.381,1.381,0,0,1,1.378-1.379m0-.218a1.6,1.6,0,1,0,1.6,1.6,1.6,1.6,0,0,0-1.6-1.6Z" fill="#ffffff"/></svg>
+    <div class="hdr-right">
+      <span class="pill">Instance Architecture</span>
+      <span class="pill">3 Production Environments</span>
+    </div>
+  </div>
+
+  <div class="title-row">
+    <h1><span>Multi-instance</span> production architecture</h1>
+    <p>American Express ServiceNow Environment</p>
+  </div>
+
+  <!-- ====== UNIFIED WRAPPER (encompasses all instances) ====== -->
+  <div class="unified-wrapper">
+    <div class="unified-header">
+      <div class="unified-title">Single Enterprise Conversational AI + Portal/Slate Layer</div>
+      <div class="unified-chips">
+        <span class="uchip">Now Assist</span>
+        <span class="uchip">EC Pro Portal</span>
+        <span class="uchip">Slate</span>
+        <span class="uchip">Enterprise Knowledge</span>
+        <span class="uchip">Catalog</span>
+      </div>
+    </div>
+
+    <!-- ====== DIAGRAM (inside unified wrapper) ====== -->
+    <div class="diagram" id="diagram">
+
+      <!-- SVG Connections -->
+      <svg class="connections" id="connSvg" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arr-ew" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="none" stroke="rgba(99,223,78,0.5)" stroke-width="1.5"/></marker>
+          <marker id="arr-is" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="none" stroke="rgba(82,184,255,0.5)" stroke-width="1.5"/></marker>
+          <marker id="arr-zc" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="none" stroke="rgba(191,113,242,0.5)" stroke-width="1.5"/></marker>
+          <marker id="arr-zc-rev" markerWidth="8" markerHeight="6" refX="1" refY="3" orient="auto"><path d="M8,0 L0,3 L8,6" fill="none" stroke="rgba(191,113,242,0.5)" stroke-width="1.5"/></marker>
+        </defs>
+      </svg>
+
+      <!-- ====== EMPLOYEE WORKS ====== -->
+      <div class="inst ew" id="instEW">
+        <div class="inst-accent"></div>
+        <div class="inst-hdr">
+          <div class="inst-dot"></div>
+          <div>
+            <div class="inst-name">Employee Works</div>
+            <div class="inst-sub">EC Pro AMEXPortal &mdash; AMEX Enterprise Environment</div>
+          </div>
+          <span class="pill" style="margin-left:auto;font-size:.4rem;">Primary</span>
+        </div>
+        <div class="inst-body" style="display:flex;gap:.6rem;">
+          <div style="flex:1;min-width:0;">
+            <div class="lyr-section">Application Modules</div>
+            <div class="inst-modules">
+              <div class="mod">HRSD<div class="tip">HR Service Delivery &mdash; employee lifecycle, onboarding, case management</div></div>
+              <div class="mod">WSD<div class="tip">Workplace Service Delivery &mdash; facilities, space planning, workplace requests</div></div>
+              <div class="mod">SOP<div class="tip">Service Operations &mdash; operational procedures and workflow management</div></div>
+              <div class="mod">TPRM<div class="tip">Third-Party Risk Management &mdash; vendor assessment and risk scoring</div></div>
+            </div>
+            <div class="lyr-section">Platform and AI</div>
+            <div class="lyr">
+              <div class="lyr-icon"><img src="data:image/svg+xml;base64,PHN2ZyBpZD0iSWNvbnMiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiB2aWV3Qm94PSIwIDAgMzIgMzIiPjxkZWZzPjxzdHlsZT4uY2xzLTF7ZmlsbDojNjJkODRlO30uY2xzLTJ7ZmlsbDojZmZmO30uY2xzLTN7ZmlsbDpub25lO308L3N0eWxlPjwvZGVmcz48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik0xOCwyMmE2LDYsMCwxLDEtNi02LDYuMjcsNi4yNywwLDAsMSwxLC4wOCwyLjM3LDIuMzcsMCwwLDAtLjE1LjRjLTEuMjgsNC4yMS0yLjE2LDQuMjEtMyw0LjEzbDMuNTIuMzNhNy4zMiw3LjMyLDAsMCwwLDQuNDMtLjY0QTUuNjQsNS42NCwwLDAsMSwxOCwyMloiLz48cGF0aCBjbGFzcz0iY2xzLTIiIGQ9Ik0yNyw0YTEsMSwwLDAsMCwwLDIsMSwxLDAsMCwxLDEsMVYyOWExLDEsMCwwLDEtMSwxSDVhMSwxLDAsMCwxLTEtMVY3QTEsMSwwLDAsMSw1LDZoOC42N2ExLDEsMCwxLDAsMC0ySDVBMywzLDAsMCwwLDIsN1YyOWEzLDMsMCwwLDAsMywzSDI3YTMsMywwLDAsMCwzLTNWN0EzLDMsMCwwLDAsMjcsNFoiLz48cGF0aCBjbGFzcz0iY2xzLTIiIGQ9Ik0xNC4xMiwxMy41OWEzLjksMy45LDAsMCwwLTIuMjQsMi42Yy0xLjA3LDMuNTEtMS42MywzLjQ2LTIsMy40MmwtMS4wNy0uMS0uMDksMWMtLjA2LjYtLjA4Ljg0LjkxLDF2MGguMDZ2LjA2YTQuMjYsNC4yNiwwLDAsMCwuNSwwYy42OC4wOSwxLjY2LjE4LDMuMDcuMzFhMTIuNzMsMTIuNzMsMCwwLDAsMS4zNS4wN2M0LDAsNi4wNi0yLDYuNTItNi4yN0wyNC4yNyw0LjQ0QTMuNSwzLjUsMCwwLDAsMjIuMDkuMmEzLjM3LDMuMzcsMCwwLDAtMi43MS4xOSwzLjUxLDMuNTEsMCwwLDAtMS43NSwyLjE4bC0zLDEwLjg0QTQuNzIsNC43MiwwLDAsMCwxNC4xMiwxMy41OVpNMTkuNTYsMy4xYTEuNSwxLjUsMCwwLDEsLjc0LS45NCwxLjQ0LDEuNDQsMCwwLDEsMS4xMy0uMDgsMS41MSwxLjUxLDAsMCwxLC45MSwxLjgybC0xLjc2LDYuMjhhMTUuNDIsMTUuNDIsMCwwLDAtMi43Ni0uNzdabS0yLjI3LDguMjZhMTMsMTMsMCwwLDEsMi43NS43NkwxOS41MSwxNGExMS40MSwxMS40MSwwLDAsMC0yLjc1LS43MlpNMTkuMDcsMTZjLS40NywzLjI4LTIsNC4yOC01LjY2LDMuOTRsLS44My0uMDhhMTUuODYsMTUuODYsMCwwLDAsMS4yMS0zLjA5LDEuOTIsMS45MiwwLDAsMSwxLjA5LTEuMzNDMTYuMDksMTQuOTQsMTgsMTUuNTIsMTkuMDcsMTZaIi8+PHJlY3QgY2xhc3M9ImNscy0zIiB3aWR0aD0iMzIiIGhlaWdodD0iMzIiLz48L3N2Zz4=" alt=""></div>
+              <span class="lyr-label">App Engine + Creator</span>
+              <span class="lyr-tag">Low-Code</span>
+            </div>
+            <div class="lyr">
+              <div class="lyr-icon"><img src="data:image/svg+xml;base64,PHN2ZyBpZD0iSWNvbnMiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiB2aWV3Qm94PSIwIDAgMzIgMzIiPjxkZWZzPjxzdHlsZT4uY2xzLTEsLmNscy0ze2ZpbGw6bm9uZTt9LmNscy0xe3N0cm9rZTojZmZmO3N0cm9rZS1saW5lY2FwOnJvdW5kO3N0cm9rZS1saW5lam9pbjpyb3VuZDtzdHJva2Utd2lkdGg6MnB4O30uY2xzLTJ7ZmlsbDojNjJkODRlO308L3N0eWxlPjwvZGVmcz48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik0xNSwzMVYyOWEyLDIsMCwwLDAtMi0ySDlhMS44OSwxLjg5LDAsMCwxLTItMlYyMWwtNC0uNzRMNywxNFYxM0ExMS4yMSwxMS4yMSwwLDAsMSwxNi41NiwyLjExLDEwLjgxLDEwLjgxLDAsMCwxLDI5LDEyLjc0YTEyLjM4LDEyLjM4LDAsMCwxLTEuNTMsNS43MkExNy4yMSwxNy4yMSwwLDAsMCwyNS42LDI4Ljg3bC4xNSwxLjA2Ii8+PHBhdGggY2xhc3M9ImNscy0yIiBkPSJNMTksMTZhMSwxLDAsMCwxLTIsMFYxMGExLjA2LDEuMDYsMCwwLDEsMC0uMTksMi41LDIuNSwwLDEsMSwxLjkyLDBBMS4wNiwxLjA2LDAsMCwxLDE5LDEwWm02LjUtMy41QTIuNSwyLjUsMCwxLDAsMjIsMTQuNzl2LjhsLTIuNzEsMi43QTEsMSwwLDAsMCwxOSwxOXYzYTEsMSwwLDAsMCwyLDBWMTkuNDFsMi43MS0yLjdBMSwxLDAsMCwwLDI0LDE2VjE0Ljc5QTIuNTEsMi41MSwwLDAsMCwyNS41LDEyLjVaTTE0LDE1LjU5di0uOGEyLjUsMi41LDAsMSwwLTIsMFYxNmExLDEsMCwwLDAsLjI5LjcxTDE1LDE5LjQxVjIyYTEsMSwwLDAsMCwyLDBWMTlhMSwxLDAsMCwwLS4yOS0uNzFaIi8+PHJlY3QgY2xhc3M9ImNscy0zIiB3aWR0aD0iMzIiIGhlaWdodD0iMzIiLz48L3N2Zz4=" alt=""></div>
+              <span class="lyr-label">Now Assist + AICT</span>
+              <span class="lyr-tag">Gen AI</span>
+            </div>
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div class="lyr-section">Data and Infrastructure</div>
+            <div class="lyr">
+              <div class="lyr-icon"><img src="data:image/svg+xml;base64,PHN2ZyBpZD0iSWNvbnMiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiB2aWV3Qm94PSIwIDAgMzIgMzIiPjxkZWZzPjxzdHlsZT4uY2xzLTF7ZmlsbDojZmZmO30uY2xzLTJ7ZmlsbDojNjJkODRlO30uY2xzLTN7ZmlsbDpub25lO308L3N0eWxlPjwvZGVmcz48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik03LDExYTQsNCwwLDEsMSw0LTRBNCw0LDAsMCwxLDcsMTFaTTcsNUEyLDIsMCwxLDAsOSw3LDIsMiwwLDAsMCw3LDVaIi8+PHBhdGggY2xhc3M9ImNscy0xIiBkPSJNMjUsMjlhNCw0LDAsMSwxLDQtNEE0LDQsMCwwLDEsMjUsMjlabTAtNmEyLDIsMCwxLDAsMiwyQTIsMiwwLDAsMCwyNSwyM1oiLz48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik0yNSwxMmExLDEsMCwwLDEtLjcxLS4yOWwtNC00YTEsMSwwLDAsMSwwLTEuNDJsNC00YTEsMSwwLDAsMSwxLjQyLDBsNCw0YTEsMSwwLDAsMSwwLDEuNDJsLTQsNEExLDEsMCwwLDEsMjUsMTJaTTIyLjQxLDcsMjUsOS41OSwyNy41OSw3LDI1LDQuNDFaIi8+PHBhdGggY2xhc3M9ImNscy0yIiBkPSJNMTUuNTksOGwtLjMuMjlhMSwxLDAsMCwwLDAsMS40MiwxLDEsMCwwLDAsMS40MiwwbDItMmExLDEsMCwwLDAsMC0xLjQybC0yLTJhMSwxLDAsMCwwLTEuNDIsMS40MmwuMy4yOUgxM2ExLDEsMCwwLDAsMCwyWiIvPjxwYXRoIGNsYXNzPSJjbHMtMiIgZD0iTTE5LDI0SDE2LjQxbC4zLS4yOWExLDEsMCwwLDAtMS40Mi0xLjQybC0yLDJhMSwxLDAsMCwwLDAsMS40MmwyLDJhMSwxLDAsMCwwLDEuNDIsMCwxLDEsMCwwLDAsMC0xLjQybC0uMy0uMjlIMTlhMSwxLDAsMCwwLDAtMloiLz48cGF0aCBjbGFzcz0iY2xzLTIiIGQ9Ik0yNy43MSwxNS43OWExLDEsMCwwLDAtMS40MiwwbC0uMjkuM1YxNGExLDEsMCwwLDAtMiwwdjIuMDlsLS4yOS0uM2ExLDEsMCwwLDAtMS40MiwxLjQybDIsMmExLDEsMCwwLDAsMS40MiwwbDItMkExLDEsMCwwLDAsMjcuNzEsMTUuNzlaIi8+PHJlY3QgY2xhc3M9ImNscy0yIiB4PSIzIiB5PSIyMSIgd2lkdGg9IjgiIGhlaWdodD0iOCIgcng9IjEiLz48cmVjdCBjbGFzcz0iY2xzLTMiIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIvPjwvc3ZnPg==" alt=""></div>
+              <span class="lyr-label">Workflow Data Fabric</span>
+              <span class="lyr-tag">Data</span>
+            </div>
+            <div class="lyr">
+              <div class="lyr-icon"><img src="data:image/svg+xml;base64,PHN2ZyBpZD0iSWNvbnMiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiB2aWV3Qm94PSIwIDAgMzIgMzIiPjxkZWZzPjxzdHlsZT4uY2xzLTF7ZmlsbDojNjJkODRlO30uY2xzLTJ7ZmlsbDojZmZmO30uY2xzLTN7ZmlsbDpub25lO308L3N0eWxlPjwvZGVmcz48ZWxsaXBzZSBjbGFzcz0iY2xzLTEiIGN4PSIxNiIgY3k9IjcuMzciIHJ4PSI3IiByeT0iMi42MyIvPjxwYXRoIGNsYXNzPSJjbHMtMiIgZD0iTTI4LDcuNUMyOCwzLjg1LDIyLjczLDEsMTYsMVM0LDMuODUsNCw3LjVWMjYuMjdDNCwyOS41NCw5LjE2LDMyLDE2LDMyczEyLTIuNDYsMTItNS43M1pNMjYsMjB2LjI3QzI2LDIyLDIxLjcyLDI0LDE2LDI0UzYsMjIsNiwyMC4yN1YxNy41MkM4LjExLDE5LDExLjczLDIwLDE2LDIwczcuODktMSwxMC0yLjQ4Wm0wLTZ2LjI3QzI2LDE2LDIxLjcyLDE4LDE2LDE4UzYsMTYsNiwxNC4yN1YxMS4xNEM4LjEzLDEyLjg4LDExLjc4LDE0LDE2LDE0czcuODctMS4xMiwxMC0yLjg2Wk0xNiwzYzUuODksMCwxMCwyLjM3LDEwLDQuNVMyMS44OSwxMiwxNiwxMiw2LDkuNjMsNiw3LjUsMTAuMTEsMywxNiwzWm0wLDI3Yy01LjcyLDAtMTAtMi0xMC0zLjczVjIzLjUyQzguMTEsMjUsMTEuNzMsMjYsMTYsMjZzNy44OS0xLDEwLTIuNDh2Mi43NUMyNiwyOCwyMS43MiwzMCwxNiwzMFoiLz48cmVjdCBjbGFzcz0iY2xzLTMiIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIvPjwvc3ZnPg==" alt=""></div>
+              <span class="lyr-label">RaptorDB Pro + Vault + Veza + Private Peer</span>
+              <span class="lyr-tag">Infra</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====== ENTERPRISE RISK ====== -->
+      <div class="inst er" id="instER">
+        <div class="inst-accent"></div>
+        <div class="inst-hdr">
+          <div class="inst-dot"></div>
+          <div>
+            <div class="inst-name">AMEX Enterprise Risk</div>
+            <div class="inst-sub">Governance, Risk, and Compliance</div>
+          </div>
+        </div>
+        <div class="inst-body">
+          <div class="lyr-section">Application Modules</div>
+          <div class="inst-modules">
+            <div class="mod">IRM Prime<div class="tip">Integrated Risk Management &mdash; enterprise risk identification, assessment, and monitoring</div></div>
+            <div class="mod">BCM<div class="tip">Business Continuity Management &mdash; continuity planning and recovery</div></div>
+            <div class="mod">Privacy<div class="tip">Privacy Management &mdash; data privacy compliance and consent</div></div>
+          </div>
+          <div class="lyr-section">Platform and AI</div>
+          <div class="lyr">
+            <div class="lyr-icon"><img src="data:image/svg+xml;base64,PHN2ZyBpZD0iSWNvbnMiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiB2aWV3Qm94PSIwIDAgMzIgMzIiPjxkZWZzPjxzdHlsZT4uY2xzLTF7ZmlsbDojNjJkODRlO30uY2xzLTJ7ZmlsbDojZmZmO30uY2xzLTN7ZmlsbDpub25lO308L3N0eWxlPjwvZGVmcz48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik0xOCwyMmE2LDYsMCwxLDEtNi02LDYuMjcsNi4yNywwLDAsMSwxLC4wOCwyLjM3LDIuMzcsMCwwLDAtLjE1LjRjLTEuMjgsNC4yMS0yLjE2LDQuMjEtMyw0LjEzbDMuNTIuMzNhNy4zMiw3LjMyLDAsMCwwLDQuNDMtLjY0QTUuNjQsNS42NCwwLDAsMSwxOCwyMloiLz48cGF0aCBjbGFzcz0iY2xzLTIiIGQ9Ik0yNyw0YTEsMSwwLDAsMCwwLDIsMSwxLDAsMCwxLDEsMVYyOWExLDEsMCwwLDEtMSwxSDVhMSwxLDAsMCwxLTEtMVY3QTEsMSwwLDAsMSw1LDZoOC42N2ExLDEsMCwxLDAsMC0ySDVBMywzLDAsMCwwLDIsN1YyOWEzLDMsMCwwLDAsMywzSDI3YTMsMywwLDAsMCwzLTNWN0EzLDMsMCwwLDAsMjcsNFoiLz48cGF0aCBjbGFzcz0iY2xzLTIiIGQ9Ik0xNC4xMiwxMy41OWEzLjksMy45LDAsMCwwLTIuMjQsMi42Yy0xLjA3LDMuNTEtMS42MywzLjQ2LTIsMy40MmwtMS4wNy0uMS0uMDksMWMtLjA2LjYtLjA4Ljg0LjkxLDF2MGguMDZ2LjA2YTQuMjYsNC4yNiwwLDAsMCwuNSwwYy42OC4wOSwxLjY2LjE4LDMuMDcuMzFhMTIuNzMsMTIuNzMsMCwwLDAsMS4zNS4wN2M0LDAsNi4wNi0yLDYuNTItNi4yN0wyNC4yNyw0LjQ0QTMuNSwzLjUsMCwwLDAsMjIuMDkuMmEzLjM3LDMuMzcsMCwwLDAtMi43MS4xOSwzLjUxLDMuNTEsMCwwLDAtMS43NSwyLjE4bC0zLDEwLjg0QTQuNzIsNC43MiwwLDAsMCwxNC4xMiwxMy41OVpNMTkuNTYsMy4xYTEuNSwxLjUsMCwwLDEsLjc0LS45NCwxLjQ0LDEuNDQsMCwwLDEsMS4xMy0uMDgsMS41MSwxLjUxLDAsMCwxLC45MSwxLjgybC0xLjc2LDYuMjhhMTUuNDIsMTUuNDIsMCwwLDAtMi43Ni0uNzdabS0yLjI3LDguMjZhMTMsMTMsMCwwLDEsMi43NS43NkwxOS41MSwxNGExMS40MSwxMS40MSwwLDAsMC0yLjc1LS43MlpNMTkuMDcsMTZjLS40NywzLjI4LTIsNC4yOC01LjY2LDMuOTRsLS44My0uMDhhMTUuODYsMTUuODYsMCwwLDAsMS4yMS0zLjA5LDEuOTIsMS45MiwwLDAsMSwxLjA5LTEuMzNDMTYuMDksMTQuOTQsMTgsMTUuNTIsMTkuMDcsMTZaIi8+PHJlY3QgY2xhc3M9ImNscy0zIiB3aWR0aD0iMzIiIGhlaWdodD0iMzIiLz48L3N2Zz4=" alt=""></div>
+            <span class="lyr-label">App Engine + Creator</span>
+            <span class="lyr-tag">Low-Code</span>
+          </div>
+          <div class="lyr">
+            <div class="lyr-icon"><img src="data:image/svg+xml;base64,PHN2ZyBpZD0iSWNvbnMiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiB2aWV3Qm94PSIwIDAgMzIgMzIiPjxkZWZzPjxzdHlsZT4uY2xzLTEsLmNscy0ze2ZpbGw6bm9uZTt9LmNscy0xe3N0cm9rZTojZmZmO3N0cm9rZS1saW5lY2FwOnJvdW5kO3N0cm9rZS1saW5lam9pbjpyb3VuZDtzdHJva2Utd2lkdGg6MnB4O30uY2xzLTJ7ZmlsbDojNjJkODRlO308L3N0eWxlPjwvZGVmcz48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik0xNSwzMVYyOWEyLDIsMCwwLDAtMi0ySDlhMS44OSwxLjg5LDAsMCwxLTItMlYyMWwtNC0uNzRMNywxNFYxM0ExMS4yMSwxMS4yMSwwLDAsMSwxNi41NiwyLjExLDEwLjgxLDEwLjgxLDAsMCwxLDI5LDEyLjc0YTEyLjM4LDEyLjM4LDAsMCwxLTEuNTMsNS43MkExNy4yMSwxNy4yMSwwLDAsMCwyNS42LDI4Ljg3bC4xNSwxLjA2Ii8+PHBhdGggY2xhc3M9ImNscy0yIiBkPSJNMTksMTZhMSwxLDAsMCwxLTIsMFYxMGExLjA2LDEuMDYsMCwwLDEsMC0uMTksMi41LDIuNSwwLDEsMSwxLjkyLDBBMS4wNiwxLjA2LDAsMCwxLDE5LDEwWm02LjUtMy41QTIuNSwyLjUsMCwxLDAsMjIsMTQuNzl2LjhsLTIuNzEsMi43QTEsMSwwLDAsMCwxOSwxOXYzYTEsMSwwLDAsMCwyLDBWMTkuNDFsMi43MS0yLjdBMSwxLDAsMCwwLDI0LDE2VjE0Ljc5QTIuNTEsMi41MSwwLDAsMCwyNS41LDEyLjVaTTE0LDE1LjU5di0uOGEyLjUsMi41LDAsMSwwLTIsMFYxNmExLDEsMCwwLDAsLjI5LjcxTDE1LDE5LjQxVjIyYTEsMSwwLDAsMCwyLDBWMTlhMSwxLDAsMCwwLS4yOS0uNzFaIi8+PHJlY3QgY2xhc3M9ImNscy0zIiB3aWR0aD0iMzIiIGhlaWdodD0iMzIiLz48L3N2Zz4=" alt=""></div>
+            <span class="lyr-label">Now Assist</span>
+            <span class="lyr-tag">Gen AI</span>
+          </div>
+          <div class="lyr-section">Data and Infrastructure</div>
+          <div class="lyr">
+            <div class="lyr-icon"><img src="data:image/svg+xml;base64,PHN2ZyBpZD0iSWNvbnMiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiB2aWV3Qm94PSIwIDAgMzIgMzIiPjxkZWZzPjxzdHlsZT4uY2xzLTF7ZmlsbDojZmZmO30uY2xzLTJ7ZmlsbDojNjJkODRlO30uY2xzLTN7ZmlsbDpub25lO308L3N0eWxlPjwvZGVmcz48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik03LDExYTQsNCwwLDEsMSw0LTRBNCw0LDAsMCwxLDcsMTFaTTcsNUEyLDIsMCwxLDAsOSw3LDIsMiwwLDAsMCw3LDVaIi8+PHBhdGggY2xhc3M9ImNscy0xIiBkPSJNMjUsMjlhNCw0LDAsMSwxLDQtNEE0LDQsMCwwLDEsMjUsMjlabTAtNmEyLDIsMCwxLDAsMiwyQTIsMiwwLDAsMCwyNSwyM1oiLz48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik0yNSwxMmExLDEsMCwwLDEtLjcxLS4yOWwtNC00YTEsMSwwLDAsMSwwLTEuNDJsNC00YTEsMSwwLDAsMSwxLjQyLDBsNCw0YTEsMSwwLDAsMSwwLDEuNDJsLTQsNEExLDEsMCwwLDEsMjUsMTJaTTIyLjQxLDcsMjUsOS41OSwyNy41OSw3LDI1LDQuNDFaIi8+PHBhdGggY2xhc3M9ImNscy0yIiBkPSJNMTUuNTksOGwtLjMuMjlhMSwxLDAsMCwwLDAsMS40MiwxLDEsMCwwLDAsMS40MiwwbDItMmExLDEsMCwwLDAsMC0xLjQybC0yLTJhMSwxLDAsMCwwLTEuNDIsMS40MmwuMy4yOUgxM2ExLDEsMCwwLDAsMCwyWiIvPjxwYXRoIGNsYXNzPSJjbHMtMiIgZD0iTTE5LDI0SDE2LjQxbC4zLS4yOWExLDEsMCwwLDAtMS40Mi0xLjQybC0yLDJhMSwxLDAsMCwwLDAsMS40MmwyLDJhMSwxLDAsMCwwLDEuNDIsMCwxLDEsMCwwLDAsMC0xLjQybC0uMy0uMjlIMTlhMSwxLDAsMCwwLDAtMloiLz48cGF0aCBjbGFzcz0iY2xzLTIiIGQ9Ik0yNy43MSwxNS43OWExLDEsMCwwLDAtMS40MiwwbC0uMjkuM1YxNGExLDEsMCwwLDAtMiwwdjIuMDlsLS4yOS0uM2ExLDEsMCwwLDAtMS40MiwxLjQybDIsMmExLDEsMCwwLDAsMS40MiwwbDItMkExLDEsMCwwLDAsMjcuNzEsMTUuNzlaIi8+PHJlY3QgY2xhc3M9ImNscy0yIiB4PSIzIiB5PSIyMSIgd2lkdGg9IjgiIGhlaWdodD0iOCIgcng9IjEiLz48cmVjdCBjbGFzcz0iY2xzLTMiIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIvPjwvc3ZnPg==" alt=""></div>
+            <span class="lyr-label">Workflow Data Fabric</span>
+            <span class="lyr-tag">Data</span>
+          </div>
+          <div class="lyr">
+            <div class="lyr-icon"><img src="data:image/svg+xml;base64,PHN2ZyBpZD0iSWNvbnMiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiB2aWV3Qm94PSIwIDAgMzIgMzIiPjxkZWZzPjxzdHlsZT4uY2xzLTF7ZmlsbDojNjJkODRlO30uY2xzLTJ7ZmlsbDojZmZmO30uY2xzLTN7ZmlsbDpub25lO308L3N0eWxlPjwvZGVmcz48ZWxsaXBzZSBjbGFzcz0iY2xzLTEiIGN4PSIxNiIgY3k9IjcuMzciIHJ4PSI3IiByeT0iMi42MyIvPjxwYXRoIGNsYXNzPSJjbHMtMiIgZD0iTTI4LDcuNUMyOCwzLjg1LDIyLjczLDEsMTYsMVM0LDMuODUsNCw3LjVWMjYuMjdDNCwyOS41NCw5LjE2LDMyLDE2LDMyczEyLTIuNDYsMTItNS43M1pNMjYsMjB2LjI3QzI2LDIyLDIxLjcyLDI0LDE2LDI0UzYsMjIsNiwyMC4yN1YxNy41MkM4LjExLDE5LDExLjczLDIwLDE2LDIwczcuODktMSwxMC0yLjQ4Wm0wLTZ2LjI3QzI2LDE2LDIxLjcyLDE4LDE2LDE4UzYsMTYsNiwxNC4yN1YxMS4xNEM4LjEzLDEyLjg4LDExLjc4LDE0LDE2LDE0czcuODctMS4xMiwxMC0yLjg2Wk0xNiwzYzUuODksMCwxMCwyLjM3LDEwLDQuNVMyMS44OSwxMiwxNiwxMiw2LDkuNjMsNiw3LjUsMTAuMTEsMywxNiwzWm0wLDI3Yy01LjcyLDAtMTAtMi0xMC0zLjczVjIzLjUyQzguMTEsMjUsMTEuNzMsMjYsMTYsMjZzNy44OS0xLDEwLTIuNDh2Mi43NUMyNiwyOCwyMS43MiwzMCwxNiwzMFoiLz48cmVjdCBjbGFzcz0iY2xzLTMiIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIvPjwvc3ZnPg==" alt=""></div>
+            <span class="lyr-label">RaptorDB Pro + Vault + Veza + Private Peer</span>
+            <span class="lyr-tag">Infra</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====== INFO SEC / COG ====== -->
+      <div class="inst is" id="instIS">
+        <div class="inst-accent"></div>
+        <div class="inst-hdr">
+          <div class="inst-dot"></div>
+          <div>
+            <div class="inst-name">AMEX Info Sec / COG</div>
+            <div class="inst-sub">Security Operations and IT Management</div>
+          </div>
+        </div>
+        <div class="inst-body">
+          <div class="lyr-section">Application Modules</div>
+          <div class="inst-modules">
+            <div class="mod">ITSM<div class="tip">IT Service Management &mdash; incident, problem, change management</div></div>
+            <div class="mod">ITAM<div class="tip">IT Asset Management &mdash; asset lifecycle and license compliance</div></div>
+            <div class="mod">ITOM<div class="tip">IT Operations Management &mdash; discovery, events, cloud management</div></div>
+            <div class="mod">SIR Pro Plus<div class="tip">Security Incident Response &mdash; threat detection and investigation</div></div>
+            <div class="mod">TPRM<div class="tip">Third-Party Risk &mdash; security vendor risk assessment</div></div>
+            <div class="mod">DW Backend + Assets<div class="tip">Data Warehouse Backend &mdash; centralized reporting and asset tracking</div></div>
+          </div>
+          <div class="lyr-section">Integration</div>
+          <div class="lyr">
+            <div class="lyr-icon"><img src="data:image/svg+xml;base64,PHN2ZyBpZD0iSWNvbnMiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiB2aWV3Qm94PSIwIDAgMzIgMzIiPjxkZWZzPjxzdHlsZT4uY2xzLTF7ZmlsbDojNjJkODRlO30uY2xzLTJ7ZmlsbDojZmZmO30uY2xzLTN7ZmlsbDpub25lO308L3N0eWxlPjwvZGVmcz48Y2lyY2xlIGNsYXNzPSJjbHMtMSIgY3g9IjI2IiBjeT0iMTYiIHI9IjQiLz48cGF0aCBjbGFzcz0iY2xzLTIiIGQ9Ik0yMCwxNmE0LDQsMCwxLDAtNCw0QTQsNCwwLDAsMCwyMCwxNlptLTYsMGEyLDIsMCwxLDEsMiwyQTIsMiwwLDAsMSwxNCwxNloiLz48cGF0aCBjbGFzcz0iY2xzLTIiIGQ9Ik02LDIwYTQsNCwwLDEsMC00LTRBNCw0LDAsMCwwLDYsMjBabTAtNmEyLDIsMCwxLDEtMiwyQTIsMiwwLDAsMSw2LDE0WiIvPjxwYXRoIGNsYXNzPSJjbHMtMiIgZD0iTTI5LjcxLDYuMjlhMSwxLDAsMCwwLTEuNDIsMEwyNyw3LjU5VjVhMywzLDAsMCwwLTMtM0g4QTMsMywwLDAsMCw1LDV2NWExLDEsMCwwLDAsMiwwVjVBMSwxLDAsMCwxLDgsNEgyNGExLDEsMCwwLDEsMSwxVjcuNTlsLTEuMjktMS4zYTEsMSwwLDAsMC0xLjQyLDEuNDJsMywzYTEsMSwwLDAsMCwxLjQyLDBsMy0zQTEsMSwwLDAsMCwyOS43MSw2LjI5WiIvPjxwYXRoIGNsYXNzPSJjbHMtMiIgZD0iTTI2LDIxYTEsMSwwLDAsMC0xLDF2NWExLDEsMCwwLDEtMSwxSDhhMSwxLDAsMCwxLTEtMVYyNC40MWwxLjI5LDEuM2ExLDEsMCwwLDAsMS40MiwwLDEsMSwwLDAsMCwwLTEuNDJsLTMtM2ExLDEsMCwwLDAtMS40MiwwbC0zLDNhMSwxLDAsMCwwLDEuNDIsMS40Mkw1LDI0LjQxVjI3YTMsMywwLDAsMCwzLDNIMjRhMywzLDAsMCwwLDMtM1YyMkExLDEsMCwwLDAsMjYsMjFaIi8+PHJlY3QgY2xhc3M9ImNscy0zIiB3aWR0aD0iMzIiIGhlaWdodD0iMzIiLz48L3N2Zz4=" alt=""></div>
+            <span class="lyr-label">Integration Hub + IDR</span>
+            <span class="lyr-tag">APIs</span>
+          </div>
+          <div class="lyr-section">Infrastructure</div>
+          <div class="lyr">
+            <div class="lyr-icon"><img src="data:image/svg+xml;base64,PHN2ZyBpZD0iSWNvbnMiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiB2aWV3Qm94PSIwIDAgMzIgMzIiPjxkZWZzPjxzdHlsZT4uY2xzLTF7ZmlsbDojNjJkODRlO30uY2xzLTJ7ZmlsbDojZmZmO30uY2xzLTN7ZmlsbDpub25lO308L3N0eWxlPjwvZGVmcz48ZWxsaXBzZSBjbGFzcz0iY2xzLTEiIGN4PSIxNiIgY3k9IjcuMzciIHJ4PSI3IiByeT0iMi42MyIvPjxwYXRoIGNsYXNzPSJjbHMtMiIgZD0iTTI4LDcuNUMyOCwzLjg1LDIyLjczLDEsMTYsMVM0LDMuODUsNCw3LjVWMjYuMjdDNCwyOS41NCw5LjE2LDMyLDE2LDMyczEyLTIuNDYsMTItNS43M1pNMjYsMjB2LjI3QzI2LDIyLDIxLjcyLDI0LDE2LDI0UzYsMjIsNiwyMC4yN1YxNy41MkM4LjExLDE5LDExLjczLDIwLDE2LDIwczcuODktMSwxMC0yLjQ4Wm0wLTZ2LjI3QzI2LDE2LDIxLjcyLDE4LDE2LDE4UzYsMTYsNiwxNC4yN1YxMS4xNEM4LjEzLDEyLjg4LDExLjc4LDE0LDE2LDE0czcuODctMS4xMiwxMC0yLjg2Wk0xNiwzYzUuODksMCwxMCwyLjM3LDEwLDQuNVMyMS44OSwxMiwxNiwxMiw2LDkuNjMsNiw3LjUsMTAuMTEsMywxNiwzWm0wLDI3Yy01LjcyLDAtMTAtMi0xMC0zLjczVjIzLjUyQzguMTEsMjUsMTEuNzMsMjYsMTYsMjZzNy44OS0xLDEwLTIuNDh2Mi43NUMyNiwyOCwyMS43MiwzMCwxNiwzMFoiLz48cmVjdCBjbGFzcz0iY2xzLTMiIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIvPjwvc3ZnPg==" alt=""></div>
+            <span class="lyr-label">RaptorDB Pro + Cloud Encryption</span>
+            <span class="lyr-tag">Infra</span>
+          </div>
+
+          <!-- CMDB inside Info Sec -->
+          <div class="cmdb-inner-box">
+            <div class="cmdb-hdr">
+              <div class="lyr-icon" style="width:18px;height:18px;min-width:18px;border-radius:4px;">
+                <img src="data:image/svg+xml;base64,PHN2ZyBpZD0iSWNvbnMiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiB2aWV3Qm94PSIwIDAgMzIgMzIiPjxkZWZzPjxzdHlsZT4uY2xzLTF7ZmlsbDojZmZmO30uY2xzLTJ7ZmlsbDojNjJkODRlO30uY2xzLTN7ZmlsbDpub25lO308L3N0eWxlPjwvZGVmcz48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik0yOCw4djZhMywzLDAsMCwxLTMsM0gyMFYxNWg1YTEsMSwwLDAsMCwxLTFWOGExLDEsMCwwLDAtMS0xSDE0VjVIMjVBMywzLDAsMCwxLDI4LDhaTTYsMjRWMThhMSwxLDAsMCwxLDEtMWg1VjE1SDdhMywzLDAsMCwwLTMsM3Y2YTMsMywwLDAsMCwzLDNIMTlWMjVIN0ExLDEsMCwwLDEsNiwyNFoiLz48Y2lyY2xlIGNsYXNzPSJjbHMtMiIgY3g9IjEwIiBjeT0iNiIgcj0iNSIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTksOC4wNmEuNjMuNjMsMCwwLDEtLjQ0LS4xOUw3LjEyLDYuNDlhLjQyLjQyLDAsMCwxLDAtLjU5bC4zLS4zQS40Mi40MiwwLDAsMSw4LDUuNkw5LDYuNTQsMy0zYS40Mi40MiwwLDAsMSwuNTksMGwuMy4zYS40Mi40MiwwLDAsMSwwLC41OUw5LjQsNy44N0EuNjcuNjcsMCwwLDEsOSw4LjA2WiIvPjxjaXJjbGUgY2xhc3M9ImNscy0yIiBjeD0iMjMiIGN5PSIyNiIgcj0iNSIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTIyLDI4LjA2YS42My42MywwLDAsMS0uNDQtLjE5bC0xLjM5LTEuMzhhLjQyLjQyLDAsMCwxLDAtLjU5bC4zLS4zYS40Mi40MiwwLDAsMSwuNTksMGwuOTQuOTQsMy0zYS40Mi40MiwwLDAsMSwuNTksMGwuMy4zYS40Mi40MiwwLDAsMSwwLC41OUwyMi40LDI3Ljg3QS42Ny42NywwLDAsMSwyMiwyOC4wNloiLz48Y2lyY2xlIGNsYXNzPSJjbHMtMiIgY3g9IjE2IiBjeT0iMTYiIHI9IjUiLz48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik0xNSwxOC4wNmEuNjMuNjMsMCwwLDEtLjQ0LS4xOWwtMS4zOS0xLjM4YS40Mi40MiwwLDAsMSwwLS41OWwuMy0uM2EuNDIuNDIsMCwwLDEsLjU5LDBsLjk0Ljk0LDMtM2EuNDIuNDIsMCwwLDEsLjU5LDBsLjMuM2EuNDIuNDIsMCwwLDEsMCwuNTlMMTUuNCwxNy44N0EuNjcuNjcsMCwwLDEsMTUsMTguMDZaIi8+PHJlY3QgY2xhc3M9ImNscy0zIiB3aWR0aD0iMzIiIGhlaWdodD0iMzIiLz48L3N2Zz4=" alt="" style="width:10px;height:10px;">
+              </div>
+              <span class="cmdb-label">AMEX CMDB</span>
+              <span class="cmdb-sub">Hosted here &mdash; consumed enterprise-wide</span>
+              <div class="cmdb-feeds">
+                <span class="cmdb-feed ew">EW</span>
+                <span class="cmdb-feed er">ER</span>
+                <span class="cmdb-feed is">IS</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Flow labels (positioned by JS) -->
+      <div class="flow-label" id="lbl-ew-er" style="display:none;">WSD + ITSM + ITAM Tickets/Tasks<br>HRSD + ITSM Tickets/Tasks</div>
+      <div class="flow-label" id="lbl-ew-is" style="display:none;">Security Events + Asset Data</div>
+      <div class="flow-label" id="lbl-er-is" style="display:none;">Zero Copy Connect</div>
+
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot ew"></div>Employee Works</div>
+    <div class="legend-item"><div class="legend-dot er"></div>Enterprise Risk</div>
+    <div class="legend-item"><div class="legend-dot is"></div>Info Sec / COG</div>
+    <div class="legend-line"></div>
+    <div class="legend-item" style="gap:.2rem;"><svg width="20" height="6"><line x1="0" y1="3" x2="20" y2="3" stroke="rgba(191,113,242,0.5)" stroke-width="1.5" stroke-dasharray="4,3"/></svg> Zero Copy Connect</div>
+    <div class="legend-item" style="gap:.2rem;"><svg width="20" height="6"><line x1="0" y1="3" x2="20" y2="3" stroke="rgba(99,223,78,0.3)" stroke-width="1.5"/></svg> Data Flow</div>
+  </div>
+
+  <div class="ftr">&copy; 2026 ServiceNow, Inc. All rights reserved.</div>
+</div>
+
+<script>
+function drawConnections() {
+  const svg = document.getElementById('connSvg');
+  const diagram = document.getElementById('diagram');
+  const dRect = diagram.getBoundingClientRect();
+  svg.setAttribute('width', dRect.width);
+  svg.setAttribute('height', dRect.height);
+
+  function getBox(id) {
+    const el = document.getElementById(id);
+    if (!el) return null;
+    const r = el.getBoundingClientRect();
+    return {
+      left: r.left - dRect.left, top: r.top - dRect.top,
+      right: r.right - dRect.left, bottom: r.bottom - dRect.top,
+      cx: (r.left + r.right) / 2 - dRect.left,
+      cy: (r.top + r.bottom) / 2 - dRect.top,
+      w: r.width, h: r.height
+    };
+  }
+
+  const ew = getBox('instEW');
+  const er = getBox('instER');
+  const is_ = getBox('instIS');
+
+  if (!ew || !er || !is_) return;
+
+  // Preserve defs
+  const defs = svg.querySelector('defs');
+  svg.innerHTML = '';
+  svg.appendChild(defs);
+
+  // Helper: create curved SVG path (cubic bezier)
+  function makeCurvedPath(x1, y1, x2, y2, cls, markerId, curveFactor) {
+    curveFactor = curveFactor || 0.4;
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    // Control points for vertical-dominant curves
+    const cp1x = x1;
+    const cp1y = y1 + dy * curveFactor;
+    const cp2x = x2;
+    const cp2y = y2 - dy * curveFactor;
+    const d = 'M ' + x1 + ',' + y1 + ' C ' + cp1x + ',' + cp1y + ' ' + cp2x + ',' + cp2y + ' ' + x2 + ',' + y2;
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', d);
+    path.setAttribute('class', 'conn-path ' + cls);
+    if (markerId) path.setAttribute('marker-end', 'url(#' + markerId + ')');
+    svg.appendChild(path);
+    return d;
+  }
+
+  // Helper: create horizontal curved path for ER <-> IS
+  function makeHCurvedPath(x1, y1, x2, y2, cls, markerId, offset) {
+    offset = offset || 0;
+    var midX = (x1 + x2) / 2;
+    var curveY = Math.min(y1, y2) - 25 + offset;
+    var d = 'M ' + x1 + ',' + y1 + ' C ' + midX + ',' + curveY + ' ' + midX + ',' + curveY + ' ' + x2 + ',' + y2;
+
+    var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', d);
+    path.setAttribute('class', 'conn-path ' + cls);
+    if (markerId) path.setAttribute('marker-end', 'url(#' + markerId + ')');
+    svg.appendChild(path);
+    return d;
+  }
+
+  // Helper: animated flow particle along a path
+  function makeFlowParticle(pathD, cls, duration, reverse) {
+    var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', pathD);
+    path.setAttribute('class', 'flow-particle ' + cls);
+    path.setAttribute('fill', 'none');
+
+    // Get path length
+    svg.appendChild(path);
+    var len = path.getTotalLength();
+    var dashLen = len * 0.12;
+    var gapLen = len - dashLen;
+
+    path.setAttribute('stroke-dasharray', dashLen + ',' + gapLen);
+
+    var anim = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
+    anim.setAttribute('attributeName', 'stroke-dashoffset');
+    if (reverse) {
+      anim.setAttribute('from', (-len).toString());
+      anim.setAttribute('to', '0');
+    } else {
+      anim.setAttribute('from', '0');
+      anim.setAttribute('to', (-len).toString());
+    }
+    anim.setAttribute('dur', (duration || 2) + 's');
+    anim.setAttribute('repeatCount', 'indefinite');
+    path.appendChild(anim);
+  }
+
+  // ---- Connection: EW -> ER (green, left side) ----
+  var ewErStartX = ew.left + ew.w * 0.25;
+  var ewErStartY = ew.bottom;
+  var ewErEndX = er.cx;
+  var ewErEndY = er.top;
+  var pathEwEr = makeCurvedPath(ewErStartX, ewErStartY, ewErEndX, ewErEndY, 'ew-er', 'arr-ew', 0.45);
+  makeFlowParticle(pathEwEr, 'ew-er', 2.2, false);
+
+  // ---- Connection: EW -> IS (blue, right side) ----
+  var ewIsStartX = ew.left + ew.w * 0.75;
+  var ewIsStartY = ew.bottom;
+  var ewIsEndX = is_.cx;
+  var ewIsEndY = is_.top;
+  var pathEwIs = makeCurvedPath(ewIsStartX, ewIsStartY, ewIsEndX, ewIsEndY, 'ew-is', 'arr-is', 0.45);
+  makeFlowParticle(pathEwIs, 'ew-is', 2.4, false);
+
+  // ---- Connection: ER <-> IS (purple dashed, bidirectional) ----
+  var zcY = (er.cy + is_.cy) / 2;
+  var erRightX = er.right;
+  var isLeftX = is_.left;
+  // Forward path (ER -> IS)
+  var pathErIsF = makeHCurvedPath(erRightX, zcY - 2, isLeftX, zcY - 2, 'er-is', 'arr-zc', 0);
+  makeFlowParticle(pathErIsF, 'er-is', 2.5, false);
+  // Reverse path (IS -> ER)
+  var pathErIsR = makeHCurvedPath(isLeftX, zcY + 2, erRightX, zcY + 2, 'er-is', 'arr-zc-rev', 10);
+  makeFlowParticle(pathErIsR, 'er-is', 2.8, false);
+
+  // ---- Position flow labels ----
+  var lblEwEr = document.getElementById('lbl-ew-er');
+  lblEwEr.style.display = 'block';
+  lblEwEr.style.left = (Math.min(ewErStartX, ewErEndX) - 35) + 'px';
+  lblEwEr.style.top = ((ewErStartY + ewErEndY) / 2 - 8) + 'px';
+
+  var lblEwIs = document.getElementById('lbl-ew-is');
+  lblEwIs.style.display = 'block';
+  lblEwIs.style.left = (Math.max(ewIsStartX, ewIsEndX) + 8) + 'px';
+  lblEwIs.style.top = ((ewIsStartY + ewIsEndY) / 2 - 4) + 'px';
+
+  var lblErIs = document.getElementById('lbl-er-is');
+  lblErIs.style.display = 'block';
+  lblErIs.style.left = ((erRightX + isLeftX) / 2 - 38) + 'px';
+  lblErIs.style.top = (zcY - 32) + 'px';
+}
+
+window.addEventListener('load', function() { setTimeout(drawConnections, 120); });
+window.addEventListener('resize', drawConnections);
+</script>
+</body>
+</html>
