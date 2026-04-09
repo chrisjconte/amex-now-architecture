@@ -227,12 +227,12 @@ body { font-family:var(--font-sans); background:var(--bg-deep); color:#fff; }
 .inst.ew .inst-accent { background:var(--ew-color); box-shadow:0 0 8px rgba(99,223,78,0.3); }
 .inst.ew .inst-dot { background:var(--ew-color); box-shadow:0 0 6px rgba(99,223,78,0.4); }
 
-.inst.er { left:2%; top:55%; width:44%; height:43%; }
+.inst.er { left:2%; top:50%; width:40%; height:48%; }
 .inst.er:hover { border-color:rgba(118,97,255,0.25); }
 .inst.er .inst-accent { background:var(--er-color); box-shadow:0 0 8px rgba(118,97,255,0.3); }
 .inst.er .inst-dot { background:var(--er-color); box-shadow:0 0 6px rgba(118,97,255,0.4); }
 
-.inst.is { left:52%; top:55%; width:46%; height:43%; }
+.inst.is { left:58%; top:50%; width:40%; height:48%; }
 .inst.is:hover { border-color:rgba(82,184,255,0.25); }
 .inst.is .inst-accent { background:var(--is-color); box-shadow:0 0 8px rgba(82,184,255,0.3); }
 .inst.is .inst-dot { background:var(--is-color); box-shadow:0 0 6px rgba(82,184,255,0.4); }
@@ -490,40 +490,30 @@ function drawConnections() {
   }
 
   // ════════════════════════════════════════════════
-  // UPSIDE-DOWN T: Zero Copy Connect (solid lines, no animation)
+  // Zero Copy Connect: horizontal bidirectional arrow between ER and IS
+  // Sits in the gap between the two bottom boxes
   // ════════════════════════════════════════════════
 
-  var tCenterX = ew.cx;
-  var tBarY = gapTop + (gapBot - gapTop) * 0.45;  // Bar slightly above center of gap
-  var tLeftX = er.cx;
-  var tRightX = is_.cx;
+  var zcY = er.cy;  // Vertically centered on the bottom boxes
+  var zcLeft = er.right + 6;
+  var zcRight = is_.left - 6;
+  var zcMidX = (zcLeft + zcRight) / 2;
 
-  // Vertical stem: EW bottom center → bar
-  makeLine(tCenterX, gapTop, tCenterX, tBarY, 'er-is', null);
+  // Bidirectional horizontal line (ER → IS and IS → ER)
+  makeLine(zcLeft, zcY, zcRight, zcY, 'er-is', 'arr-zc');
+  // Reverse arrowhead on the left end
+  makeLine(zcRight, zcY, zcLeft, zcY, 'er-is', 'arr-zc-rev');
 
-  // Horizontal bar: left to right
-  makeLine(tLeftX, tBarY, tRightX, tBarY, 'er-is', null);
-
-  // Left drop: bar → ER top
-  makeLine(tLeftX, tBarY, tLeftX, gapBot, 'er-is', 'arr-ew');
-
-  // Right drop: bar → IS top
-  makeLine(tRightX, tBarY, tRightX, gapBot, 'er-is', 'arr-is');
-
-  // ════════════════════════════════════════════════
-  // LABELS
-  // ════════════════════════════════════════════════
-
-  // Hide the data flow labels (no longer have those lines)
+  // Hide unused labels
   document.getElementById('lbl-ew-er').style.display = 'none';
   document.getElementById('lbl-ew-is').style.display = 'none';
 
-  // Zero Copy Connect label: centered on the horizontal bar of the T
+  // Zero Copy Connect label: centered below the arrow in the gap
   var lblErIs = document.getElementById('lbl-er-is');
   lblErIs.style.display = 'block';
-  lblErIs.style.left = Math.round(tCenterX) + 'px';
+  lblErIs.style.left = Math.round(zcMidX) + 'px';
   lblErIs.style.transform = 'translateX(-50%)';
-  lblErIs.style.top = Math.round(tBarY + 4) + 'px';
+  lblErIs.style.top = Math.round(zcY + 8) + 'px';
 }
 
 window.addEventListener('load', function() { setTimeout(drawConnections, 120); });
