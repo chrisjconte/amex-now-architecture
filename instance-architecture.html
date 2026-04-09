@@ -479,17 +479,14 @@ function drawConnections() {
   var is_ = getBox('instIS');
   if (!ew || !er || !is_) return;
 
-  // Preserve defs, clear everything else
   var defs = svg.querySelector('defs');
   svg.innerHTML = '';
   svg.appendChild(defs);
 
-  // The gap between EW bottom and ER/IS top
   var gapTop = ew.bottom;
   var gapBot = Math.min(er.top, is_.top);
   var gapMid = (gapTop + gapBot) / 2;
 
-  // ── Helper: straight line ──
   function makeLine(x1, y1, x2, y2, cls, markerId) {
     var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
     line.setAttribute('x1', x1); line.setAttribute('y1', y1);
@@ -497,12 +494,11 @@ function drawConnections() {
     line.setAttribute('class', 'conn-path ' + cls);
     if (markerId) line.setAttribute('marker-end', 'url(#' + markerId + ')');
     svg.appendChild(line);
-    return line;
   }
 
-  // ── Helper: animated particle on a straight line ──
   function makeParticle(x1, y1, x2, y2, cls, dur) {
     var len = Math.sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
+    if (len < 1) return;
     var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
     line.setAttribute('x1', x1); line.setAttribute('y1', y1);
     line.setAttribute('x2', x2); line.setAttribute('y2', y2);
@@ -518,62 +514,84 @@ function drawConnections() {
     svg.appendChild(line);
   }
 
-  // ═══ EW → ER: two straight dashed lines (left side) ═══
-  // Line 1: from EW ~30% across bottom, down to ER ~40% across top
-  var ew_er_x1 = ew.left + ew.w * 0.22;
-  var er_x1 = er.left + er.w * 0.35;
-  makeLine(ew_er_x1, gapTop, er_x1, gapBot, 'ew-er', 'arr-ew');
-  makeParticle(ew_er_x1, gapTop, er_x1, gapBot, 'ew-er', 2.0);
+  // ════════════════════════════════════════════════
+  // UPSIDE-DOWN T: Zero Copy Connect
+  // Vertical stem from EW center bottom → horizontal bar → left to ER, right to IS
+  // ════════════════════════════════════════════════
 
-  // Line 2: offset right, from EW ~38% to ER ~65%
-  var ew_er_x2 = ew.left + ew.w * 0.32;
-  var er_x2 = er.left + er.w * 0.65;
-  makeLine(ew_er_x2, gapTop, er_x2, gapBot, 'ew-er', 'arr-ew');
-  makeParticle(ew_er_x2, gapTop, er_x2, gapBot, 'ew-er', 2.3);
+  var tCenterX = ew.cx;
+  var tBarY = gapMid;                        // Horizontal bar sits at gap midpoint
+  var tLeftX = er.left + er.w * 0.5;         // Left end: center of ER
+  var tRightX = is_.left + is_.w * 0.5;      // Right end: center of IS
 
-  // ═══ EW → IS: two straight dashed lines (right side) ═══
-  // Line 1: from EW ~68% to IS ~35%
-  var ew_is_x1 = ew.left + ew.w * 0.68;
-  var is_x1 = is_.left + is_.w * 0.3;
-  makeLine(ew_is_x1, gapTop, is_x1, gapBot, 'ew-is', 'arr-is');
-  makeParticle(ew_is_x1, gapTop, is_x1, gapBot, 'ew-is', 2.1);
+  // Vertical stem: EW bottom center → bar
+  makeLine(tCenterX, gapTop, tCenterX, tBarY, 'er-is', null);
+  makeParticle(tCenterX, gapTop, tCenterX, tBarY, 'er-is', 1.8);
 
-  // Line 2: from EW ~78% to IS ~55%
-  var ew_is_x2 = ew.left + ew.w * 0.78;
-  var is_x2 = is_.left + is_.w * 0.55;
-  makeLine(ew_is_x2, gapTop, is_x2, gapBot, 'ew-is', 'arr-is');
-  makeParticle(ew_is_x2, gapTop, is_x2, gapBot, 'ew-is', 2.4);
+  // Horizontal bar: left to right
+  makeLine(tLeftX, tBarY, tRightX, tBarY, 'er-is', null);
+  makeParticle(tLeftX, tBarY, tRightX, tBarY, 'er-is', 2.2);
+  makeParticle(tRightX, tBarY, tLeftX, tBarY, 'er-is', 2.5);
 
-  // ═══ ER ↔ IS: Zero Copy Connect (horizontal between boxes) ═══
-  var zcY = er.top + er.h * 0.92;
-  var zcLeft = er.right + 4;
-  var zcRight = is_.left - 4;
-  // Bidirectional: forward
-  makeLine(zcLeft, zcY, zcRight, zcY, 'er-is', 'arr-zc');
-  makeParticle(zcLeft, zcY - 1.5, zcRight, zcY - 1.5, 'er-is', 2.5);
-  // Bidirectional: reverse
-  makeParticle(zcRight, zcY + 1.5, zcLeft, zcY + 1.5, 'er-is', 2.8);
+  // Left drop: bar → ER top
+  makeLine(tLeftX, tBarY, tLeftX, gapBot, 'er-is', 'arr-ew');
+  makeParticle(tLeftX, tBarY, tLeftX, gapBot, 'er-is', 1.2);
 
-  // ═══ Position labels cleanly in the gap ═══
-  // EW→ER label: left side of the gap
+  // Right drop: bar → IS top
+  makeLine(tRightX, tBarY, tRightX, gapBot, 'er-is', 'arr-is');
+  makeParticle(tRightX, tBarY, tRightX, gapBot, 'er-is', 1.2);
+
+  // ════════════════════════════════════════════════
+  // DATA FLOW LINES: dashed lines from EW to ER (left side)
+  // ════════════════════════════════════════════════
+
+  var flowX1 = ew.left + ew.w * 0.18;
+  var flowX1end = er.left + er.w * 0.25;
+  makeLine(flowX1, gapTop, flowX1end, gapBot, 'ew-er', 'arr-ew');
+  makeParticle(flowX1, gapTop, flowX1end, gapBot, 'ew-er', 2.0);
+
+  var flowX2 = ew.left + ew.w * 0.28;
+  var flowX2end = er.left + er.w * 0.5;
+  makeLine(flowX2, gapTop, flowX2end, gapBot, 'ew-er', 'arr-ew');
+  makeParticle(flowX2, gapTop, flowX2end, gapBot, 'ew-er', 2.3);
+
+  // ════════════════════════════════════════════════
+  // DATA FLOW LINES: dashed lines from EW to IS (right side)
+  // ════════════════════════════════════════════════
+
+  var flowRX1 = ew.left + ew.w * 0.72;
+  var flowRX1end = is_.left + is_.w * 0.25;
+  makeLine(flowRX1, gapTop, flowRX1end, gapBot, 'ew-is', 'arr-is');
+  makeParticle(flowRX1, gapTop, flowRX1end, gapBot, 'ew-is', 2.1);
+
+  var flowRX2 = ew.left + ew.w * 0.82;
+  var flowRX2end = is_.left + is_.w * 0.7;
+  makeLine(flowRX2, gapTop, flowRX2end, gapBot, 'ew-is', 'arr-is');
+  makeParticle(flowRX2, gapTop, flowRX2end, gapBot, 'ew-is', 2.4);
+
+  // ════════════════════════════════════════════════
+  // LABELS — all positioned in the gap, nothing overlapping boxes
+  // ════════════════════════════════════════════════
+
+  // EW→ER label: far left in gap
   var lblEwEr = document.getElementById('lbl-ew-er');
   lblEwEr.style.display = 'block';
-  lblEwEr.style.left = Math.round(ew.left + ew.w * 0.04) + 'px';
-  lblEwEr.style.top = Math.round(gapMid - 10) + 'px';
+  lblEwEr.style.left = Math.round(ew.left + 4) + 'px';
+  lblEwEr.style.top = Math.round(gapTop + 3) + 'px';
 
-  // EW→IS label: right side of the gap
+  // EW→IS label: far right in gap
   var lblEwIs = document.getElementById('lbl-ew-is');
   lblEwIs.style.display = 'block';
-  lblEwIs.style.right = Math.round(dRect.width - ew.right + ew.w * 0.04) + 'px';
   lblEwIs.style.left = 'auto';
-  lblEwIs.style.top = Math.round(gapMid - 5) + 'px';
+  lblEwIs.style.right = Math.round(dRect.width - ew.right + 4) + 'px';
+  lblEwIs.style.top = Math.round(gapTop + 3) + 'px';
 
-  // Zero Copy Connect label: centered between ER and IS, below the line
+  // Zero Copy Connect label: centered on the horizontal bar of the T
   var lblErIs = document.getElementById('lbl-er-is');
   lblErIs.style.display = 'block';
-  var zcMidX = (zcLeft + zcRight) / 2;
-  lblErIs.style.left = Math.round(zcMidX - 55) + 'px';
-  lblErIs.style.top = Math.round(zcY + 6) + 'px';
+  lblErIs.style.left = Math.round(tCenterX) + 'px';
+  lblErIs.style.transform = 'translateX(-50%)';
+  lblErIs.style.top = Math.round(tBarY + 4) + 'px';
 }
 
 window.addEventListener('load', function() { setTimeout(drawConnections, 120); });
