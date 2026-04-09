@@ -545,48 +545,77 @@ function drawConnections() {
     path.appendChild(anim);
   }
 
-  // ---- Connection: EW -> ER (green, left side) ----
-  var ewErStartX = ew.left + ew.w * 0.25;
-  var ewErStartY = ew.bottom;
-  var ewErEndX = er.cx;
-  var ewErEndY = er.top;
-  var pathEwEr = makeCurvedPath(ewErStartX, ewErStartY, ewErEndX, ewErEndY, 'ew-er', 'arr-ew', 0.45);
-  makeFlowParticle(pathEwEr, 'ew-er', 2.2, false);
+  // ════ THREE-PRONG JUNCTION ════
+  // Central hub point between all three instances
+  var hubX = (er.right + is_.left) / 2;
+  var hubY = (ew.bottom + Math.min(er.top, is_.top)) / 2;
 
-  // ---- Connection: EW -> IS (blue, right side) ----
-  var ewIsStartX = ew.left + ew.w * 0.75;
-  var ewIsStartY = ew.bottom;
-  var ewIsEndX = is_.cx;
-  var ewIsEndY = is_.top;
-  var pathEwIs = makeCurvedPath(ewIsStartX, ewIsStartY, ewIsEndX, ewIsEndY, 'ew-is', 'arr-is', 0.45);
-  makeFlowParticle(pathEwIs, 'ew-is', 2.4, false);
+  // Hub dot (small circle at junction)
+  var hubDot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  hubDot.setAttribute('cx', hubX); hubDot.setAttribute('cy', hubY);
+  hubDot.setAttribute('r', 4);
+  hubDot.setAttribute('fill', 'rgba(191,113,242,0.6)');
+  hubDot.setAttribute('stroke', 'rgba(191,113,242,0.3)');
+  hubDot.setAttribute('stroke-width', '6');
+  // Pulsing glow
+  var hubAnim = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
+  hubAnim.setAttribute('attributeName', 'stroke-width');
+  hubAnim.setAttribute('values', '6;10;6');
+  hubAnim.setAttribute('dur', '2s');
+  hubAnim.setAttribute('repeatCount', 'indefinite');
+  hubDot.appendChild(hubAnim);
+  svg.appendChild(hubDot);
 
-  // ---- Connection: ER <-> IS (purple dashed, bidirectional) ----
-  var zcY = (er.cy + is_.cy) / 2;
-  var erRightX = er.right;
-  var isLeftX = is_.left;
-  // Forward path (ER -> IS)
-  var pathErIsF = makeHCurvedPath(erRightX, zcY - 2, isLeftX, zcY - 2, 'er-is', 'arr-zc', 0);
-  makeFlowParticle(pathErIsF, 'er-is', 2.5, false);
-  // Reverse path (IS -> ER)
-  var pathErIsR = makeHCurvedPath(isLeftX, zcY + 2, erRightX, zcY + 2, 'er-is', 'arr-zc-rev', 10);
-  makeFlowParticle(pathErIsR, 'er-is', 2.8, false);
+  // ── Prong 1: EW down to hub ──
+  var ewStartX = ew.cx;
+  var ewStartY = ew.bottom;
+  var pathEwHub = makeCurvedPath(ewStartX, ewStartY, hubX, hubY, 'ew-er', null, 0.5);
+  makeFlowParticle(pathEwHub, 'ew-er', 1.8, false);
 
-  // ---- Position flow labels ----
+  // ── Prong 2: hub left to ER ──
+  var erEndX = er.right;
+  var erEndY = er.top + er.h * 0.3;
+  var d2 = 'M ' + hubX + ',' + hubY + ' C ' + (hubX - (hubX - erEndX)*0.3) + ',' + hubY + ' ' + erEndX + ',' + (erEndY - (erEndY - hubY)*0.3) + ' ' + erEndX + ',' + erEndY;
+  var p2 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  p2.setAttribute('d', d2);
+  p2.setAttribute('class', 'conn-path ew-er');
+  p2.setAttribute('marker-end', 'url(#arr-ew)');
+  svg.appendChild(p2);
+  makeFlowParticle(d2, 'ew-er', 1.6, false);
+
+  // ── Prong 3: hub right to IS ──
+  var isEndX = is_.left;
+  var isEndY = is_.top + is_.h * 0.3;
+  var d3 = 'M ' + hubX + ',' + hubY + ' C ' + (hubX + (isEndX - hubX)*0.3) + ',' + hubY + ' ' + isEndX + ',' + (isEndY - (isEndY - hubY)*0.3) + ' ' + isEndX + ',' + isEndY;
+  var p3 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  p3.setAttribute('d', d3);
+  p3.setAttribute('class', 'conn-path ew-is');
+  p3.setAttribute('marker-end', 'url(#arr-is)');
+  svg.appendChild(p3);
+  makeFlowParticle(d3, 'ew-is', 1.6, false);
+
+  // ── Zero Copy Connect: ER <-> IS (dashed, below hub) ──
+  var zcY = er.top + er.h * 0.55;
+  var zcPathF = makeHCurvedPath(er.right, zcY - 2, is_.left, zcY - 2, 'er-is', 'arr-zc', 0);
+  makeFlowParticle(zcPathF, 'er-is', 2.5, false);
+  var zcPathR = makeHCurvedPath(is_.left, zcY + 2, er.right, zcY + 2, 'er-is', 'arr-zc-rev', 10);
+  makeFlowParticle(zcPathR, 'er-is', 2.8, false);
+
+  // ── Position flow labels ──
   var lblEwEr = document.getElementById('lbl-ew-er');
   lblEwEr.style.display = 'block';
-  lblEwEr.style.left = (Math.min(ewErStartX, ewErEndX) - 35) + 'px';
-  lblEwEr.style.top = ((ewErStartY + ewErEndY) / 2 - 8) + 'px';
+  lblEwEr.style.left = (Math.min(hubX, erEndX) - 50) + 'px';
+  lblEwEr.style.top = ((hubY + erEndY) / 2 - 12) + 'px';
 
   var lblEwIs = document.getElementById('lbl-ew-is');
   lblEwIs.style.display = 'block';
-  lblEwIs.style.left = (Math.max(ewIsStartX, ewIsEndX) + 8) + 'px';
-  lblEwIs.style.top = ((ewIsStartY + ewIsEndY) / 2 - 4) + 'px';
+  lblEwIs.style.left = (Math.max(hubX, isEndX) + 8) + 'px';
+  lblEwIs.style.top = ((hubY + isEndY) / 2 - 8) + 'px';
 
   var lblErIs = document.getElementById('lbl-er-is');
   lblErIs.style.display = 'block';
-  lblErIs.style.left = ((erRightX + isLeftX) / 2 - 38) + 'px';
-  lblErIs.style.top = (zcY - 32) + 'px';
+  lblErIs.style.left = (hubX - 42) + 'px';
+  lblErIs.style.top = (zcY - 22) + 'px';
 }
 
 window.addEventListener('load', function() { setTimeout(drawConnections, 120); });
