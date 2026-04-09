@@ -542,49 +542,12 @@ function drawConnections() {
   makeParticle(tRightX, tBarY, tRightX, gapBot, 'er-is', 1.2);
 
   // ════════════════════════════════════════════════
-  // DATA FLOW LINES: dashed lines from EW to ER (left side)
+  // LABELS
   // ════════════════════════════════════════════════
 
-  var flowX1 = ew.left + ew.w * 0.18;
-  var flowX1end = er.left + er.w * 0.25;
-  makeLine(flowX1, gapTop, flowX1end, gapBot, 'ew-er', 'arr-ew');
-  makeParticle(flowX1, gapTop, flowX1end, gapBot, 'ew-er', 2.0);
-
-  var flowX2 = ew.left + ew.w * 0.28;
-  var flowX2end = er.left + er.w * 0.5;
-  makeLine(flowX2, gapTop, flowX2end, gapBot, 'ew-er', 'arr-ew');
-  makeParticle(flowX2, gapTop, flowX2end, gapBot, 'ew-er', 2.3);
-
-  // ════════════════════════════════════════════════
-  // DATA FLOW LINES: dashed lines from EW to IS (right side)
-  // ════════════════════════════════════════════════
-
-  var flowRX1 = ew.left + ew.w * 0.72;
-  var flowRX1end = is_.left + is_.w * 0.25;
-  makeLine(flowRX1, gapTop, flowRX1end, gapBot, 'ew-is', 'arr-is');
-  makeParticle(flowRX1, gapTop, flowRX1end, gapBot, 'ew-is', 2.1);
-
-  var flowRX2 = ew.left + ew.w * 0.82;
-  var flowRX2end = is_.left + is_.w * 0.7;
-  makeLine(flowRX2, gapTop, flowRX2end, gapBot, 'ew-is', 'arr-is');
-  makeParticle(flowRX2, gapTop, flowRX2end, gapBot, 'ew-is', 2.4);
-
-  // ════════════════════════════════════════════════
-  // LABELS — all positioned in the gap, nothing overlapping boxes
-  // ════════════════════════════════════════════════
-
-  // EW→ER label: far left in gap
-  var lblEwEr = document.getElementById('lbl-ew-er');
-  lblEwEr.style.display = 'block';
-  lblEwEr.style.left = Math.round(ew.left + 4) + 'px';
-  lblEwEr.style.top = Math.round(gapTop + 3) + 'px';
-
-  // EW→IS label: far right in gap
-  var lblEwIs = document.getElementById('lbl-ew-is');
-  lblEwIs.style.display = 'block';
-  lblEwIs.style.left = 'auto';
-  lblEwIs.style.right = Math.round(dRect.width - ew.right + 4) + 'px';
-  lblEwIs.style.top = Math.round(gapTop + 3) + 'px';
+  // Hide the data flow labels (no longer have those lines)
+  document.getElementById('lbl-ew-er').style.display = 'none';
+  document.getElementById('lbl-ew-is').style.display = 'none';
 
   // Zero Copy Connect label: centered on the horizontal bar of the T
   var lblErIs = document.getElementById('lbl-er-is');
