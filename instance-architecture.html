@@ -453,7 +453,7 @@ body[data-version="hybrid"] .cp.zcc-glow{stroke:rgba(82,184,255,.55);filter:drop
     <span class="scenario-chip" data-scenario="hr-case">HR Case Flow</span>
     <span class="scenario-chip" data-scenario="workplace">Workplace Request</span>
     <span class="scenario-chip" data-scenario="security">Security Incident</span>
-    <span class="scenario-chip" data-scenario="risk">Risk Assessment</span>
+    <span class="scenario-chip" data-scenario="risk">Supplier Onboarding</span>
     <span class="scenario-desc" id="scenario-desc"></span>
   </div>
 
@@ -630,11 +630,13 @@ body[data-version="hybrid"] .cp.zcc-glow{stroke:rgba(82,184,255,.55);filter:drop
       ]
     },
     'risk': {
-      desc: 'TPRM flags a vendor risk, Workflow Data Fabric federates the signal, IRM assesses and BCM plans continuity.',
+      desc: 'Procurement requests a new supplier; TPRM screens third-party risk; Workflow Data Fabric federates the signal to Enterprise Risk where IRM assesses and BCM plans continuity.',
       steps: [
-        {from: 'ew-tprm',  to: 'zcc-hub',  label: 'Vendor risk signal'},
-        {from: 'zcc-hub',  to: 'er-irm',   label: 'Assess risk'},
-        {from: 'er-irm',   to: 'er-bcm',   label: 'Continuity plan'}
+        {from: 'ew-catalog', to: 'ew-sop',   label: 'Supplier requested'},
+        {from: 'ew-sop',     to: 'ew-tprm',  label: 'Screen third-party risk'},
+        {from: 'ew-tprm',    to: 'zcc-hub',  label: 'Federate via WDF'},
+        {from: 'zcc-hub',    to: 'er-irm',   label: 'Assess enterprise risk'},
+        {from: 'er-irm',     to: 'er-bcm',   label: 'Plan continuity'}
       ]
     }
   };
@@ -728,30 +730,45 @@ body[data-version="hybrid"] .cp.zcc-glow{stroke:rgba(82,184,255,.55);filter:drop
     flowPaths = []; flowLabels = [];
   }
 
+  // Return the point on `box`'s rectangular edge lying on the ray from box center to (tx, ty).
+  function edgeAnchor(box, tx, ty) {
+    var dx = tx - box.cx, dy = ty - box.cy;
+    if (dx === 0 && dy === 0) return {x: box.cx, y: box.cy};
+    var halfW = box.w / 2, halfH = box.h / 2;
+    var sx = Math.abs(dx) > 0.0001 ? halfW / Math.abs(dx) : Infinity;
+    var sy = Math.abs(dy) > 0.0001 ? halfH / Math.abs(dy) : Infinity;
+    var s = Math.min(sx, sy);
+    return {x: box.cx + dx * s, y: box.cy + dy * s};
+  }
+
   function drawFlow(steps) {
     clearFlowRender();
     if (!svg || !diagram) return;
+
+    var cX = dR.width / 2, cY = dR.height / 2;
+    var CURVE = 28; // uniform perpendicular offset for every step
 
     steps.forEach(function(step, i) {
       var a = getBox(step.from);
       var b = getBox(step.to);
       if (!a || !b) return;
 
-      // Anchor on card edges rather than centers so labels sit between elements
-      var ax = a.cx, ay = a.cy, bx = b.cx, by = b.cy;
-      var dx = bx - ax, dy = by - ay;
-      // Nudge endpoints slightly inside each box so the line doesn't terminate on the box edge awkwardly
-      var ctrlX = (ax + bx) / 2;
-      // Curve upward if both boxes are at similar y (horizontal flow); downward if from is above to
-      var curveAmt = Math.min(60, Math.abs(dx) * 0.15);
-      var ctrlY = Math.min(ay, by) - curveAmt;
-      // If they're vertically stacked (dy significant and dx small), bend sideways instead
-      if (Math.abs(dx) < 40 && Math.abs(dy) > 40) {
-        ctrlX = ax + (ax > dR.width / 2 ? -40 : 40);
-        ctrlY = (ay + by) / 2;
-      }
+      // Edge-anchored endpoints (line terminates on each box's border, not center)
+      var p1 = edgeAnchor(a, b.cx, b.cy);
+      var p2 = edgeAnchor(b, a.cx, a.cy);
 
-      var d = 'M' + ax + ',' + ay + ' Q' + ctrlX + ',' + ctrlY + ' ' + bx + ',' + by;
+      // Uniform curve: perpendicular to chord, bowing away from diagram center
+      var mx = (p1.x + p2.x) / 2, my = (p1.y + p2.y) / 2;
+      var chordX = p2.x - p1.x, chordY = p2.y - p1.y;
+      var len = Math.sqrt(chordX * chordX + chordY * chordY) || 1;
+      var perpX = -chordY / len, perpY = chordX / len;
+      var outwardDot = perpX * (mx - cX) + perpY * (my - cY);
+      var sign = outwardDot >= 0 ? 1 : -1;
+      var amt = Math.min(CURVE, len * 0.25);
+      var ctrlX = mx + perpX * sign * amt;
+      var ctrlY = my + perpY * sign * amt;
+
+      var d = 'M' + p1.x + ',' + p1.y + ' Q' + ctrlX + ',' + ctrlY + ' ' + p2.x + ',' + p2.y;
 
       var halo = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       halo.setAttribute('d', d);
@@ -766,13 +783,13 @@ body[data-version="hybrid"] .cp.zcc-glow{stroke:rgba(82,184,255,.55);filter:drop
       svg.appendChild(p);
       flowPaths.push(p);
 
-      // Midpoint of the quadratic at t=0.5: (a + 2*ctrl + b) / 4
-      var mx = (ax + 2 * ctrlX + bx) / 4;
-      var my = (ay + 2 * ctrlY + by) / 4;
+      // Quadratic curve midpoint: (p1 + 2*ctrl + p2) / 4
+      var lmx = (p1.x + 2 * ctrlX + p2.x) / 4;
+      var lmy = (p1.y + 2 * ctrlY + p2.y) / 4;
       var label = document.createElement('div');
       label.className = 'flow-label';
-      label.style.left = mx + 'px';
-      label.style.top = my + 'px';
+      label.style.left = lmx + 'px';
+      label.style.top = lmy + 'px';
       label.style.animationDelay = (0.15 + i * 0.15) + 's';
       label.innerHTML = '<span class="flow-badge">' + (i + 1) + '</span>' + step.label;
       diagram.appendChild(label);
