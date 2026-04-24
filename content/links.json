@@ -1,73 +1,39 @@
 {
   "_schema": {
-    "description": "Source of truth for ServiceNow documentation links surfaced in the AMEX instance architecture diagram. Keys match diagram element IDs (see amex-instance-architecture.html).",
+    "description": "Source of truth for ServiceNow documentation links surfaced in the AMEX instance architecture diagram. Each entry may declare 'aliases' — a list of diagram element IDs that should reuse the same content.",
     "entry_shape": {
       "name": "Display name",
+      "eyebrow": "Section label shown above the title",
       "tagline": "1-sentence hero headline",
       "summary": "2-3 sentence overview",
-      "hero_image": "Absolute image URL",
-      "stats": [
-        {
-          "value": "30K+",
-          "label": "hours saved"
-        }
-      ],
-      "feature_cards": [
-        {
-          "title": "...",
-          "description": "..."
-        }
-      ],
-      "key_capabilities": [
-        "bullet",
-        "..."
-      ],
+      "hero_image": "Absolute image URL or null",
+      "stats": [{"value": "30K+", "label": "hours saved"}],
+      "feature_cards": [{"title": "...", "description": "..."}],
+      "key_capabilities": ["bullet", "..."],
       "official_url": "servicenow.com product page",
-      "docs_url": "servicenow.com/docs/",
-      "sources": [
-        "urls used during scrape"
-      ]
+      "docs_url": "australia-release docs bundle",
+      "aliases": ["alt element IDs"],
+      "sources": ["urls used during scrape"]
     }
   },
-  "instances": {},
-  "portal": {},
+
   "modules": {
     "ew-hrsd": {
       "name": "HR Service Delivery",
+      "eyebrow": "Application Module",
       "tagline": "Streamline HR workflows, boost productivity, and improve employee satisfaction with AI agents across the full employee lifecycle.",
       "summary": "HR Service Delivery reduces repetitive tasks and improves employee productivity by leveraging AI agents that handle requests and automate workflows from hiring to exit. The platform frees HR teams to focus on strategic, human-centered work while employees gain instant access to answers and services through an AI-powered front door.",
       "hero_image": "https://www.servicenow.com/content/dam/servicenow-assets/public/en-us/images/ds-backgrounds/hrsd-marquee.sm.png",
       "stats": [
-        {
-          "value": "30K+",
-          "label": "hours saved per year"
-        },
-        {
-          "value": "76%",
-          "label": "self-service deflection"
-        },
-        {
-          "value": "80%",
-          "label": "HR agent efficiency lift"
-        }
+        {"value": "30K+", "label": "hours saved per year"},
+        {"value": "76%", "label": "self-service deflection"},
+        {"value": "80%", "label": "HR agent efficiency lift"}
       ],
       "feature_cards": [
-        {
-          "title": "AI Front Door",
-          "description": "Give employees a next-gen AI experience to get answers and take action instantly — no tickets, no waiting."
-        },
-        {
-          "title": "Agentic Self-Service",
-          "description": "One place to search, ask, speak, or type. AI handles repetitive tasks so your team focuses on meaningful work."
-        },
-        {
-          "title": "Manager Productivity",
-          "description": "Managers get a single place to run tasks, team approvals, and growth conversations with help from AI agents."
-        },
-        {
-          "title": "HR Agent Productivity",
-          "description": "HR teams resolve cases fast, with AI agents handling routine requests and escalating only the complex ones."
-        }
+        {"title": "AI Front Door", "description": "Give employees a next-gen AI experience to get answers and take action instantly — no tickets, no waiting."},
+        {"title": "Agentic Self-Service", "description": "One place to search, ask, speak, or type. AI handles repetitive tasks so your team focuses on meaningful work."},
+        {"title": "Manager Productivity", "description": "Managers get a single place to run tasks, team approvals, and growth conversations with help from AI agents."},
+        {"title": "HR Agent Productivity", "description": "HR teams resolve cases fast, with AI agents handling routine requests and escalating only the complex ones."}
       ],
       "key_capabilities": [
         "AI agents automate requests across employee lifecycle",
@@ -79,46 +45,24 @@
       ],
       "official_url": "https://www.servicenow.com/products/hr-service-delivery.html",
       "docs_url": "https://www.servicenow.com/docs/bundle/australia-hr-service-delivery",
-      "sources": [
-        "https://www.servicenow.com/products/hr-service-delivery.html"
-      ]
+      "sources": ["https://www.servicenow.com/products/hr-service-delivery.html"]
     },
     "ew-wsd": {
       "name": "Workplace Service Delivery",
+      "eyebrow": "Application Module",
       "tagline": "Automate and simplify workplace tasks for a smooth-running, connected employee experience.",
       "summary": "Workplace Service Delivery unifies workplace data and processes across disconnected systems. It brings employee engagement and facilities workflows together on a single platform, offering integrated insights and automated actions powered by AI to support business growth.",
       "hero_image": "https://www.servicenow.com/content/dam/servicenow-assets/public/en-us/images/ds-backgrounds/wsd-marquee.sm.jpg",
       "stats": [
-        {
-          "value": "550%",
-          "label": "increase in weekly desk bookings"
-        },
-        {
-          "value": "4.35M",
-          "label": "reservations booked in 12 months"
-        },
-        {
-          "value": "18K",
-          "label": "team members on optimized scheduling"
-        }
+        {"value": "550%", "label": "increase in weekly desk bookings"},
+        {"value": "4.35M", "label": "reservations booked in 12 months"},
+        {"value": "18K", "label": "team members on optimized scheduling"}
       ],
       "feature_cards": [
-        {
-          "title": "Space Planning",
-          "description": "Right-size your space with AI insights. Optimize your real estate portfolio with proactive trend and usage data."
-        },
-        {
-          "title": "Operational Efficiency",
-          "description": "Streamline workplace service requests and maintenance. Automate tasks via schedules, sensors, and asset conditions."
-        },
-        {
-          "title": "Reservations & Scheduling",
-          "description": "Reduce booking friction with AI-driven insights. Improve office resource utilization and employee experience."
-        },
-        {
-          "title": "Health & Safety Management",
-          "description": "Minimize avoidable risk with simplified assessment and monitoring. Employees report concerns easily; hazards stay visible."
-        }
+        {"title": "Space Planning", "description": "Right-size your space with AI insights. Optimize your real estate portfolio with proactive trend and usage data."},
+        {"title": "Operational Efficiency", "description": "Streamline workplace service requests and maintenance. Automate tasks via schedules, sensors, and asset conditions."},
+        {"title": "Reservations & Scheduling", "description": "Reduce booking friction with AI-driven insights. Improve office resource utilization and employee experience."},
+        {"title": "Health & Safety Management", "description": "Minimize avoidable risk with simplified assessment and monitoring. Employees report concerns easily; hazards stay visible."}
       ],
       "key_capabilities": [
         "AI-powered workplace agents and automation",
@@ -130,46 +74,24 @@
       ],
       "official_url": "https://www.servicenow.com/products/workplace-service-delivery.html",
       "docs_url": "https://www.servicenow.com/docs/bundle/australia-workplace-service-delivery",
-      "sources": [
-        "https://www.servicenow.com/products/workplace-service-delivery.html"
-      ]
+      "sources": ["https://www.servicenow.com/products/workplace-service-delivery.html"]
     },
     "ew-sop": {
       "name": "Source-to-Pay Operations",
+      "eyebrow": "Application Module",
       "tagline": "Automate procurement workflows end-to-end with AI.",
       "summary": "Source-to-Pay Operations reduces manual work across sourcing and purchasing processes, freeing teams to focus on strategic priorities like price negotiation and cost optimization through AI-powered automation.",
       "hero_image": "https://www.servicenow.com/content/dam/servicenow-assets/public/en-us/images/ds-backgrounds/marquee-spo.sm.jpg",
       "stats": [
-        {
-          "value": "50%",
-          "label": "faster supplier onboarding"
-        },
-        {
-          "value": "50%",
-          "label": "shorter procurement cycle"
-        },
-        {
-          "value": "18x",
-          "label": "hard-savings improvement over 4 years"
-        }
+        {"value": "50%", "label": "faster supplier onboarding"},
+        {"value": "50%", "label": "shorter procurement cycle"},
+        {"value": "18x", "label": "hard-savings improvement over 4 years"}
       ],
       "feature_cards": [
-        {
-          "title": "Source-to-Contract",
-          "description": "AI agents gather requirements and surface savings opportunities while accelerating vendor onboarding without manual intervention."
-        },
-        {
-          "title": "Procure-to-Pay",
-          "description": "Streamline purchasing with guided workflows, intelligent approvals, and automated invoice processing at scale."
-        },
-        {
-          "title": "Supplier Relationship Management",
-          "description": "Reduce manual work in vendor onboarding, management, and offboarding while tracking performance metrics centrally."
-        },
-        {
-          "title": "Autonomous Orchestration",
-          "description": "End-to-end process automation across teams and systems — before, between, and after transactions."
-        }
+        {"title": "Source-to-Contract", "description": "AI agents gather requirements and surface savings opportunities while accelerating vendor onboarding without manual intervention."},
+        {"title": "Procure-to-Pay", "description": "Streamline purchasing with guided workflows, intelligent approvals, and automated invoice processing at scale."},
+        {"title": "Supplier Relationship Management", "description": "Reduce manual work in vendor onboarding, management, and offboarding while tracking performance metrics centrally."},
+        {"title": "Autonomous Orchestration", "description": "End-to-end process automation across teams and systems — before, between, and after transactions."}
       ],
       "key_capabilities": [
         "AI agent-driven task automation across procurement",
@@ -181,33 +103,20 @@
       ],
       "official_url": "https://www.servicenow.com/products/source-to-pay.html",
       "docs_url": "https://www.servicenow.com/docs/bundle/australia-source-to-pay",
-      "sources": [
-        "https://www.servicenow.com/products/source-to-pay.html"
-      ]
+      "sources": ["https://www.servicenow.com/products/source-to-pay.html"]
     },
     "ew-tprm": {
       "name": "Third-Party Risk Management",
+      "eyebrow": "Application Module",
       "tagline": "Take control of the third-party risk lifecycle, from onboarding to retirement.",
       "summary": "Third-Party Risk Management helps organizations continuously monitor critical vendors to evaluate, mitigate, and remediate risks. Centralize vendor management in one location and transform assessment processes with automation and intelligence.",
       "hero_image": "https://www.servicenow.com/content/dam/servicenow-assets/public/en-us/images/ds-backgrounds/marquee-tprm.sm.png",
       "stats": [],
       "feature_cards": [
-        {
-          "title": "Onboarding, Offboarding & Renewals",
-          "description": "Perform due diligence and assessments at all relationship stages with automated built-in processes."
-        },
-        {
-          "title": "Risk Intelligence & Monitoring",
-          "description": "Integrate targeted risk intelligence scores and ratings for continuous insights across your vendor ecosystem."
-        },
-        {
-          "title": "Third-Party Portal",
-          "description": "Connect and collaborate with third parties in a single location for all risk management activities."
-        },
-        {
-          "title": "Portfolio Management",
-          "description": "Eliminate spreadsheets with a centralized database for third-party information and concentration risk mapping."
-        }
+        {"title": "Onboarding, Offboarding & Renewals", "description": "Perform due diligence and assessments at all relationship stages with automated built-in processes."},
+        {"title": "Risk Intelligence & Monitoring", "description": "Integrate targeted risk intelligence scores and ratings for continuous insights across your vendor ecosystem."},
+        {"title": "Third-Party Portal", "description": "Connect and collaborate with third parties in a single location for all risk management activities."},
+        {"title": "Portfolio Management", "description": "Eliminate spreadsheets with a centralized database for third-party information and concentration risk mapping."}
       ],
       "key_capabilities": [
         "Automated due diligence workflows",
@@ -219,42 +128,24 @@
       ],
       "official_url": "https://www.servicenow.com/products/third-party-risk-management.html",
       "docs_url": "https://www.servicenow.com/docs/bundle/australia-third-party-risk-management",
-      "sources": [
-        "https://www.servicenow.com/products/third-party-risk-management.html"
-      ]
+      "aliases": ["is-tprm"],
+      "sources": ["https://www.servicenow.com/products/third-party-risk-management.html"]
     },
     "er-irm": {
       "name": "Integrated Risk Management",
+      "eyebrow": "Application Module",
       "tagline": "Make risk-informed decisions and increase efficiency with real-time intelligence and automated workflows.",
       "summary": "Integrated Risk Management operationalizes risk and resilience across your enterprise on a single platform. Continuously monitor risks and controls while automating compliance workflows, enabling organizations to manage governance, risk, and compliance strategies with confidence and efficiency.",
       "hero_image": "https://www.servicenow.com/content/dam/servicenow-assets/public/en-us/images/ds-backgrounds/marquee-irm.sm.png",
       "stats": [
-        {
-          "value": "Real-time",
-          "label": "enterprise resilience visibility"
-        },
-        {
-          "value": "Automated",
-          "label": "cross-functional workflows"
-        }
+        {"value": "Real-time", "label": "enterprise resilience visibility"},
+        {"value": "Automated", "label": "cross-functional workflows"}
       ],
       "feature_cards": [
-        {
-          "title": "Policy & Compliance Management",
-          "description": "Automate and manage policy lifecycles while continuously monitoring for compliance across your organization."
-        },
-        {
-          "title": "Risk Management",
-          "description": "Enable fine-grained business impact analysis to prioritize and respond to identified risks."
-        },
-        {
-          "title": "Operational Resilience Management",
-          "description": "Gain real-time visibility into the resilience of your technology, people, processes, and facilities."
-        },
-        {
-          "title": "Audit Management",
-          "description": "Use risk data to scope and prioritize audit plans while automating cross-functional processes."
-        }
+        {"title": "Policy & Compliance Management", "description": "Automate and manage policy lifecycles while continuously monitoring for compliance across your organization."},
+        {"title": "Risk Management", "description": "Enable fine-grained business impact analysis to prioritize and respond to identified risks."},
+        {"title": "Operational Resilience Management", "description": "Gain real-time visibility into the resilience of your technology, people, processes, and facilities."},
+        {"title": "Audit Management", "description": "Use risk data to scope and prioritize audit plans while automating cross-functional processes."}
       ],
       "key_capabilities": [
         "Continuous monitoring and regulatory change insights",
@@ -266,33 +157,20 @@
       ],
       "official_url": "https://www.servicenow.com/products/integrated-risk-management.html",
       "docs_url": "https://www.servicenow.com/docs/bundle/australia-integrated-risk-management",
-      "sources": [
-        "https://www.servicenow.com/products/integrated-risk-management.html"
-      ]
+      "sources": ["https://www.servicenow.com/products/integrated-risk-management.html"]
     },
     "er-bcm": {
       "name": "Business Continuity Management",
+      "eyebrow": "Application Module",
       "tagline": "Plan, exercise, and recover from disasters effectively with enterprise automation.",
       "summary": "Business Continuity Management enables organizations to harmonize business continuity, disaster recovery, and crisis management through real-time integration with the ServiceNow CMDB. Build automated workflows and implement recovery strategies for any disruption.",
       "hero_image": "https://www.servicenow.com/content/dam/servicenow-assets/public/en-us/images/ds-backgrounds/marquee-bcm.sm.png",
       "stats": [],
       "feature_cards": [
-        {
-          "title": "Business Impact Analysis",
-          "description": "Find and prioritize business services to produce recovery time and point objectives (RTO and RPO)."
-        },
-        {
-          "title": "Exercise Management",
-          "description": "Practice recovery plans during normal operations to assess preparedness and identify planning gaps."
-        },
-        {
-          "title": "Crisis Management",
-          "description": "Activate continuity plans and monitor ongoing completion of recovery tasks during a crisis event in real time."
-        },
-        {
-          "title": "Emergency Mass Notifications",
-          "description": "Send emergency communications quickly through 25+ channels including email, text, and phone."
-        }
+        {"title": "Business Impact Analysis", "description": "Find and prioritize business services to produce recovery time and point objectives (RTO and RPO)."},
+        {"title": "Exercise Management", "description": "Practice recovery plans during normal operations to assess preparedness and identify planning gaps."},
+        {"title": "Crisis Management", "description": "Activate continuity plans and monitor ongoing completion of recovery tasks during a crisis event in real time."},
+        {"title": "Emergency Mass Notifications", "description": "Send emergency communications quickly through 25+ channels including email, text, and phone."}
       ],
       "key_capabilities": [
         "Continuity planning with automated workflows",
@@ -304,33 +182,20 @@
       ],
       "official_url": "https://www.servicenow.com/products/business-continuity-management.html",
       "docs_url": "https://www.servicenow.com/docs/bundle/australia-business-continuity-management",
-      "sources": [
-        "https://www.servicenow.com/products/business-continuity-management.html"
-      ]
+      "sources": ["https://www.servicenow.com/products/business-continuity-management.html"]
     },
     "er-privacy": {
       "name": "Privacy Management",
+      "eyebrow": "Application Module",
       "tagline": "Turn privacy complexity into operational control on a single unified platform.",
       "summary": "Privacy Management unifies privacy risk, compliance, and operations to help organizations meet regulatory deadlines, stay audit-ready, and build customer trust. AI accelerates assessments and ongoing compliance activities while providing real-time visibility into privacy risks across the enterprise.",
       "hero_image": "https://www.servicenow.com/content/dam/servicenow-assets/public/en-us/images/ds-backgrounds/marquee-privacy-management.sm.jpg",
       "stats": [],
       "feature_cards": [
-        {
-          "title": "Compliance Management",
-          "description": "Map obligations across jurisdictions, monitor regulatory changes, and generate compliance evidence instantly."
-        },
-        {
-          "title": "Privacy Operations",
-          "description": "Automate assessments, maintain records of processing activities, and embed privacy controls across the enterprise."
-        },
-        {
-          "title": "Risk Management",
-          "description": "Identify, prioritize, and remediate privacy risks with automated workflows and continuous monitoring."
-        },
-        {
-          "title": "Data Subject Rights",
-          "description": "Automate DSAR fulfillment and meet regulatory deadlines without increasing operational overhead."
-        }
+        {"title": "Compliance Management", "description": "Map obligations across jurisdictions, monitor regulatory changes, and generate compliance evidence instantly."},
+        {"title": "Privacy Operations", "description": "Automate assessments, maintain records of processing activities, and embed privacy controls across the enterprise."},
+        {"title": "Risk Management", "description": "Identify, prioritize, and remediate privacy risks with automated workflows and continuous monitoring."},
+        {"title": "Data Subject Rights", "description": "Automate DSAR fulfillment and meet regulatory deadlines without increasing operational overhead."}
       ],
       "key_capabilities": [
         "Real-time privacy risk visibility and monitoring",
@@ -342,46 +207,24 @@
       ],
       "official_url": "https://www.servicenow.com/products/privacy-management.html",
       "docs_url": "https://www.servicenow.com/docs/bundle/australia-privacy-management",
-      "sources": [
-        "https://www.servicenow.com/products/privacy-management.html"
-      ]
+      "sources": ["https://www.servicenow.com/products/privacy-management.html"]
     },
     "is-itsm": {
       "name": "IT Service Management",
+      "eyebrow": "Application Module",
       "tagline": "Align IT service management with ITIL standards to manage access, availability, and fulfill service requests at scale.",
       "summary": "ServiceNow ITSM intelligently delivers resilient enterprise IT services on a unified AI platform. It combines people, processes, and workflows to boost IT productivity and create exceptional employee experiences through automation and real-time insights.",
       "hero_image": "https://www.servicenow.com/content/dam/servicenow-assets/public/en-us/images/ds-og-images/it-service-managment-og.jpg",
       "stats": [
-        {
-          "value": "92%",
-          "label": "MTTR improvement on P1 incidents"
-        },
-        {
-          "value": "≤10 min",
-          "label": "saved per request with Now Assist"
-        },
-        {
-          "value": "87%",
-          "label": "increase in self-service rate"
-        }
+        {"value": "92%", "label": "MTTR improvement on P1 incidents"},
+        {"value": "≤10 min", "label": "saved per request with Now Assist"},
+        {"value": "87%", "label": "increase in self-service rate"}
       ],
       "feature_cards": [
-        {
-          "title": "Resilient IT Services",
-          "description": "Keep IT services responsive and scalable using AI agents and performance analytics to autonomously complete tasks."
-        },
-        {
-          "title": "Staff Productivity",
-          "description": "Unify people, data, and workflows with automated incident routing and intelligent AI recommendations."
-        },
-        {
-          "title": "24/7 Employee Support",
-          "description": "Round-the-clock IT support via a mobile-friendly portal and AI Voice Agent, with AI search and assistive capabilities."
-        },
-        {
-          "title": "Single-Platform Transformation",
-          "description": "Unite AI agents, data, and workflows on one enterprise-grade platform built for scale and trust."
-        }
+        {"title": "Resilient IT Services", "description": "Keep IT services responsive and scalable using AI agents and performance analytics to autonomously complete tasks."},
+        {"title": "Staff Productivity", "description": "Unify people, data, and workflows with automated incident routing and intelligent AI recommendations."},
+        {"title": "24/7 Employee Support", "description": "Round-the-clock IT support via a mobile-friendly portal and AI Voice Agent, with AI search and assistive capabilities."},
+        {"title": "Single-Platform Transformation", "description": "Unite AI agents, data, and workflows on one enterprise-grade platform built for scale and trust."}
       ],
       "key_capabilities": [
         "Incident management and faster resolution",
@@ -393,46 +236,24 @@
       ],
       "official_url": "https://www.servicenow.com/products/itsm.html",
       "docs_url": "https://www.servicenow.com/docs/bundle/australia-it-service-management",
-      "sources": [
-        "https://www.servicenow.com/products/itsm.html"
-      ]
+      "sources": ["https://www.servicenow.com/products/itsm.html"]
     },
     "is-itam": {
       "name": "IT Asset Management",
+      "eyebrow": "Application Module",
       "tagline": "Automate the end-to-end lifecycle for software, hardware, and cloud assets to optimize costs while reducing risk.",
       "summary": "IT Asset Management runs on the ServiceNow AI Platform to automate the full asset lifecycle. AI Agents automate tasks from planning to end-of-life to improve data accuracy across contracts, costs, and compliance. ITAM connects to catalogs, CMDB, and procurement for real-time visibility.",
       "hero_image": "https://www.servicenow.com/content/dam/servicenow-assets/public/en-us/images/ds-backgrounds/marquee-itam.sm.jpg",
       "stats": [
-        {
-          "value": "50%",
-          "label": "faster upgrade times"
-        },
-        {
-          "value": "$1M",
-          "label": "anticipated annual hardware savings"
-        },
-        {
-          "value": "160K+",
-          "label": "pieces of equipment managed"
-        }
+        {"value": "50%", "label": "faster upgrade times"},
+        {"value": "$1M", "label": "anticipated annual hardware savings"},
+        {"value": "160K+", "label": "pieces of equipment managed"}
       ],
       "feature_cards": [
-        {
-          "title": "Lifecycle Management",
-          "description": "Automate tracking, usage, and retirement of IT assets. Maximize value, reduce risk, and maintain compliance."
-        },
-        {
-          "title": "Audit Readiness",
-          "description": "Maintain comprehensive, accurate asset and license records. Respond quickly and demonstrate compliance."
-        },
-        {
-          "title": "Cloud FinOps",
-          "description": "Automate cloud cost tracking and forecasting. Use real-time insights for smarter multicloud decisions."
-        },
-        {
-          "title": "Inventory Management",
-          "description": "Improve inventory accuracy and reduce loss. Track, receive, and manage assets with AI agents."
-        }
+        {"title": "Lifecycle Management", "description": "Automate tracking, usage, and retirement of IT assets. Maximize value, reduce risk, and maintain compliance."},
+        {"title": "Audit Readiness", "description": "Maintain comprehensive, accurate asset and license records. Respond quickly and demonstrate compliance."},
+        {"title": "Cloud FinOps", "description": "Automate cloud cost tracking and forecasting. Use real-time insights for smarter multicloud decisions."},
+        {"title": "Inventory Management", "description": "Improve inventory accuracy and reduce loss. Track, receive, and manage assets with AI agents."}
       ],
       "key_capabilities": [
         "Real-time visibility across all IT assets",
@@ -444,46 +265,24 @@
       ],
       "official_url": "https://www.servicenow.com/products/it-asset-management.html",
       "docs_url": "https://www.servicenow.com/docs/bundle/australia-it-asset-management",
-      "sources": [
-        "https://www.servicenow.com/products/it-asset-management.html"
-      ]
+      "sources": ["https://www.servicenow.com/products/it-asset-management.html"]
     },
     "is-itom": {
       "name": "IT Operations Management",
+      "eyebrow": "Application Module",
       "tagline": "Stop chasing outages and incidents with AIOps that provides insight and autonomous resolution.",
       "summary": "ServiceNow ITOM modernizes IT operations by federating signals from systems and services to find unknown issues before they become incidents. It integrates natively with ITSM to deliver resilient digital operations across hybrid and cloud environments.",
       "hero_image": "https://www.servicenow.com/content/dam/servicenow-assets/public/en-us/images/ds-og-images/itom-og.jpg",
       "stats": [
-        {
-          "value": "92%",
-          "label": "improvement in MTTR"
-        },
-        {
-          "value": "100%",
-          "label": "uninterrupted operations in stores"
-        },
-        {
-          "value": "40%",
-          "label": "reduction in major incidents"
-        }
+        {"value": "92%", "label": "improvement in MTTR"},
+        {"value": "100%", "label": "uninterrupted operations in stores"},
+        {"value": "40%", "label": "reduction in major incidents"}
       ],
       "feature_cards": [
-        {
-          "title": "Dynamic Service Mapping",
-          "description": "Auto-build dynamic service maps with the Common Services Data Model to provide business context across hybrid and cloud."
-        },
-        {
-          "title": "Event Intelligence",
-          "description": "Correlate and de-duplicate alerts across monitoring tools using AIOps to reduce noise and prioritize actionable incidents."
-        },
-        {
-          "title": "Agentic Remediation",
-          "description": "Reduce repeat incidents — identify root cause patterns and trigger orchestrated workflows automatically."
-        },
-        {
-          "title": "Change Impact Analysis",
-          "description": "Schedule service changes with confidence by seeing downstream impact before you commit."
-        }
+        {"title": "Dynamic Service Mapping", "description": "Auto-build dynamic service maps with the Common Services Data Model to provide business context across hybrid and cloud."},
+        {"title": "Event Intelligence", "description": "Correlate and de-duplicate alerts across monitoring tools using AIOps to reduce noise and prioritize actionable incidents."},
+        {"title": "Agentic Remediation", "description": "Reduce repeat incidents — identify root cause patterns and trigger orchestrated workflows automatically."},
+        {"title": "Change Impact Analysis", "description": "Schedule service changes with confidence by seeing downstream impact before you commit."}
       ],
       "key_capabilities": [
         "Real-time service health and anomaly detection",
@@ -495,33 +294,20 @@
       ],
       "official_url": "https://www.servicenow.com/products/it-operations-management.html",
       "docs_url": "https://www.servicenow.com/docs/bundle/australia-it-operations-management",
-      "sources": [
-        "https://www.servicenow.com/products/it-operations-management.html"
-      ]
+      "sources": ["https://www.servicenow.com/products/it-operations-management.html"]
     },
     "is-sir": {
       "name": "Security Incident Response",
+      "eyebrow": "Application Module",
       "tagline": "Respond rapidly to evolving threats with Security Incident Response.",
       "summary": "Security Incident Response enables organizations to manage threat exposure proactively, react faster with collaborative workflows, and maintain cyber resilience. It automates incident prioritization and remediation across security and IT teams while providing real-time visibility into security posture and SOC performance.",
       "hero_image": null,
       "stats": [],
       "feature_cards": [
-        {
-          "title": "Workflow Management",
-          "description": "Automate assignments and coordinate incident prioritization and remediation across IT and security teams."
-        },
-        {
-          "title": "Operations Dashboard",
-          "description": "Monitor SOC performance and identify where teams and response workflows need to evolve."
-        },
-        {
-          "title": "Major Security Incident Management",
-          "description": "Respond collaboratively to critical incidents like ransomware and data breaches with coordinated processes."
-        },
-        {
-          "title": "MITRE ATT&CK Integration",
-          "description": "Stay ahead of attackers with advanced context through MITRE ATT&CK framework integration."
-        }
+        {"title": "Workflow Management", "description": "Automate assignments and coordinate incident prioritization and remediation across IT and security teams."},
+        {"title": "Operations Dashboard", "description": "Monitor SOC performance and identify where teams and response workflows need to evolve."},
+        {"title": "Major Security Incident Management", "description": "Respond collaboratively to critical incidents like ransomware and data breaches with coordinated processes."},
+        {"title": "MITRE ATT&CK Integration", "description": "Stay ahead of attackers with advanced context through MITRE ATT&CK framework integration."}
       ],
       "key_capabilities": [
         "Proactive threat exposure management",
@@ -533,51 +319,307 @@
       ],
       "official_url": "https://www.servicenow.com/products/security-incident-response.html",
       "docs_url": "https://www.servicenow.com/docs/bundle/australia-security-incident-response",
-      "sources": [
-        "https://www.servicenow.com/products/security-incident-response.html"
-      ]
-    },
-    "is-tprm": {
-      "name": "Third-Party Risk Management",
-      "tagline": "Take control of the third-party risk lifecycle, from onboarding to retirement.",
-      "summary": "Third-Party Risk Management helps organizations continuously monitor critical vendors to evaluate, mitigate, and remediate risks. Centralize vendor management in one location and transform assessment processes with automation and intelligence.",
-      "hero_image": "https://www.servicenow.com/content/dam/servicenow-assets/public/en-us/images/ds-backgrounds/marquee-tprm.sm.png",
-      "stats": [],
-      "feature_cards": [
-        {
-          "title": "Onboarding, Offboarding & Renewals",
-          "description": "Perform due diligence and assessments at all relationship stages with automated built-in processes."
-        },
-        {
-          "title": "Risk Intelligence & Monitoring",
-          "description": "Integrate targeted risk intelligence scores and ratings for continuous insights across your vendor ecosystem."
-        },
-        {
-          "title": "Third-Party Portal",
-          "description": "Connect and collaborate with third parties in a single location for all risk management activities."
-        },
-        {
-          "title": "Portfolio Management",
-          "description": "Eliminate spreadsheets with a centralized database for third-party information and concentration risk mapping."
-        }
-      ],
-      "key_capabilities": [
-        "Automated due diligence workflows",
-        "Continuous vendor risk monitoring",
-        "Aggregated risk scoring and insights",
-        "Issue management and remediation",
-        "Third-party performance tracking",
-        "Compliance and resilience building"
-      ],
-      "official_url": "https://www.servicenow.com/products/third-party-risk-management.html",
-      "docs_url": "https://www.servicenow.com/docs/bundle/australia-third-party-risk-management",
-      "sources": [
-        "https://www.servicenow.com/products/third-party-risk-management.html"
-      ]
+      "sources": ["https://www.servicenow.com/products/security-incident-response.html"]
     }
   },
-  "platform_ai": {},
-  "data_infra": {},
-  "integration": {},
-  "cmdb": {}
+
+  "portal": {
+    "employee-center": {
+      "name": "Employee Center",
+      "eyebrow": "Portal Layer",
+      "tagline": "AI front door to getting work done — autonomous agents handling end-to-end processes.",
+      "summary": "Employee Center consolidates search, self-service, and AI agents into one portal where employees find answers and complete tasks without app-hopping. AI agents autonomously execute workflows while employees access omnichannel experiences across mobile, chat, portal, and voice.",
+      "hero_image": "https://www.servicenow.com/content/dam/servicenow-assets/public/en-us/images/ds-backgrounds/employee-cntr-marquee.sm.jpg",
+      "stats": [
+        {"value": "100%", "label": "of employees use portal weekly"},
+        {"value": "87%", "label": "increase in self-service"},
+        {"value": "€600K", "label": "self-service productivity savings"}
+      ],
+      "feature_cards": [
+        {"title": "Intelligent Search", "description": "Ask once and get answers made for you. AI-powered search completes work from question to completion."},
+        {"title": "AI Agents", "description": "Autonomous agents connect teams, systems, and data to run entire processes end-to-end per policy."},
+        {"title": "Self-Service Across Enterprise", "description": "Single place to search, chat, or act for HR, IT, and procurement needs. Employees get what they need fast."},
+        {"title": "Omnichannel Experience", "description": "Consistent AI-native experience across mobile, chat, portal, voice, or kiosk for all workers."}
+      ],
+      "key_capabilities": [
+        "Run processes end-to-end with AI agents",
+        "Automated approvals and recommendations",
+        "Personalized employee communications",
+        "Conversational AI search at enterprise scale",
+        "Mobile and deskless worker support",
+        "Enterprise-grade platform for scale and trust"
+      ],
+      "official_url": "https://www.servicenow.com/products/employee-center.html",
+      "docs_url": "https://www.servicenow.com/docs/bundle/australia-employee-service-center",
+      "aliases": ["ew-portal-slate", "ew-catalog"],
+      "sources": ["https://www.servicenow.com/products/employee-center.html"]
+    },
+    "conversational-ai": {
+      "name": "AI Agents",
+      "eyebrow": "Portal Layer",
+      "tagline": "Put AI Agents to work for you across your entire business.",
+      "summary": "ServiceNow AI Agents act autonomously to solve problems and drive productivity across IT, customer service, HR, and every corner of your business. Built on a unified platform with data and workflows, they collaborate as teams to handle complex tasks beyond traditional automation.",
+      "hero_image": "https://www.servicenow.com/content/dam/servicenow-assets/public/en-us/images/ds-og-images/og-ai-agents.jpg",
+      "stats": [
+        {"value": "40%", "label": "less time building forms and workflows"},
+        {"value": "87%", "label": "increase in overall self-service rate"},
+        {"value": "80%", "label": "ticket deflection across departments"}
+      ],
+      "feature_cards": [
+        {"title": "AI Agent Orchestrator", "description": "Coordinate teams of AI agents to achieve complex business goals — better results than single agents."},
+        {"title": "AI Agent Studio", "description": "Build and customize specialized AI agents using natural language with built-in guardrails."},
+        {"title": "AI Control Tower", "description": "Central intelligent hub connecting AI strategy, governance, and management across the enterprise."},
+        {"title": "AI Experience", "description": "Meet users where they are via text, voice, web, and multiple channels — integrated into workflows."}
+      ],
+      "key_capabilities": [
+        "Autonomous incident management and resolution",
+        "HR request automation and onboarding",
+        "Customer service routing and issue resolution",
+        "Vulnerability detection and security remediation",
+        "Workflow orchestration across fragmented systems",
+        "Real-time personalization with business data"
+      ],
+      "official_url": "https://www.servicenow.com/products/ai-agents.html",
+      "docs_url": "https://www.servicenow.com/docs/bundle/australia-now-assist",
+      "aliases": ["ew-conversational-ai"],
+      "sources": ["https://www.servicenow.com/products/ai-agents.html"]
+    },
+    "knowledge-management": {
+      "name": "Knowledge Management",
+      "eyebrow": "Portal Layer",
+      "tagline": "Increase self-service rates and boost agent productivity with AI-powered contextual knowledge.",
+      "summary": "Knowledge Management empowers customers and employees with consistent, proven resolutions while enabling agents to create or auto-generate articles. The platform identifies knowledge gaps, manages feedback, and tracks usage to drive continuous improvement across your organization.",
+      "hero_image": "https://www.servicenow.com/content/dam/servicenow-assets/public/en-us/images/ds-og-images/og-ai-platform.jpg",
+      "stats": [
+        {"value": "75%", "label": "case resolution time reduction (OVHcloud)"}
+      ],
+      "feature_cards": [
+        {"title": "GenAI Content Creation", "description": "Auto-generate knowledge articles from closed incidents to accelerate content development."},
+        {"title": "Knowledge Gap Intelligence", "description": "Use AI to identify and visualize gaps for targeted content assignment and continuous improvement."},
+        {"title": "Feedback-Driven Optimization", "description": "Act on customer feedback through closed-loop processes to enhance article quality and relevance."},
+        {"title": "KCS v6 Verification", "description": "Implement Knowledge-Centered Service best practices to capture know-how and improve satisfaction."}
+      ],
+      "key_capabilities": [
+        "In-context creation and auto-generation",
+        "AI-powered search with personalized results",
+        "Knowledge harvesting from community",
+        "Real-time analytics and usage dashboards",
+        "Translation management and subscriptions",
+        "Group ownership for team collaboration"
+      ],
+      "official_url": "https://www.servicenow.com/products/knowledge-management.html",
+      "docs_url": "https://www.servicenow.com/docs/bundle/australia-servicenow-platform",
+      "aliases": ["ew-knowledge"],
+      "sources": ["https://www.servicenow.com/products/knowledge-management.html"]
+    }
+  },
+
+  "platform_ai": {
+    "app-engine": {
+      "name": "App Engine",
+      "eyebrow": "Platform & AI",
+      "tagline": "Build and run apps that think, act, and operate at scale with agentic AI and built-in governance.",
+      "summary": "App Engine is ServiceNow's low-code platform enabling anyone to build intelligent, agentic apps fast using natural language and AI. It combines AI agents, data, and workflows on a single enterprise-grade platform designed for scale, trust, and efficiency.",
+      "hero_image": "https://www.servicenow.com/content/dam/servicenow-assets/public/en-us/images/ds-backgrounds/app-engine-marquee.sm.png",
+      "stats": [
+        {"value": "30%", "label": "faster development"},
+        {"value": "2×", "label": "faster onboarding"},
+        {"value": "40%", "label": "less time on forms and workflows"}
+      ],
+      "feature_cards": [
+        {"title": "AI-Infused Apps", "description": "Build apps with built-in AI using natural language and Now Assist for App Engine to create intelligent workflows."},
+        {"title": "Unified Developer Studio", "description": "Develop, test, and deploy faster in ServiceNow Studio with AI guidance — less overhead, more innovation."},
+        {"title": "Intelligent Governance", "description": "Scale safely with automated reviews and compliance through App Engine Management Center."},
+        {"title": "Agentic Experience", "description": "Create apps that take independent action — resolve issues, suggest answers, automate work."}
+      ],
+      "key_capabilities": [
+        "Natural language app building with AI guidance",
+        "Built-in governance and compliance automation",
+        "Agentic AI for intelligent workflow automation",
+        "Enterprise-grade security and scalability",
+        "Unified platform for apps, data, and AI",
+        "Low-code development for any skill level"
+      ],
+      "official_url": "https://www.servicenow.com/products/now-platform-app-engine.html",
+      "docs_url": "https://www.servicenow.com/docs/bundle/australia-application-development",
+      "aliases": ["ew-app-engine", "er-app-engine"],
+      "sources": ["https://www.servicenow.com/products/now-platform-app-engine.html"]
+    },
+    "now-assist": {
+      "name": "Now Assist",
+      "eyebrow": "Platform & AI",
+      "tagline": "Accelerate productivity with generative AI built right into the ServiceNow AI Platform.",
+      "summary": "Now Assist combines generative AI with powerful workflow automation to improve organizational productivity. It delivers better self-service, recommends actions, provides answers, and makes searches more effective across employees, customers, agents, and developers.",
+      "hero_image": "https://www.servicenow.com/content/dam/servicenow-assets/public/en-us/images/ds-og-images/gen-ai-og.jpg",
+      "stats": [],
+      "feature_cards": [
+        {"title": "Conversational Exchanges", "description": "GenAI through chatbots and virtual agents for successful self-service workflows using LLMs."},
+        {"title": "Content Creation", "description": "Help HR, IT, and customer service agents draft emails, chat replies, and written content efficiently."},
+        {"title": "Code and Flow Generation", "description": "Generate flows and code from simple text prompts for rapid development and editing."},
+        {"title": "AI Search", "description": "LLM-powered search that delivers actionable, relevant AI-generated summaries in context."}
+      ],
+      "key_capabilities": [
+        "Summarization for cases, incidents, and chats",
+        "Domain-specific large language models",
+        "Custom GenAI skills development",
+        "Voice commands for accessibility",
+        "Multi-language support with auto-translation",
+        "Integration with Microsoft Copilot and OpenAI"
+      ],
+      "official_url": "https://www.servicenow.com/now-platform/now-assist.html",
+      "docs_url": "https://www.servicenow.com/docs/bundle/australia-now-assist",
+      "aliases": ["ew-now-assist", "er-now-assist"],
+      "sources": ["https://www.servicenow.com/now-platform/now-assist.html"]
+    },
+    "ai-control-tower": {
+      "name": "AI Control Tower",
+      "eyebrow": "Platform & AI",
+      "tagline": "Manage and govern all AI models and assets across your enterprise with centralized control.",
+      "summary": "AI Control Tower provides a unified hub for governing any AI deployment at scale. Connect AI strategy, governance, and management across the enterprise while automating workflows and managing risk in real time. Gain visibility into the AI ecosystem and prove ROI.",
+      "hero_image": "https://www.servicenow.com/content/dam/servicenow-assets/public/en-us/images/ds-backgrounds/ai-control-tower-marquee.sm.png",
+      "stats": [],
+      "feature_cards": [
+        {"title": "Align AI with Strategy", "description": "Prioritize AI initiatives against business and technology strategy to focus on maximum-value projects."},
+        {"title": "Streamline AI Operations", "description": "Boost efficiency in the AI lifecycle with automated workflows and optimized deployment."},
+        {"title": "Manage AI Risk", "description": "Enforce governance best practices with real-time insights to mitigate risks and maintain compliance."},
+        {"title": "Integrate Any AI", "description": "Works with any AI — internally built, third-party, or agent-driven — across workflows."}
+      ],
+      "key_capabilities": [
+        "Map AI assets to business services",
+        "Automate end-to-end AI workflows",
+        "Monitor AI performance metrics continuously",
+        "Assess and mitigate AI risks",
+        "Track AI value and prove ROI",
+        "Unified governance for any AI"
+      ],
+      "official_url": "https://www.servicenow.com/products/ai-control-tower.html",
+      "docs_url": "https://www.servicenow.com/docs/bundle/australia-now-assist",
+      "sources": ["https://www.servicenow.com/products/ai-control-tower.html"]
+    }
+  },
+
+  "data_infra": {
+    "workflow-data-fabric": {
+      "name": "Workflow Data Fabric",
+      "eyebrow": "Data & Infrastructure",
+      "tagline": "Put your data to work with AI-ready, instantly actionable data across any system.",
+      "summary": "Workflow Data Fabric connects data across systems and adds business context via unified data catalog and policy-based governance. It enables AI agents to understand how your company works and take trusted action without complex integrations or data duplication.",
+      "hero_image": "https://www.servicenow.com/content/dam/servicenow-assets/public/en-us/images/ds-og-images/workflow-df-og.jpg",
+      "stats": [
+        {"value": "6×", "label": "faster data connections"},
+        {"value": "70%", "label": "reduction in integration costs"},
+        {"value": "Minutes", "label": "vs. days to connect systems"}
+      ],
+      "feature_cards": [
+        {"title": "Connect Your Data", "description": "Tap into any system in minutes without complex integrations or managing endless data copies."},
+        {"title": "Contextualize Your Data", "description": "Give data meaning to enable personalized experiences, faster resolutions, and context-aware AI agents."},
+        {"title": "Control Your Data", "description": "Keep data safe and compliant with built-in governance and lineage tracking for trusted decisions."},
+        {"title": "One Platform", "description": "Unite AI agents, data, and workflows on one enterprise-grade platform built for scale and trust."}
+      ],
+      "key_capabilities": [
+        "Zero-copy connectors for instant data access",
+        "Unified data catalog with business context",
+        "Policy-based governance and compliance",
+        "AI-ready data for agent automation",
+        "Cross-system process automation with RPA",
+        "Real-time data integration from any source"
+      ],
+      "official_url": "https://www.servicenow.com/platform/workflow-data-fabric.html",
+      "docs_url": "https://www.servicenow.com/docs/bundle/australia-workflow-data-fabric",
+      "aliases": ["zcc-hub", "ew-wdf", "er-wdf"],
+      "sources": ["https://www.servicenow.com/platform/workflow-data-fabric.html"]
+    },
+    "raptordb": {
+      "name": "RaptorDB Pro",
+      "eyebrow": "Data & Infrastructure",
+      "tagline": "Unify analytics and operations on the ServiceNow AI Platform for insights-driven workflows at scale.",
+      "summary": "RaptorDB Pro is an HTAP database that runs transactional and analytical queries on the same live dataset without data copies or pipeline delays. It embeds real-time analytics directly into workflows, eliminating replication complexity and keeping sensitive data secure.",
+      "hero_image": "https://www.servicenow.com/content/dam/servicenow-assets/public/en-us/images/ds-backgrounds/raptor-db-pro-marquee.sm.jpg",
+      "stats": [
+        {"value": "45%", "label": "faster data processing"},
+        {"value": "59%", "label": "less compute time per transaction"}
+      ],
+      "feature_cards": [
+        {"title": "Real-Time Analytics", "description": "Access fresh, contextual information directly where work happens — no separate data systems."},
+        {"title": "Enterprise-Scale Performance", "description": "Handle growing AI workloads and user volume while sustaining fast queries and throughput."},
+        {"title": "Direct BI Integration", "description": "Give BI tools direct SQL access to live data, eliminating ETL pipelines and data sprawl."},
+        {"title": "Built-In Security", "description": "Keep sensitive data governed and encrypted within the platform — with archiving at scale."}
+      ],
+      "key_capabilities": [
+        "Hybrid transactional and analytical processing",
+        "Column-store indexing and parallel processing",
+        "Zero-copy data architecture",
+        "Real-time insights embedded in workflows",
+        "Cloud, self-hosted, and hybrid deployment",
+        "Direct SQL access for BI tools"
+      ],
+      "official_url": "https://www.servicenow.com/products/raptordb.html",
+      "docs_url": "https://www.servicenow.com/docs/bundle/australia-platform-administration",
+      "aliases": ["ew-infra", "er-infra", "is-infra"],
+      "sources": ["https://www.servicenow.com/products/raptordb.html"]
+    }
+  },
+
+  "integration": {
+    "integration-hub": {
+      "name": "Integration Hub",
+      "eyebrow": "Integration",
+      "tagline": "Natively integrate ServiceNow with any external app, platform, or data.",
+      "summary": "Integration Hub connects hundreds of modern enterprise apps instantly to ServiceNow using prebuilt spokes. Build custom integrations with a GenAI-powered spoke generator requiring no code. Accelerate workflow automation while reducing integration costs and complexity.",
+      "hero_image": "https://www.servicenow.com/content/dam/servicenow-assets/public/en-us/images/ds-backgrounds/marquee-integration-hub.sm.png",
+      "stats": [
+        {"value": "30K", "label": "requests/month automated (TD Bank)"}
+      ],
+      "feature_cards": [
+        {"title": "Out-of-the-Box Spokes", "description": "Integrate data and automate thousands of actions in critical business systems — no custom dev."},
+        {"title": "Spoke Generator", "description": "Build spokes rapidly with no-code tools powered by OpenAPI specs for custom integrations."},
+        {"title": "Packaged Solutions", "description": "Reduce IT ticket volume with pre-built automation for password reset, provisioning, and access."},
+        {"title": "Connections Dashboard", "description": "Simplify credential management and connect systems in minutes through one unified dashboard."}
+      ],
+      "key_capabilities": [
+        "Connect any modern API-enabled system",
+        "Pre-built integrations for critical business apps",
+        "Drag-and-drop flow automation with no code",
+        "Built-in REST API triggers and webhooks",
+        "Remote tables for temporary external data",
+        "Enterprise-grade security and compliance"
+      ],
+      "official_url": "https://www.servicenow.com/products/integration-hub.html",
+      "docs_url": "https://www.servicenow.com/docs/bundle/australia-integrate-applications",
+      "aliases": ["is-integration"],
+      "sources": ["https://www.servicenow.com/products/integration-hub.html"]
+    }
+  },
+
+  "cmdb": {
+    "amex-cmdb": {
+      "name": "AMEX CMDB",
+      "eyebrow": "Configuration Management",
+      "tagline": "Single, trusted system of record for all configuration item data — hosted in AMEX Info Sec, consumed enterprise-wide.",
+      "summary": "The ServiceNow Configuration Management Database provides full visibility into infrastructure and services. At AMEX it is hosted within the Info Sec instance and federated to the Enterprise and Risk environments via Workflow Data Fabric, so every workflow operates on a consistent, curated view of the estate.",
+      "hero_image": null,
+      "stats": [
+        {"value": "360°", "label": "insights from integrated systems"},
+        {"value": "3", "label": "instances consuming the same CMDB"}
+      ],
+      "feature_cards": [
+        {"title": "Service Graph Connectors", "description": "Integrate external data from key IT systems seamlessly for comprehensive visibility."},
+        {"title": "CMDB Workspace", "description": "Central hub to track activity, ensure accuracy, and derive insights from configuration data."},
+        {"title": "Data Acquisition", "description": "Populate and refresh context quickly from multiple sources with automated data curation."},
+        {"title": "Visualization & Reporting", "description": "View business context and technical relationships through a unified, comprehensive map."}
+      ],
+      "key_capabilities": [
+        "Connect multiple IT systems seamlessly",
+        "Break down digital product silos",
+        "Automate data-driven outcomes",
+        "Continuously assess data accuracy",
+        "Enable trusted AI outcomes across AMEX instances",
+        "Map CI relationships dynamically"
+      ],
+      "official_url": "https://www.servicenow.com/products/servicenow-platform/configuration-management-database.html",
+      "docs_url": "https://www.servicenow.com/docs/bundle/australia-servicenow-platform",
+      "aliases": ["is-cmdb"],
+      "sources": ["https://www.servicenow.com/products/servicenow-platform/configuration-management-database.html"]
+    }
+  }
 }
