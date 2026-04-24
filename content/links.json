@@ -1,0 +1,85 @@
+{
+  "_schema": {
+    "description": "Source of truth for ServiceNow documentation links surfaced in the AMEX instance architecture diagram. Keys match diagram element IDs (see amex-instance-architecture.html).",
+    "entry_shape": {
+      "name": "Display name",
+      "official_url": "Primary servicenow.com product page",
+      "docs_url": "docs.servicenow.com canonical documentation entry point",
+      "summary": "2-3 sentence scraped summary",
+      "key_capabilities": ["bullet 1", "bullet 2"],
+      "sources": ["urls used during scrape"]
+    }
+  },
+
+  "instances": {
+    "ew": {},
+    "er": {},
+    "is": {}
+  },
+
+  "portal": {
+    "ew-employee-works": {},
+    "ew-conversational-ai": {},
+    "ew-portal-slate": {},
+    "ew-enterprise-knowledge": {},
+    "ew-catalog": {}
+  },
+
+  "modules": {
+    "ew-hrsd": {
+      "name": "HR Service Delivery",
+      "official_url": "https://www.servicenow.com/products/hr-service-delivery.html",
+      "docs_url": "https://www.servicenow.com/docs/",
+      "summary": "ServiceNow HR Service Delivery reduces repetitive tasks and improves employee productivity by deploying AI agents that handle requests and automate workflows across the entire employee lifecycle—from hiring through exit. This frees HR teams to focus on strategic, human-centered work.",
+      "key_capabilities": [
+        "AI Front Door for instant employee answers",
+        "Autonomous task completion across HR systems",
+        "Manager productivity and approval workflows",
+        "Self-service request fulfillment via conversational AI",
+        "Workforce planning with real-time visibility",
+        "End-to-end hiring through offboarding automation"
+      ],
+      "sources": [
+        "https://www.servicenow.com/products/hr-service-delivery.html"
+      ]
+    },
+    "ew-wsd": {},
+    "ew-sop": {},
+    "ew-tprm": {},
+
+    "er-irm": {},
+    "er-bcm": {},
+    "er-privacy": {},
+
+    "is-itsm": {},
+    "is-itam": {},
+    "is-itom": {},
+    "is-sir": {},
+    "is-tprm": {}
+  },
+
+  "platform_ai": {
+    "ew-app-engine": {},
+    "ew-now-assist": {},
+    "er-app-engine": {},
+    "er-now-assist": {}
+  },
+
+  "data_infra": {
+    "workflow-data-fabric": {},
+    "raptordb-pro": {},
+    "vault": {},
+    "veza": {},
+    "private-peer": {},
+    "cloud-encryption": {}
+  },
+
+  "integration": {
+    "is-integration-hub": {},
+    "is-idr": {}
+  },
+
+  "cmdb": {
+    "amex-cmdb": {}
+  }
+}
