@@ -98,6 +98,8 @@ body[data-version="direct"] .vtab.active{background:rgba(118,97,255,.08);border-
 /* Diagram area */
 .diagram{flex:1;position:relative;min-height:0;margin:.4rem 0 1.25rem}
 .conn-svg{position:absolute;inset:0;z-index:1;pointer-events:none}
+.flow-svg{z-index:20}
+.flow-label{z-index:21}
 
 /* Instance cards */
 .inst{
@@ -469,6 +471,7 @@ body[data-version="hybrid"] .inst.is .mod{color:#fff}
       <svg class="conn-svg" id="svg" xmlns="http://www.w3.org/2000/svg">
         <defs></defs>
       </svg>
+      <svg class="conn-svg flow-svg" id="flow-svg" xmlns="http://www.w3.org/2000/svg"></svg>
 
       <!-- ===== AMEX ENTERPRISE ENVIRONMENT ===== -->
       <div class="inst ew" id="ew">
@@ -775,6 +778,12 @@ body[data-version="hybrid"] .inst.is .mod{color:#fff}
     clearFlowRender();
     if (!svg || !diagram) return;
 
+    var flowSvg = document.getElementById('flow-svg');
+    if (flowSvg) {
+      flowSvg.setAttribute('width', dR.width);
+      flowSvg.setAttribute('height', dR.height);
+    }
+
     var cX = dR.width / 2, cY = dR.height / 2;
     var CURVE = 28; // uniform perpendicular offset for every step
 
@@ -803,14 +812,14 @@ body[data-version="hybrid"] .inst.is .mod{color:#fff}
       var halo = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       halo.setAttribute('d', d);
       halo.setAttribute('class', 'cp flow-halo');
-      svg.appendChild(halo);
+      (flowSvg || svg).appendChild(halo);
       flowPaths.push(halo);
 
       var p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       p.setAttribute('d', d);
       p.setAttribute('class', 'cp flow');
       p.style.animationDelay = (i * 0.15) + 's';
-      svg.appendChild(p);
+      (flowSvg || svg).appendChild(p);
       flowPaths.push(p);
 
       // Quadratic curve midpoint: (p1 + 2*ctrl + p2) / 4
