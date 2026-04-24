@@ -461,6 +461,7 @@ body[data-version="hybrid"] .inst.is .mod{color:#fff}
     <span class="scenario-chip" data-scenario="workplace">Workplace Request</span>
     <span class="scenario-chip" data-scenario="security">Security Incident</span>
     <span class="scenario-chip" data-scenario="risk">Supplier Onboarding</span>
+    <span class="scenario-chip" data-scenario="conf-room">Conference Room Setup</span>
     <span class="scenario-desc" id="scenario-desc"></span>
   </div>
 
@@ -655,6 +656,17 @@ body[data-version="hybrid"] .inst.is .mod{color:#fff}
         {from: 'ew-tprm',    to: 'zcc-hub',  label: 'Federate via WDF'},
         {from: 'zcc-hub',    to: 'er-irm',   label: 'Assess enterprise risk'},
         {from: 'er-irm',     to: 'er-bcm',   label: 'Plan continuity'}
+      ]
+    },
+    'conf-room': {
+      desc: 'Employee requests a conference room with a monitor; WSD raises the request; ITAM finds no monitors in stock; S2P procures one; the new monitor is received, registered in the CMDB as a physical CI, and ITAM assigns it to the room.',
+      steps: [
+        {from: 'ew-catalog', to: 'ew-wsd',   label: 'Room with monitor requested'},
+        {from: 'ew-wsd',     to: 'zcc-hub',  label: 'Federate via WDF'},
+        {from: 'zcc-hub',    to: 'is-itam',  label: 'Check monitor inventory'},
+        {from: 'is-itam',    to: 'ew-sop',   label: 'Out of stock — order monitor'},
+        {from: 'ew-sop',     to: 'is-cmdb',  label: 'Receive & register CI'},
+        {from: 'is-cmdb',    to: 'is-itam',  label: 'Assign asset to room'}
       ]
     }
   };
