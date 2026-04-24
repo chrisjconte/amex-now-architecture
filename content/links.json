@@ -128,7 +128,7 @@
       ],
       "official_url": "https://www.servicenow.com/products/third-party-risk-management.html",
       "docs_url": "https://www.servicenow.com/docs/bundle/australia-third-party-risk-management",
-      "aliases": ["is-tprm"],
+      "aliases": ["is-tprm", "er-tprm"],
       "sources": ["https://www.servicenow.com/products/third-party-risk-management.html"]
     },
     "er-irm": {
