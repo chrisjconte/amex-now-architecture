@@ -128,7 +128,7 @@ body[data-version="direct"] .vtab.active{background:rgba(118,97,255,.08);border-
 .mod:last-child{border-right:none}
 .mod:hover{background:rgba(255,255,255,.1)}
 
-/* Module scenario highlighting */
+/* Module scenario highlighting (legacy highlight mode - kept for fallback) */
 .mod.s-active{
   background:rgba(191,113,242,.12);
   box-shadow:inset 0 -2px 0 var(--purple),0 0 12px rgba(191,113,242,.1);
@@ -137,6 +137,66 @@ body[data-version="direct"] .vtab.active{background:rgba(118,97,255,.08);border-
 .mod.s-dim{opacity:.3}
 .inst.s-dim-card{opacity:.2}
 .zcc-hub.s-glow{border-color:rgba(191,113,242,.5);box-shadow:0 0 30px rgba(191,113,242,.15)}
+
+/* ── Scenario flow mode (end-to-end story) ── */
+body.s-flow .inst{transition:opacity .4s,filter .4s}
+body.s-flow .inst:not(.s-flow-host){opacity:.1;filter:saturate(.3)}
+body.s-flow .mod,body.s-flow .lyr,body.s-flow .uchip,body.s-flow .cmdb{transition:opacity .4s,background .3s,box-shadow .3s,transform .3s}
+body.s-flow .s-flow-dim{opacity:.08}
+body.s-flow .mod.s-flow-hot{
+  background:rgba(191,113,242,.18);
+  box-shadow:inset 0 -2px 0 var(--purple),0 0 24px rgba(191,113,242,.35);
+  color:#fff;transform:scale(1.03);position:relative;z-index:3;
+}
+body.s-flow .lyr.s-flow-hot,body.s-flow .uchip.s-flow-hot{
+  background:rgba(191,113,242,.16);
+  border-color:rgba(191,113,242,.5)!important;
+  box-shadow:0 0 22px rgba(191,113,242,.3);
+  color:#fff;position:relative;z-index:3;
+}
+body.s-flow .cmdb.s-flow-hot{
+  border-color:rgba(191,113,242,.55);
+  box-shadow:0 0 26px rgba(191,113,242,.28);
+  transform:scale(1.015);position:relative;z-index:3;
+}
+body.s-flow .zcc-hub.s-flow-hot{
+  border-color:rgba(191,113,242,.75);
+  box-shadow:0 0 50px rgba(191,113,242,.35);
+}
+body.s-flow .zcc-hub:not(.s-flow-hot){opacity:.2}
+/* Hide legacy ZCC connectors during flow mode */
+body.s-flow .cp.zcc,body.s-flow .cp.zcc-glow{opacity:0}
+
+/* Flow path + label */
+.cp.flow{
+  fill:none;stroke:rgba(191,113,242,.75);stroke-width:2.5;stroke-linecap:round;
+  stroke-dasharray:8 10;
+  filter:drop-shadow(0 0 6px rgba(191,113,242,.5));
+  animation:flowOut 1.6s linear infinite;
+}
+.cp.flow-halo{
+  fill:none;stroke:rgba(191,113,242,.18);stroke-width:8;stroke-linecap:round;
+}
+.flow-label{
+  position:absolute;z-index:6;pointer-events:none;
+  background:rgba(10,25,41,.9);border:1px solid rgba(191,113,242,.4);
+  padding:.22rem .55rem;border-radius:999px;
+  font-size:.56rem;font-weight:500;color:#fff;
+  font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;
+  white-space:nowrap;transform:translate(-50%,-50%);
+  backdrop-filter:blur(4px);
+  box-shadow:0 6px 18px rgba(0,0,0,.5),0 0 14px rgba(191,113,242,.2);
+  display:inline-flex;align-items:center;gap:.35rem;
+  opacity:0;animation:flowLabelIn .45s ease .15s forwards;
+}
+@keyframes flowLabelIn{to{opacity:1}}
+.flow-badge{
+  width:16px;height:16px;border-radius:50%;
+  background:var(--purple);color:#fff;
+  font-size:.5rem;font-weight:700;font-family:var(--sans);
+  display:inline-flex;align-items:center;justify-content:center;
+  box-shadow:0 0 8px rgba(191,113,242,.6);
+}
 
 /* Layers */
 .lyr{
@@ -414,7 +474,7 @@ body[data-version="hybrid"] .cp.zcc-glow{stroke:rgba(82,184,255,.55);filter:drop
           <span class="pill" style="margin-left:auto;font-size:.5rem">Estate Entrypoint</span>
         </div>
         <div class="inst-body">
-          <div class="entry-layer">
+          <div class="entry-layer" id="ew-employee-works">
             <div class="entry-layer-hdr">
               <div class="entry-layer-name">Employee Works</div>
               <div class="entry-layer-sub">EC Pro AMEXPortal</div>
@@ -544,28 +604,38 @@ body[data-version="hybrid"] .cp.zcc-glow{stroke:rgba(82,184,255,.55);filter:drop
   // ── Scenario definitions ──
   var scenarios = {
     'hr-case': {
-      desc: 'Employee submits HR case via portal \u2192 HRSD processes \u2192 ITSM tracks resolution',
-      modules: ['ew-hrsd', 'is-itsm'],
-      instances: ['ew', 'is'],
-      zcc: true
+      desc: 'Employee raises an HR case via portal; HRSD handles it; CMDB context enriches the ITSM ticket.',
+      steps: [
+        {from: 'ew-employee-works', to: 'ew-hrsd',  label: 'Case submitted'},
+        {from: 'ew-hrsd',           to: 'zcc-hub',  label: 'Sync via WDF'},
+        {from: 'zcc-hub',           to: 'is-itsm',  label: 'Route to IT'},
+        {from: 'is-cmdb',           to: 'is-itsm',  label: 'Enrich with CI'}
+      ]
     },
     'workplace': {
-      desc: 'Workplace service request \u2192 WSD fulfills \u2192 ITAM tracks assets involved',
-      modules: ['ew-wsd', 'is-itam'],
-      instances: ['ew', 'is'],
-      zcc: true
+      desc: 'Employee books a workplace service; WSD fulfills; ITAM tracks the physical asset impacted.',
+      steps: [
+        {from: 'ew-catalog',  to: 'ew-wsd',   label: 'Request raised'},
+        {from: 'ew-wsd',      to: 'zcc-hub',  label: 'Asset context'},
+        {from: 'zcc-hub',     to: 'is-itam',  label: 'Track asset'},
+        {from: 'is-cmdb',     to: 'is-itam',  label: 'CI relationship'}
+      ]
     },
     'security': {
-      desc: 'SIR detects threat \u2192 ITSM creates incident \u2192 ITOM investigates infrastructure',
-      modules: ['is-sir', 'is-itsm', 'is-itom'],
-      instances: ['is'],
-      zcc: false
+      desc: 'SIR detects a threat, ITSM opens an incident, ITOM correlates infra impact — all within Info Sec.',
+      steps: [
+        {from: 'is-sir',   to: 'is-itsm',  label: 'Incident created'},
+        {from: 'is-itsm',  to: 'is-itom',  label: 'Probe infra'},
+        {from: 'is-cmdb',  to: 'is-itom',  label: 'Service map'}
+      ]
     },
     'risk': {
-      desc: 'TPRM flags vendor risk \u2192 Workflow Data Fabric syncs to Enterprise Risk \u2192 IRM assesses',
-      modules: ['ew-tprm', 'er-irm'],
-      instances: ['ew', 'er'],
-      zcc: true
+      desc: 'TPRM flags a vendor risk, Workflow Data Fabric federates the signal, IRM assesses and BCM plans continuity.',
+      steps: [
+        {from: 'ew-tprm',  to: 'zcc-hub',  label: 'Vendor risk signal'},
+        {from: 'zcc-hub',  to: 'er-irm',   label: 'Assess risk'},
+        {from: 'er-irm',   to: 'er-bcm',   label: 'Continuity plan'}
+      ]
     }
   };
 
@@ -646,51 +716,131 @@ body[data-version="hybrid"] .cp.zcc-glow{stroke:rgba(82,184,255,.55);filter:drop
     makeGlowPair(d3);
   }
 
-  // ── Scenario system ──
+  // ── Scenario flow mode ──
+  var flowPaths = [];
+  var flowLabels = [];
+  var flowHotIds = [];
+  var flowHostInstances = [];
+
+  function clearFlowRender() {
+    flowPaths.forEach(function(p){ if (p.parentNode) p.parentNode.removeChild(p); });
+    flowLabels.forEach(function(l){ if (l.parentNode) l.parentNode.removeChild(l); });
+    flowPaths = []; flowLabels = [];
+  }
+
+  function drawFlow(steps) {
+    clearFlowRender();
+    if (!svg || !diagram) return;
+
+    steps.forEach(function(step, i) {
+      var a = getBox(step.from);
+      var b = getBox(step.to);
+      if (!a || !b) return;
+
+      // Anchor on card edges rather than centers so labels sit between elements
+      var ax = a.cx, ay = a.cy, bx = b.cx, by = b.cy;
+      var dx = bx - ax, dy = by - ay;
+      // Nudge endpoints slightly inside each box so the line doesn't terminate on the box edge awkwardly
+      var ctrlX = (ax + bx) / 2;
+      // Curve upward if both boxes are at similar y (horizontal flow); downward if from is above to
+      var curveAmt = Math.min(60, Math.abs(dx) * 0.15);
+      var ctrlY = Math.min(ay, by) - curveAmt;
+      // If they're vertically stacked (dy significant and dx small), bend sideways instead
+      if (Math.abs(dx) < 40 && Math.abs(dy) > 40) {
+        ctrlX = ax + (ax > dR.width / 2 ? -40 : 40);
+        ctrlY = (ay + by) / 2;
+      }
+
+      var d = 'M' + ax + ',' + ay + ' Q' + ctrlX + ',' + ctrlY + ' ' + bx + ',' + by;
+
+      var halo = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      halo.setAttribute('d', d);
+      halo.setAttribute('class', 'cp flow-halo');
+      svg.appendChild(halo);
+      flowPaths.push(halo);
+
+      var p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      p.setAttribute('d', d);
+      p.setAttribute('class', 'cp flow');
+      p.style.animationDelay = (i * 0.15) + 's';
+      svg.appendChild(p);
+      flowPaths.push(p);
+
+      // Midpoint of the quadratic at t=0.5: (a + 2*ctrl + b) / 4
+      var mx = (ax + 2 * ctrlX + bx) / 4;
+      var my = (ay + 2 * ctrlY + by) / 4;
+      var label = document.createElement('div');
+      label.className = 'flow-label';
+      label.style.left = mx + 'px';
+      label.style.top = my + 'px';
+      label.style.animationDelay = (0.15 + i * 0.15) + 's';
+      label.innerHTML = '<span class="flow-badge">' + (i + 1) + '</span>' + step.label;
+      diagram.appendChild(label);
+      flowLabels.push(label);
+    });
+  }
+
   function activateScenario(key) {
     var s = scenarios[key];
     if (!s) return;
     activeScenario = key;
 
-    // Highlight chips
+    // Chip state + description
     document.querySelectorAll('.scenario-chip').forEach(function(c) {
       c.classList.toggle('active', c.dataset.scenario === key);
     });
-
-    // Show description
     var descEl = document.getElementById('scenario-desc');
     descEl.textContent = s.desc;
     descEl.classList.add('visible');
 
-    // Dim non-participating instances
-    ['ew', 'er', 'is'].forEach(function(id) {
-      document.getElementById(id).classList.toggle('s-dim-card', s.instances.indexOf(id) === -1);
+    // Collect participant IDs
+    var participants = {};
+    (s.steps || []).forEach(function(st) { participants[st.from] = 1; participants[st.to] = 1; });
+    flowHotIds = Object.keys(participants);
+
+    document.body.classList.add('s-flow');
+
+    // Hot-highlight participating elements, dim the rest
+    var hotSelectors = ['.mod', '.lyr', '.uchip', '.cmdb', '.entry-layer'];
+    hotSelectors.forEach(function(sel) {
+      document.querySelectorAll(sel).forEach(function(el) {
+        if (!el.id) { el.classList.add('s-flow-dim'); return; }
+        if (participants[el.id]) el.classList.add('s-flow-hot');
+        else el.classList.add('s-flow-dim');
+      });
     });
 
-    // Highlight / dim modules
-    document.querySelectorAll('.mod').forEach(function(mod) {
-      var id = mod.id;
-      if (!id) { mod.classList.add('s-dim'); mod.classList.remove('s-active'); return; }
-      if (s.modules.indexOf(id) !== -1) {
-        mod.classList.add('s-active');
-        mod.classList.remove('s-dim');
-      } else {
-        mod.classList.add('s-dim');
-        mod.classList.remove('s-active');
-      }
+    // Hub
+    var hub = document.getElementById('zcc-hub');
+    if (participants['zcc-hub']) hub.classList.add('s-flow-hot');
+
+    // Any instance containing a participant stays visible; others dim
+    flowHostInstances = [];
+    ['ew', 'er', 'is'].forEach(function(instId) {
+      var inst = document.getElementById(instId);
+      var hosts = flowHotIds.some(function(pid) {
+        if (pid === 'zcc-hub') return false;
+        var el = document.getElementById(pid);
+        return el && inst.contains(el);
+      });
+      if (hosts) { inst.classList.add('s-flow-host'); flowHostInstances.push(instId); }
     });
 
-    // ZCC hub glow
-    document.getElementById('zcc-hub').classList.toggle('s-glow', s.zcc);
+    // Draw the lines + labels
+    requestAnimationFrame(function() { drawFlow(s.steps || []); });
   }
 
   function clearScenario() {
     activeScenario = null;
     document.querySelectorAll('.scenario-chip').forEach(function(c) { c.classList.remove('active'); });
     document.getElementById('scenario-desc').classList.remove('visible');
-    ['ew', 'er', 'is'].forEach(function(id) { document.getElementById(id).classList.remove('s-dim-card'); });
-    document.querySelectorAll('.mod').forEach(function(mod) { mod.classList.remove('s-active', 's-dim'); });
-    document.getElementById('zcc-hub').classList.remove('s-glow');
+    document.body.classList.remove('s-flow');
+    document.querySelectorAll('.s-flow-hot, .s-flow-dim, .s-flow-host').forEach(function(el) {
+      el.classList.remove('s-flow-hot', 's-flow-dim', 's-flow-host');
+    });
+    clearFlowRender();
+    flowHotIds = [];
+    flowHostInstances = [];
   }
 
   document.getElementById('scenarios').addEventListener('click', function(e) {
@@ -901,9 +1051,15 @@ body[data-version="hybrid"] .cp.zcc-glow{stroke:rgba(82,184,255,.55);filter:drop
     })
     .catch(function() { /* no content yet — panel shows placeholder */ });
 
+  function rerenderFlow() {
+    if (activeScenario && scenarios[activeScenario]) {
+      drawFlow(scenarios[activeScenario].steps || []);
+    }
+  }
+
   // ── Init ──
-  window.addEventListener('load', function() { setTimeout(drawConnections, 150); });
-  window.addEventListener('resize', function() { drawConnections(); });
+  window.addEventListener('load', function() { setTimeout(function(){ drawConnections(); rerenderFlow(); }, 150); });
+  window.addEventListener('resize', function() { drawConnections(); rerenderFlow(); });
 })();
 </script>
 </body>
