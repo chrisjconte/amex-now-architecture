@@ -421,10 +421,10 @@ body[data-version="hybrid"] .cp.zcc-glow{stroke:rgba(82,184,255,.55);filter:drop
               <div class="entry-layer-pill">Portal Layer</div>
             </div>
             <div class="ew-chips">
-              <span class="uchip">Conversational AI</span>
-              <span class="uchip">Portal / Slate</span>
-              <span class="uchip">Enterprise Knowledge</span>
-              <span class="uchip">Catalog</span>
+              <span class="uchip" id="ew-conversational-ai">Conversational AI</span>
+              <span class="uchip" id="ew-portal-slate">Portal / Slate</span>
+              <span class="uchip" id="ew-knowledge">Enterprise Knowledge</span>
+              <span class="uchip" id="ew-catalog">Catalog</span>
             </div>
           </div>
           <div class="sec">Application Modules</div>
@@ -435,11 +435,11 @@ body[data-version="hybrid"] .cp.zcc-glow{stroke:rgba(82,184,255,.55);filter:drop
             <div class="mod" id="ew-tprm" data-tip="Third-Party Risk Management &mdash; vendor assessment and risk scoring">TPRM</div>
           </div>
           <div class="sec">Platform &amp; AI</div>
-          <div class="lyr"><div class="lyr-dot" style="background:var(--wasabi)"></div><span class="lyr-label">App Engine + Creator</span><span class="lyr-tag">Low-Code</span></div>
-          <div class="lyr"><div class="lyr-dot" style="background:var(--wasabi)"></div><span class="lyr-label">Now Assist + AICT</span><span class="lyr-tag">Gen AI</span></div>
+          <div class="lyr" id="ew-app-engine"><div class="lyr-dot" style="background:var(--wasabi)"></div><span class="lyr-label">App Engine + Creator</span><span class="lyr-tag">Low-Code</span></div>
+          <div class="lyr" id="ew-now-assist"><div class="lyr-dot" style="background:var(--wasabi)"></div><span class="lyr-label">Now Assist + AICT</span><span class="lyr-tag">Gen AI</span></div>
           <div class="sec">Data &amp; Infrastructure</div>
-          <div class="lyr"><div class="lyr-dot" style="background:var(--blue)"></div><span class="lyr-label">Workflow Data Fabric</span><span class="lyr-tag">Data</span></div>
-          <div class="lyr"><div class="lyr-dot" style="background:var(--blue)"></div><span class="lyr-label">RaptorDB Pro + Vault + Veza + Private Peer</span><span class="lyr-tag">Infra</span></div>
+          <div class="lyr" id="ew-wdf"><div class="lyr-dot" style="background:var(--blue)"></div><span class="lyr-label">Workflow Data Fabric</span><span class="lyr-tag">Data</span></div>
+          <div class="lyr" id="ew-infra"><div class="lyr-dot" style="background:var(--blue)"></div><span class="lyr-label">RaptorDB Pro + Vault + Veza + Private Peer</span><span class="lyr-tag">Infra</span></div>
         </div>
       </div>
 
@@ -464,13 +464,13 @@ body[data-version="hybrid"] .cp.zcc-glow{stroke:rgba(82,184,255,.55);filter:drop
           </div>
           <div class="inst-group">
             <div class="sec">Platform &amp; AI</div>
-            <div class="lyr"><div class="lyr-dot" style="background:var(--indigo)"></div><span class="lyr-label">App Engine + Creator</span><span class="lyr-tag">Low-Code</span></div>
-            <div class="lyr"><div class="lyr-dot" style="background:var(--indigo)"></div><span class="lyr-label">Now Assist</span><span class="lyr-tag">Gen AI</span></div>
+            <div class="lyr" id="er-app-engine"><div class="lyr-dot" style="background:var(--indigo)"></div><span class="lyr-label">App Engine + Creator</span><span class="lyr-tag">Low-Code</span></div>
+            <div class="lyr" id="er-now-assist"><div class="lyr-dot" style="background:var(--indigo)"></div><span class="lyr-label">Now Assist</span><span class="lyr-tag">Gen AI</span></div>
           </div>
           <div class="inst-group">
             <div class="sec">Data &amp; Infrastructure</div>
-            <div class="lyr"><div class="lyr-dot" style="background:var(--purple)"></div><span class="lyr-label">Workflow Data Fabric</span><span class="lyr-tag">Data</span></div>
-            <div class="lyr"><div class="lyr-dot" style="background:var(--purple)"></div><span class="lyr-label">RaptorDB Pro + Vault + Veza + Private Peer</span><span class="lyr-tag">Infra</span></div>
+            <div class="lyr" id="er-wdf"><div class="lyr-dot" style="background:var(--purple)"></div><span class="lyr-label">Workflow Data Fabric</span><span class="lyr-tag">Data</span></div>
+            <div class="lyr" id="er-infra"><div class="lyr-dot" style="background:var(--purple)"></div><span class="lyr-label">RaptorDB Pro + Vault + Veza + Private Peer</span><span class="lyr-tag">Infra</span></div>
           </div>
         </div>
       </div>
@@ -498,15 +498,15 @@ body[data-version="hybrid"] .cp.zcc-glow{stroke:rgba(82,184,255,.55);filter:drop
           </div>
           <div class="inst-group">
             <div class="sec">Integration</div>
-            <div class="lyr"><div class="lyr-dot" style="background:var(--blue)"></div><span class="lyr-label">Integration Hub + IDR</span><span class="lyr-tag">APIs</span></div>
+            <div class="lyr" id="is-integration"><div class="lyr-dot" style="background:var(--blue)"></div><span class="lyr-label">Integration Hub + IDR</span><span class="lyr-tag">APIs</span></div>
           </div>
           <div class="inst-group">
             <div class="sec">Infrastructure</div>
-            <div class="lyr"><div class="lyr-dot" style="background:var(--blue)"></div><span class="lyr-label">RaptorDB Pro + Cloud Encryption</span><span class="lyr-tag">Infra</span></div>
+            <div class="lyr" id="is-infra"><div class="lyr-dot" style="background:var(--blue)"></div><span class="lyr-label">RaptorDB Pro + Cloud Encryption</span><span class="lyr-tag">Infra</span></div>
           </div>
 
           <!-- AMEX CMDB (hosted in Info Sec) -->
-          <div class="cmdb" id="cmdb">
+          <div class="cmdb" id="is-cmdb">
             <div class="cmdb-icon">
               <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <ellipse cx="12" cy="6" rx="8" ry="3" stroke="var(--purple)" stroke-width="1.5"/>
@@ -777,7 +777,12 @@ body[data-version="hybrid"] .cp.zcc-glow{stroke:rgba(82,184,255,.55);filter:drop
       if (sectionData && typeof sectionData === 'object') {
         Object.keys(sectionData).forEach(function(id) {
           var entry = sectionData[id];
-          if (entry && entry.name) out[id] = entry;
+          if (entry && entry.name) {
+            out[id] = entry;
+            if (Array.isArray(entry.aliases)) {
+              entry.aliases.forEach(function(alias) { out[alias] = entry; });
+            }
+          }
         });
       }
     });
@@ -794,7 +799,7 @@ body[data-version="hybrid"] .cp.zcc-glow{stroke:rgba(82,184,255,.55);filter:drop
     var heroImg = document.getElementById('panel-hero-img');
     var title = document.getElementById('panel-title');
     var tagline = document.getElementById('panel-tagline');
-    document.getElementById('panel-eyebrow').textContent = 'Application Module';
+    document.getElementById('panel-eyebrow').textContent = (entry && entry.eyebrow) || 'Detail';
 
     if (!entry) {
       title.textContent = id;
@@ -866,13 +871,17 @@ body[data-version="hybrid"] .cp.zcc-glow{stroke:rgba(82,184,255,.55);filter:drop
   backdrop.addEventListener('click', closePanel);
   document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closePanel(); });
 
-  // Decorate modules that have content; attach click handlers
-  document.querySelectorAll('.mod').forEach(function(mod) {
-    if (!mod.id) return;
-    mod.addEventListener('click', function(e) {
-      e.stopPropagation();
-      if (activeScenario) return;
-      renderPanel(mod.id);
+  // Attach click handlers to every diagram element that can open a pamphlet
+  var clickableSelectors = ['.mod', '.lyr', '.uchip', '.cmdb', '#zcc-hub'];
+  clickableSelectors.forEach(function(sel) {
+    document.querySelectorAll(sel).forEach(function(el) {
+      if (!el.id) return;
+      el.style.cursor = 'pointer';
+      el.addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (activeScenario) return;
+        renderPanel(el.id);
+      });
     });
   });
 
