@@ -28,17 +28,30 @@
   "modules": {
     "ew-hrsd": {
       "name": "HR Service Delivery",
+      "tagline": "Streamline HR workflows, boost productivity, and improve employee satisfaction with AI agents across the full employee lifecycle.",
+      "summary": "HR Service Delivery reduces repetitive tasks and improves employee productivity by leveraging AI agents that handle requests and automate workflows from hiring to exit. The platform frees HR teams to focus on strategic, human-centered work while employees gain instant access to answers and services through an AI-powered front door.",
+      "hero_image": "https://www.servicenow.com/content/dam/servicenow-assets/public/en-us/images/ds-backgrounds/hrsd-marquee.sm.png",
+      "stats": [
+        {"value": "30K+", "label": "hours saved per year"},
+        {"value": "76%", "label": "self-service deflection"},
+        {"value": "80%", "label": "HR agent efficiency lift"}
+      ],
+      "feature_cards": [
+        {"title": "AI Front Door", "description": "Give employees a next-gen AI experience to get answers and take action instantly — no tickets, no waiting."},
+        {"title": "Agentic Self-Service", "description": "One place to search, ask, speak, or type. AI handles repetitive tasks so your team focuses on meaningful work."},
+        {"title": "Manager Productivity", "description": "Managers get a single place to run tasks, team approvals, and growth conversations with help from AI agents."},
+        {"title": "HR Agent Productivity", "description": "HR teams resolve cases fast, with AI agents handling routine requests and escalating only the complex ones."}
+      ],
+      "key_capabilities": [
+        "AI agents automate requests across employee lifecycle",
+        "One unified portal replacing multiple HR channels",
+        "Real-time workforce planning and visibility",
+        "Cross-system workflow automation and integration",
+        "Built-in governance and analytics",
+        "Employee self-service with conversational AI"
+      ],
       "official_url": "https://www.servicenow.com/products/hr-service-delivery.html",
       "docs_url": "https://www.servicenow.com/docs/",
-      "summary": "ServiceNow HR Service Delivery reduces repetitive tasks and improves employee productivity by deploying AI agents that handle requests and automate workflows across the entire employee lifecycle—from hiring through exit. This frees HR teams to focus on strategic, human-centered work.",
-      "key_capabilities": [
-        "AI Front Door for instant employee answers",
-        "Autonomous task completion across HR systems",
-        "Manager productivity and approval workflows",
-        "Self-service request fulfillment via conversational AI",
-        "Workforce planning with real-time visibility",
-        "End-to-end hiring through offboarding automation"
-      ],
       "sources": [
         "https://www.servicenow.com/products/hr-service-delivery.html"
       ]
