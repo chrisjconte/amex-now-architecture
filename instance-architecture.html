@@ -216,6 +216,14 @@ body[data-version="direct"] .vtab.active{background:rgba(118,97,255,.08);border-
 .cp.zcc{stroke:rgba(191,113,242,.2);stroke-width:2}
 .cp.zcc-glow{fill:none;stroke:rgba(191,113,242,.55);stroke-width:2.5;stroke-linecap:round;
   stroke-dasharray:25 90;filter:drop-shadow(0 0 4px rgba(191,113,242,.35))}
+
+/* Hybrid Commercial: swap hub + connectors from purple → light blue */
+body[data-version="hybrid"] .zcc-hub{border-color:rgba(82,184,255,.2);background:rgba(82,184,255,.03)}
+body[data-version="hybrid"] .zcc-hub:hover{border-color:rgba(82,184,255,.35);box-shadow:0 0 25px rgba(82,184,255,.08)}
+body[data-version="hybrid"] .zcc-title{color:rgba(82,184,255,.85)}
+body[data-version="hybrid"] .zcc-hub.s-glow{border-color:rgba(82,184,255,.5);box-shadow:0 0 30px rgba(82,184,255,.15)}
+body[data-version="hybrid"] .cp.zcc{stroke:rgba(82,184,255,.2)}
+body[data-version="hybrid"] .cp.zcc-glow{stroke:rgba(82,184,255,.55);filter:drop-shadow(0 0 4px rgba(82,184,255,.35))}
 .cp.zcc-glow.flow-out{animation:flowOut 3.5s linear infinite}
 .cp.zcc-glow.flow-in{animation:flowIn 3.5s linear infinite;animation-delay:-1.75s}
 @keyframes flowOut{to{stroke-dashoffset:-115}}
