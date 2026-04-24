@@ -180,6 +180,17 @@ body.s-flow .cp.zcc,body.s-flow .cp.zcc-glow{opacity:0}
 .cp.flow-halo{
   fill:none;stroke:rgba(191,113,242,.18);stroke-width:8;stroke-linecap:round;
 }
+.flow-origin{
+  fill:#63DF4E;stroke:rgba(99,223,78,.4);stroke-width:6;
+  filter:drop-shadow(0 0 8px rgba(99,223,78,.7));
+  animation:flowPulse 1.6s ease-in-out infinite;
+  transform-box:fill-box;transform-origin:center;
+}
+.flow-arrow{
+  fill:#BF71F2;stroke:rgba(255,255,255,.85);stroke-width:1;
+  filter:drop-shadow(0 0 6px rgba(191,113,242,.8));
+}
+@keyframes flowPulse{0%,100%{opacity:1}50%{opacity:.55}}
 .flow-label{
   position:absolute;z-index:6;pointer-events:none;
   background:rgba(10,25,41,.9);border:1px solid rgba(191,113,242,.4);
@@ -200,6 +211,12 @@ body.s-flow .cp.zcc,body.s-flow .cp.zcc-glow{opacity:0}
   display:inline-flex;align-items:center;justify-content:center;
   box-shadow:0 0 8px rgba(191,113,242,.6);
 }
+.flow-cap{
+  font-size:.46rem;font-weight:700;letter-spacing:.1em;
+  padding:.08rem .35rem;border-radius:3px;
+}
+.flow-cap.start{background:#63DF4E;color:#0a1929}
+.flow-cap.end{background:#fff;color:#0a1929}
 
 /* Layers */
 .lyr{
@@ -831,9 +848,41 @@ body[data-version="hybrid"] .inst.is .mod{color:#fff}
       label.style.left = lmx + 'px';
       label.style.top = lmy + 'px';
       label.style.animationDelay = (0.15 + i * 0.15) + 's';
-      label.innerHTML = '<span class="flow-badge">' + (i + 1) + '</span>' + step.label;
+      var prefix = '';
+      if (i === 0) prefix = '<span class="flow-cap start">START</span>';
+      if (i === steps.length - 1) prefix = '<span class="flow-cap end">END</span>';
+      label.innerHTML = prefix + '<span class="flow-badge">' + (i + 1) + '</span>' + step.label;
       diagram.appendChild(label);
       flowLabels.push(label);
+
+      // Origin dot at start of first step
+      if (i === 0) {
+        var dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        dot.setAttribute('cx', p1.x);
+        dot.setAttribute('cy', p1.y);
+        dot.setAttribute('r', 5);
+        dot.setAttribute('class', 'flow-origin');
+        (flowSvg || svg).appendChild(dot);
+        flowPaths.push(dot);
+      }
+
+      // Arrowhead at end of last step (tangent of quadratic at t=1 is p2 - ctrl)
+      if (i === steps.length - 1) {
+        var dirX = p2.x - ctrlX, dirY = p2.y - ctrlY;
+        var dl = Math.sqrt(dirX * dirX + dirY * dirY) || 1;
+        dirX /= dl; dirY /= dl;
+        var sz = 9;
+        var bx = p2.x - dirX * sz, by = p2.y - dirY * sz;
+        var px = -dirY * sz * 0.55, py = dirX * sz * 0.55;
+        var pts = p2.x + ',' + p2.y + ' ' +
+                  (bx + px) + ',' + (by + py) + ' ' +
+                  (bx - px) + ',' + (by - py);
+        var arrow = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+        arrow.setAttribute('points', pts);
+        arrow.setAttribute('class', 'flow-arrow');
+        (flowSvg || svg).appendChild(arrow);
+        flowPaths.push(arrow);
+      }
     });
   }
 
