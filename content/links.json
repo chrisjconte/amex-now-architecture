@@ -3,27 +3,21 @@
     "description": "Source of truth for ServiceNow documentation links surfaced in the AMEX instance architecture diagram. Keys match diagram element IDs (see amex-instance-architecture.html).",
     "entry_shape": {
       "name": "Display name",
-      "official_url": "Primary servicenow.com product page",
-      "docs_url": "docs.servicenow.com canonical documentation entry point",
-      "summary": "2-3 sentence scraped summary",
-      "key_capabilities": ["bullet 1", "bullet 2"],
+      "tagline": "1-sentence hero headline",
+      "summary": "2-3 sentence overview",
+      "hero_image": "Absolute image URL",
+      "stats": [{"value": "30K+", "label": "hours saved"}],
+      "feature_cards": [{"title": "...", "description": "..."}],
+      "key_capabilities": ["bullet", "..."],
+      "official_url": "servicenow.com product page",
+      "docs_url": "servicenow.com/docs/",
       "sources": ["urls used during scrape"]
     }
   },
 
-  "instances": {
-    "ew": {},
-    "er": {},
-    "is": {}
-  },
+  "instances": {},
 
-  "portal": {
-    "ew-employee-works": {},
-    "ew-conversational-ai": {},
-    "ew-portal-slate": {},
-    "ew-enterprise-knowledge": {},
-    "ew-catalog": {}
-  },
+  "portal": {},
 
   "modules": {
     "ew-hrsd": {
@@ -52,47 +46,310 @@
       ],
       "official_url": "https://www.servicenow.com/products/hr-service-delivery.html",
       "docs_url": "https://www.servicenow.com/docs/",
-      "sources": [
-        "https://www.servicenow.com/products/hr-service-delivery.html"
-      ]
+      "sources": ["https://www.servicenow.com/products/hr-service-delivery.html"]
     },
-    "ew-wsd": {},
-    "ew-sop": {},
-    "ew-tprm": {},
 
-    "er-irm": {},
-    "er-bcm": {},
-    "er-privacy": {},
+    "ew-wsd": {
+      "name": "Workplace Service Delivery",
+      "tagline": "Automate and simplify workplace tasks for a smooth-running, connected employee experience.",
+      "summary": "Workplace Service Delivery unifies workplace data and processes across disconnected systems. It brings employee engagement and facilities workflows together on a single platform, offering integrated insights and automated actions powered by AI to support business growth.",
+      "hero_image": "https://www.servicenow.com/content/dam/servicenow-assets/public/en-us/images/ds-backgrounds/wsd-marquee.sm.jpg",
+      "stats": [
+        {"value": "550%", "label": "increase in weekly desk bookings"},
+        {"value": "4.35M", "label": "reservations booked in 12 months"},
+        {"value": "18K", "label": "team members on optimized scheduling"}
+      ],
+      "feature_cards": [
+        {"title": "Space Planning", "description": "Right-size your space with AI insights. Optimize your real estate portfolio with proactive trend and usage data."},
+        {"title": "Operational Efficiency", "description": "Streamline workplace service requests and maintenance. Automate tasks via schedules, sensors, and asset conditions."},
+        {"title": "Reservations & Scheduling", "description": "Reduce booking friction with AI-driven insights. Improve office resource utilization and employee experience."},
+        {"title": "Health & Safety Management", "description": "Minimize avoidable risk with simplified assessment and monitoring. Employees report concerns easily; hazards stay visible."}
+      ],
+      "key_capabilities": [
+        "AI-powered workplace agents and automation",
+        "Desk booking and space management",
+        "Predictive maintenance and asset tracking",
+        "Real-time analytics and insights",
+        "Mobile access for hybrid and remote workers",
+        "Integrated health and safety reporting"
+      ],
+      "official_url": "https://www.servicenow.com/products/workplace-service-delivery.html",
+      "docs_url": "https://www.servicenow.com/docs/",
+      "sources": ["https://www.servicenow.com/products/workplace-service-delivery.html"]
+    },
 
-    "is-itsm": {},
-    "is-itam": {},
-    "is-itom": {},
-    "is-sir": {},
-    "is-tprm": {}
+    "ew-sop": {
+      "name": "Source-to-Pay Operations",
+      "tagline": "Automate procurement workflows end-to-end with AI.",
+      "summary": "Source-to-Pay Operations reduces manual work across sourcing and purchasing processes, freeing teams to focus on strategic priorities like price negotiation and cost optimization through AI-powered automation.",
+      "hero_image": "https://www.servicenow.com/content/dam/servicenow-assets/public/en-us/images/ds-backgrounds/marquee-spo.sm.jpg",
+      "stats": [
+        {"value": "50%", "label": "faster supplier onboarding"},
+        {"value": "50%", "label": "shorter procurement cycle"},
+        {"value": "18x", "label": "hard-savings improvement over 4 years"}
+      ],
+      "feature_cards": [
+        {"title": "Source-to-Contract", "description": "AI agents gather requirements and surface savings opportunities while accelerating vendor onboarding without manual intervention."},
+        {"title": "Procure-to-Pay", "description": "Streamline purchasing with guided workflows, intelligent approvals, and automated invoice processing at scale."},
+        {"title": "Supplier Relationship Management", "description": "Reduce manual work in vendor onboarding, management, and offboarding while tracking performance metrics centrally."},
+        {"title": "Autonomous Orchestration", "description": "End-to-end process automation across teams and systems — before, between, and after transactions."}
+      ],
+      "key_capabilities": [
+        "AI agent-driven task automation across procurement",
+        "Integrated vendor lifecycle management",
+        "Guided buying with clear approval workflows",
+        "Enterprise-scale invoice matching and processing",
+        "Real-time supplier performance tracking",
+        "Cross-system integration with ERP platforms"
+      ],
+      "official_url": "https://www.servicenow.com/products/source-to-pay.html",
+      "docs_url": "https://www.servicenow.com/docs/",
+      "sources": ["https://www.servicenow.com/products/source-to-pay.html"]
+    },
+
+    "ew-tprm": {
+      "name": "Third-Party Risk Management",
+      "tagline": "Take control of the third-party risk lifecycle, from onboarding to retirement.",
+      "summary": "Third-Party Risk Management helps organizations continuously monitor critical vendors to evaluate, mitigate, and remediate risks. Centralize vendor management in one location and transform assessment processes with automation and intelligence.",
+      "hero_image": "https://www.servicenow.com/content/dam/servicenow-assets/public/en-us/images/ds-backgrounds/marquee-tprm.sm.png",
+      "stats": [],
+      "feature_cards": [
+        {"title": "Onboarding, Offboarding & Renewals", "description": "Perform due diligence and assessments at all relationship stages with automated built-in processes."},
+        {"title": "Risk Intelligence & Monitoring", "description": "Integrate targeted risk intelligence scores and ratings for continuous insights across your vendor ecosystem."},
+        {"title": "Third-Party Portal", "description": "Connect and collaborate with third parties in a single location for all risk management activities."},
+        {"title": "Portfolio Management", "description": "Eliminate spreadsheets with a centralized database for third-party information and concentration risk mapping."}
+      ],
+      "key_capabilities": [
+        "Automated due diligence workflows",
+        "Continuous vendor risk monitoring",
+        "Aggregated risk scoring and insights",
+        "Issue management and remediation",
+        "Third-party performance tracking",
+        "Compliance and resilience building"
+      ],
+      "official_url": "https://www.servicenow.com/products/third-party-risk-management.html",
+      "docs_url": "https://www.servicenow.com/docs/",
+      "sources": ["https://www.servicenow.com/products/third-party-risk-management.html"]
+    },
+
+    "er-irm": {
+      "name": "Integrated Risk Management",
+      "tagline": "Make risk-informed decisions and increase efficiency with real-time intelligence and automated workflows.",
+      "summary": "Integrated Risk Management operationalizes risk and resilience across your enterprise on a single platform. Continuously monitor risks and controls while automating compliance workflows, enabling organizations to manage governance, risk, and compliance strategies with confidence and efficiency.",
+      "hero_image": "https://www.servicenow.com/content/dam/servicenow-assets/public/en-us/images/ds-backgrounds/marquee-irm.sm.png",
+      "stats": [
+        {"value": "Real-time", "label": "enterprise resilience visibility"},
+        {"value": "Automated", "label": "cross-functional workflows"}
+      ],
+      "feature_cards": [
+        {"title": "Policy & Compliance Management", "description": "Automate and manage policy lifecycles while continuously monitoring for compliance across your organization."},
+        {"title": "Risk Management", "description": "Enable fine-grained business impact analysis to prioritize and respond to identified risks."},
+        {"title": "Operational Resilience Management", "description": "Gain real-time visibility into the resilience of your technology, people, processes, and facilities."},
+        {"title": "Audit Management", "description": "Use risk data to scope and prioritize audit plans while automating cross-functional processes."}
+      ],
+      "key_capabilities": [
+        "Continuous monitoring and regulatory change insights",
+        "AI-powered workflow automation and no-code playbooks",
+        "Unified single data model eliminating silos",
+        "Risk quantification with FAIR analysis integration",
+        "Self-service knowledge and policy tracking",
+        "Real-time risk posture dashboards"
+      ],
+      "official_url": "https://www.servicenow.com/products/integrated-risk-management.html",
+      "docs_url": "https://www.servicenow.com/docs/",
+      "sources": ["https://www.servicenow.com/products/integrated-risk-management.html"]
+    },
+
+    "er-bcm": {
+      "name": "Business Continuity Management",
+      "tagline": "Plan, exercise, and recover from disasters effectively with enterprise automation.",
+      "summary": "Business Continuity Management enables organizations to harmonize business continuity, disaster recovery, and crisis management through real-time integration with the ServiceNow CMDB. Build automated workflows and implement recovery strategies for any disruption.",
+      "hero_image": "https://www.servicenow.com/content/dam/servicenow-assets/public/en-us/images/ds-backgrounds/marquee-bcm.sm.png",
+      "stats": [],
+      "feature_cards": [
+        {"title": "Business Impact Analysis", "description": "Find and prioritize business services to produce recovery time and point objectives (RTO and RPO)."},
+        {"title": "Exercise Management", "description": "Practice recovery plans during normal operations to assess preparedness and identify planning gaps."},
+        {"title": "Crisis Management", "description": "Activate continuity plans and monitor ongoing completion of recovery tasks during a crisis event in real time."},
+        {"title": "Emergency Mass Notifications", "description": "Send emergency communications quickly through 25+ channels including email, text, and phone."}
+      ],
+      "key_capabilities": [
+        "Continuity planning with automated workflows",
+        "Operational resilience monitoring and oversight",
+        "Dependency visibility and risk prioritization",
+        "Real-time integration with enterprise CMDB",
+        "Compliance dashboards and reporting",
+        "Multi-channel emergency notification"
+      ],
+      "official_url": "https://www.servicenow.com/products/business-continuity-management.html",
+      "docs_url": "https://www.servicenow.com/docs/",
+      "sources": ["https://www.servicenow.com/products/business-continuity-management.html"]
+    },
+
+    "er-privacy": {
+      "name": "Privacy Management",
+      "tagline": "Turn privacy complexity into operational control on a single unified platform.",
+      "summary": "Privacy Management unifies privacy risk, compliance, and operations to help organizations meet regulatory deadlines, stay audit-ready, and build customer trust. AI accelerates assessments and ongoing compliance activities while providing real-time visibility into privacy risks across the enterprise.",
+      "hero_image": "https://www.servicenow.com/content/dam/servicenow-assets/public/en-us/images/ds-backgrounds/marquee-privacy-management.sm.jpg",
+      "stats": [],
+      "feature_cards": [
+        {"title": "Compliance Management", "description": "Map obligations across jurisdictions, monitor regulatory changes, and generate compliance evidence instantly."},
+        {"title": "Privacy Operations", "description": "Automate assessments, maintain records of processing activities, and embed privacy controls across the enterprise."},
+        {"title": "Risk Management", "description": "Identify, prioritize, and remediate privacy risks with automated workflows and continuous monitoring."},
+        {"title": "Data Subject Rights", "description": "Automate DSAR fulfillment and meet regulatory deadlines without increasing operational overhead."}
+      ],
+      "key_capabilities": [
+        "Real-time privacy risk visibility and monitoring",
+        "Automated regulatory compliance tracking",
+        "AI-powered incident assessment and response",
+        "Centralized privacy incident case management",
+        "Automated breach notification workflows",
+        "Enterprise-scale DSAR fulfillment"
+      ],
+      "official_url": "https://www.servicenow.com/products/privacy-management.html",
+      "docs_url": "https://www.servicenow.com/docs/",
+      "sources": ["https://www.servicenow.com/products/privacy-management.html"]
+    },
+
+    "is-itsm": {
+      "name": "IT Service Management",
+      "tagline": "Align IT service management with ITIL standards to manage access, availability, and fulfill service requests at scale.",
+      "summary": "ServiceNow ITSM intelligently delivers resilient enterprise IT services on a unified AI platform. It combines people, processes, and workflows to boost IT productivity and create exceptional employee experiences through automation and real-time insights.",
+      "hero_image": "https://www.servicenow.com/content/dam/servicenow-assets/public/en-us/images/ds-og-images/it-service-managment-og.jpg",
+      "stats": [
+        {"value": "92%", "label": "MTTR improvement on P1 incidents"},
+        {"value": "≤10 min", "label": "saved per request with Now Assist"},
+        {"value": "87%", "label": "increase in self-service rate"}
+      ],
+      "feature_cards": [
+        {"title": "Resilient IT Services", "description": "Keep IT services responsive and scalable using AI agents and performance analytics to autonomously complete tasks."},
+        {"title": "Staff Productivity", "description": "Unify people, data, and workflows with automated incident routing and intelligent AI recommendations."},
+        {"title": "24/7 Employee Support", "description": "Round-the-clock IT support via a mobile-friendly portal and AI Voice Agent, with AI search and assistive capabilities."},
+        {"title": "Single-Platform Transformation", "description": "Unite AI agents, data, and workflows on one enterprise-grade platform built for scale and trust."}
+      ],
+      "key_capabilities": [
+        "Incident management and faster resolution",
+        "Change management with automated processes",
+        "Performance analytics and real-time monitoring",
+        "AI-powered self-service and employee portal",
+        "Service predictability and trend analysis",
+        "Digital end-user experience tracking"
+      ],
+      "official_url": "https://www.servicenow.com/products/itsm.html",
+      "docs_url": "https://www.servicenow.com/docs/",
+      "sources": ["https://www.servicenow.com/products/itsm.html"]
+    },
+
+    "is-itam": {
+      "name": "IT Asset Management",
+      "tagline": "Automate the end-to-end lifecycle for software, hardware, and cloud assets to optimize costs while reducing risk.",
+      "summary": "IT Asset Management runs on the ServiceNow AI Platform to automate the full asset lifecycle. AI Agents automate tasks from planning to end-of-life to improve data accuracy across contracts, costs, and compliance. ITAM connects to catalogs, CMDB, and procurement for real-time visibility.",
+      "hero_image": "https://www.servicenow.com/content/dam/servicenow-assets/public/en-us/images/ds-backgrounds/marquee-itam.sm.jpg",
+      "stats": [
+        {"value": "50%", "label": "faster upgrade times"},
+        {"value": "$1M", "label": "anticipated annual hardware savings"},
+        {"value": "160K+", "label": "pieces of equipment managed"}
+      ],
+      "feature_cards": [
+        {"title": "Lifecycle Management", "description": "Automate tracking, usage, and retirement of IT assets. Maximize value, reduce risk, and maintain compliance."},
+        {"title": "Audit Readiness", "description": "Maintain comprehensive, accurate asset and license records. Respond quickly and demonstrate compliance."},
+        {"title": "Cloud FinOps", "description": "Automate cloud cost tracking and forecasting. Use real-time insights for smarter multicloud decisions."},
+        {"title": "Inventory Management", "description": "Improve inventory accuracy and reduce loss. Track, receive, and manage assets with AI agents."}
+      ],
+      "key_capabilities": [
+        "Real-time visibility across all IT assets",
+        "Automated lifecycle workflows and AI agents",
+        "License compliance and audit tracking",
+        "Hardware and software asset management",
+        "Cloud cost optimization and forecasting",
+        "Cross-functional workflow integration"
+      ],
+      "official_url": "https://www.servicenow.com/products/it-asset-management.html",
+      "docs_url": "https://www.servicenow.com/docs/",
+      "sources": ["https://www.servicenow.com/products/it-asset-management.html"]
+    },
+
+    "is-itom": {
+      "name": "IT Operations Management",
+      "tagline": "Stop chasing outages and incidents with AIOps that provides insight and autonomous resolution.",
+      "summary": "ServiceNow ITOM modernizes IT operations by federating signals from systems and services to find unknown issues before they become incidents. It integrates natively with ITSM to deliver resilient digital operations across hybrid and cloud environments.",
+      "hero_image": "https://www.servicenow.com/content/dam/servicenow-assets/public/en-us/images/ds-og-images/itom-og.jpg",
+      "stats": [
+        {"value": "92%", "label": "improvement in MTTR"},
+        {"value": "100%", "label": "uninterrupted operations in stores"},
+        {"value": "40%", "label": "reduction in major incidents"}
+      ],
+      "feature_cards": [
+        {"title": "Dynamic Service Mapping", "description": "Auto-build dynamic service maps with the Common Services Data Model to provide business context across hybrid and cloud."},
+        {"title": "Event Intelligence", "description": "Correlate and de-duplicate alerts across monitoring tools using AIOps to reduce noise and prioritize actionable incidents."},
+        {"title": "Agentic Remediation", "description": "Reduce repeat incidents — identify root cause patterns and trigger orchestrated workflows automatically."},
+        {"title": "Change Impact Analysis", "description": "Schedule service changes with confidence by seeing downstream impact before you commit."}
+      ],
+      "key_capabilities": [
+        "Real-time service health and anomaly detection",
+        "Automated discovery of IT resource dependencies",
+        "AI-driven incident correlation and prioritization",
+        "Policy-driven automated remediation",
+        "Full-stack service availability visibility",
+        "Change impact assessment across services"
+      ],
+      "official_url": "https://www.servicenow.com/products/it-operations-management.html",
+      "docs_url": "https://www.servicenow.com/docs/",
+      "sources": ["https://www.servicenow.com/products/it-operations-management.html"]
+    },
+
+    "is-sir": {
+      "name": "Security Incident Response",
+      "tagline": "Respond rapidly to evolving threats with Security Incident Response.",
+      "summary": "Security Incident Response enables organizations to manage threat exposure proactively, react faster with collaborative workflows, and maintain cyber resilience. It automates incident prioritization and remediation across security and IT teams while providing real-time visibility into security posture and SOC performance.",
+      "hero_image": null,
+      "stats": [],
+      "feature_cards": [
+        {"title": "Workflow Management", "description": "Automate assignments and coordinate incident prioritization and remediation across IT and security teams."},
+        {"title": "Operations Dashboard", "description": "Monitor SOC performance and identify where teams and response workflows need to evolve."},
+        {"title": "Major Security Incident Management", "description": "Respond collaboratively to critical incidents like ransomware and data breaches with coordinated processes."},
+        {"title": "MITRE ATT&CK Integration", "description": "Stay ahead of attackers with advanced context through MITRE ATT&CK framework integration."}
+      ],
+      "key_capabilities": [
+        "Proactive threat exposure management",
+        "Collaborative security incident workflows",
+        "Real-time security posture visibility",
+        "Automated incident prioritization",
+        "Enterprise SOC performance analytics",
+        "Cyber resilience and response optimization"
+      ],
+      "official_url": "https://www.servicenow.com/products/security-incident-response.html",
+      "docs_url": "https://www.servicenow.com/docs/",
+      "sources": ["https://www.servicenow.com/products/security-incident-response.html"]
+    },
+
+    "is-tprm": {
+      "name": "Third-Party Risk Management",
+      "tagline": "Take control of the third-party risk lifecycle, from onboarding to retirement.",
+      "summary": "Third-Party Risk Management helps organizations continuously monitor critical vendors to evaluate, mitigate, and remediate risks. Centralize vendor management in one location and transform assessment processes with automation and intelligence.",
+      "hero_image": "https://www.servicenow.com/content/dam/servicenow-assets/public/en-us/images/ds-backgrounds/marquee-tprm.sm.png",
+      "stats": [],
+      "feature_cards": [
+        {"title": "Onboarding, Offboarding & Renewals", "description": "Perform due diligence and assessments at all relationship stages with automated built-in processes."},
+        {"title": "Risk Intelligence & Monitoring", "description": "Integrate targeted risk intelligence scores and ratings for continuous insights across your vendor ecosystem."},
+        {"title": "Third-Party Portal", "description": "Connect and collaborate with third parties in a single location for all risk management activities."},
+        {"title": "Portfolio Management", "description": "Eliminate spreadsheets with a centralized database for third-party information and concentration risk mapping."}
+      ],
+      "key_capabilities": [
+        "Automated due diligence workflows",
+        "Continuous vendor risk monitoring",
+        "Aggregated risk scoring and insights",
+        "Issue management and remediation",
+        "Third-party performance tracking",
+        "Compliance and resilience building"
+      ],
+      "official_url": "https://www.servicenow.com/products/third-party-risk-management.html",
+      "docs_url": "https://www.servicenow.com/docs/",
+      "sources": ["https://www.servicenow.com/products/third-party-risk-management.html"]
+    }
   },
 
-  "platform_ai": {
-    "ew-app-engine": {},
-    "ew-now-assist": {},
-    "er-app-engine": {},
-    "er-now-assist": {}
-  },
-
-  "data_infra": {
-    "workflow-data-fabric": {},
-    "raptordb-pro": {},
-    "vault": {},
-    "veza": {},
-    "private-peer": {},
-    "cloud-encryption": {}
-  },
-
-  "integration": {
-    "is-integration-hub": {},
-    "is-idr": {}
-  },
-
-  "cmdb": {
-    "amex-cmdb": {}
-  }
+  "platform_ai": {},
+  "data_infra": {},
+  "integration": {},
+  "cmdb": {}
 }
