@@ -43,8 +43,23 @@ a.pill-link:hover{background:rgba(82,184,255,.15);border-color:rgba(82,184,255,.
 
 .title-row{display:flex;align-items:baseline;gap:1rem;padding:.3rem 0 .1rem;flex-shrink:0}
 .title-row h1{font-size:1.15rem;font-weight:700}
-.title-row h1 span{color:var(--wasabi)}
+.title-row h1 .accent{color:var(--wasabi)}
+.title-row h1 #version-label{color:var(--blue);transition:color .25s}
+body[data-version="direct"] .title-row h1 #version-label{color:var(--indigo)}
 .title-row p{font-size:.72rem;color:var(--g4);font-weight:300}
+
+/* Version tabs */
+.vtabs{display:flex;gap:.3rem;padding:.45rem 0 0;flex-shrink:0;align-items:flex-end}
+.vtab{
+  font-size:.62rem;font-weight:600;padding:.35rem .85rem;border-radius:6px 6px 0 0;
+  background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-bottom:1px solid transparent;
+  color:var(--g4);cursor:pointer;transition:all .25s;user-select:none;
+  font-family:var(--mono);text-transform:uppercase;letter-spacing:.04em;position:relative;bottom:-1px;
+}
+.vtab:hover{background:rgba(255,255,255,.05);color:#fff}
+.vtab.active{background:rgba(82,184,255,.08);border-color:rgba(82,184,255,.3);color:var(--blue)}
+body[data-version="direct"] .vtab.active{background:rgba(118,97,255,.08);border-color:rgba(118,97,255,.35);color:var(--indigo)}
+.vtabs-rule{flex:1;border-bottom:1px solid rgba(255,255,255,.06);align-self:flex-end;height:1px}
 
 @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
@@ -219,7 +234,7 @@ a.pill-link:hover{background:rgba(82,184,255,.15);border-color:rgba(82,184,255,.
 .ftr{flex-shrink:0;text-align:center;padding:.1rem;font-size:.4rem;color:rgba(255,255,255,.1)}
 </style>
 </head>
-<body>
+<body data-version="hybrid">
 <div class="bg"></div>
 <div class="tooltip" id="tip"></div>
 
@@ -234,8 +249,14 @@ a.pill-link:hover{background:rgba(82,184,255,.15);border-color:rgba(82,184,255,.
     </div>
   </div>
 
+  <div class="vtabs" id="vtabs">
+    <span class="vtab active" data-version="hybrid">Hybrid Commercial</span>
+    <span class="vtab" data-version="direct">Full Direct</span>
+    <span class="vtabs-rule"></span>
+  </div>
+
   <div class="title-row">
-    <h1><span>Multi-Instance</span> Production Architecture</h1>
+    <h1><span class="accent">Multi-Instance</span> <span id="version-label">Hybrid Commercial</span> Production Architecture</h1>
     <p>American Express ServiceNow Environment</p>
   </div>
 
@@ -586,6 +607,22 @@ a.pill-link:hover{background:rgba(82,184,255,.15);border-color:rgba(82,184,255,.
       instIds.forEach(function(i) { document.getElementById(i).classList.remove('dimmed'); });
       paths.forEach(function(p) { p.style.opacity = ''; });
     }
+  });
+
+  // ── Version tab switcher ──
+  var versionLabels = { hybrid: 'Hybrid Commercial', direct: 'Full Direct' };
+  document.getElementById('vtabs').addEventListener('click', function(e) {
+    var tab = e.target.closest('.vtab');
+    if (!tab) return;
+    var v = tab.dataset.version;
+    if (document.body.dataset.version === v) return;
+    document.body.dataset.version = v;
+    document.querySelectorAll('.vtab').forEach(function(t) {
+      t.classList.toggle('active', t.dataset.version === v);
+    });
+    document.getElementById('version-label').textContent = versionLabels[v];
+    if (activeScenario) clearScenario();
+    setTimeout(drawConnections, 50);
   });
 
   // ── Init ──
