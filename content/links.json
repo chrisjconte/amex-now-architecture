@@ -442,7 +442,7 @@
       ],
       "official_url": "https://www.servicenow.com/products/now-platform-app-engine.html",
       "docs_url": "https://www.servicenow.com/docs/bundle/australia-application-development",
-      "aliases": ["ew-app-engine", "er-app-engine"],
+      "aliases": ["ew-app-engine", "er-app-engine", "is-app-engine"],
       "sources": ["https://www.servicenow.com/products/now-platform-app-engine.html"]
     },
     "now-assist": {
@@ -468,7 +468,7 @@
       ],
       "official_url": "https://www.servicenow.com/now-platform/now-assist.html",
       "docs_url": "https://www.servicenow.com/docs/bundle/australia-now-assist",
-      "aliases": ["ew-now-assist", "er-now-assist"],
+      "aliases": ["ew-now-assist", "er-now-assist", "is-now-assist"],
       "sources": ["https://www.servicenow.com/now-platform/now-assist.html"]
     },
     "ai-control-tower": {
@@ -526,7 +526,7 @@
       ],
       "official_url": "https://www.servicenow.com/platform/workflow-data-fabric.html",
       "docs_url": "https://www.servicenow.com/docs/bundle/australia-workflow-data-fabric",
-      "aliases": ["zcc-hub", "ew-wdf", "er-wdf"],
+      "aliases": ["zcc-hub", "ew-wdf", "er-wdf", "is-wdf"],
       "sources": ["https://www.servicenow.com/platform/workflow-data-fabric.html"]
     },
     "raptordb": {
@@ -555,7 +555,7 @@
       ],
       "official_url": "https://www.servicenow.com/products/raptordb.html",
       "docs_url": "https://www.servicenow.com/docs/bundle/australia-platform-administration",
-      "aliases": ["ew-infra", "er-infra", "is-infra"],
+      "aliases": ["ew-infra", "er-infra", "is-infra", "is-infra-direct"],
       "sources": ["https://www.servicenow.com/products/raptordb.html"]
     }
   },
