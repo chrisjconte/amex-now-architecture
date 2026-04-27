@@ -76,6 +76,35 @@
       "docs_url": "https://www.servicenow.com/docs/bundle/australia-workplace-service-delivery",
       "sources": ["https://www.servicenow.com/products/workplace-service-delivery.html"]
     },
+    "ew-fsm": {
+      "name": "Field Service Management",
+      "eyebrow": "Application Module",
+      "tagline": "Turn repeat visits into first-time fixes with FSM.",
+      "summary": "ServiceNow Field Service Management uses AI to assign jobs with precision, empower technicians, and streamline field operations. It moves field service from reactive to proactive by predicting issues early and automating scheduling. AI agents, data, and workflows run on one enterprise-grade platform built for scale and trust.",
+      "hero_image": "https://www.servicenow.com/content/dam/servicenow-assets/public/en-us/images/ds-backgrounds/marquee-fsm.sm.jpg",
+      "stats": [
+        {"value": "130%", "label": "productivity improvement in Field Service Management"},
+        {"value": "500K", "label": "customer calls saved with AI-powered Virtual Repair"},
+        {"value": "160K+", "label": "pieces of equipment maintained and deployed"}
+      ],
+      "feature_cards": [
+        {"title": "Smart Work Planning", "description": "Manage resources in a single flexible workspace with AI-balanced workloads across technicians, crews, and contractors."},
+        {"title": "Autonomous Scheduling", "description": "Let AI coordinate assignments and keep schedules optimized as priorities, skills, and availability shift in real time."},
+        {"title": "Mobile Work Execution", "description": "Give technicians an AI copilot that predicts next steps, surfaces asset history, and guides field tasks on any device."},
+        {"title": "Performance Optimization", "description": "Monitor asset trends and analyze utilization to drive continuous improvement and prevent future service disruptions."}
+      ],
+      "key_capabilities": [
+        "Assign work to the best-fit technician, crew, or contractor automatically",
+        "Predict issues early and trigger preventive maintenance plans",
+        "Transform technicians into experts with mobile AI guidance",
+        "Break down silos through automated cross-team workflows",
+        "Improve first-time fix rates with asset data and service history",
+        "Reduce service disruptions with predictable, optimized schedules"
+      ],
+      "official_url": "https://www.servicenow.com/products/field-service-management.html",
+      "docs_url": "https://www.servicenow.com/docs/bundle/australia-field-service-management",
+      "sources": ["https://www.servicenow.com/products/field-service-management.html"]
+    },
     "ew-sop": {
       "name": "Source-to-Pay Operations",
       "eyebrow": "Application Module",
