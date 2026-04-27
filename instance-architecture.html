@@ -848,6 +848,11 @@ body[data-version="hybrid"] .inst.is .mod{color:#fff}
     clearFlowRender();
     if (!svg || !diagram) return;
 
+    // Refresh the diagram bounding rect — getBox() and the cX/cY math below
+    // both depend on it, and the diagram can resize between drawConnections()
+    // and the first scenario activation, leading to stale positions.
+    dR = diagram.getBoundingClientRect();
+
     var flowSvg = document.getElementById('flow-svg');
     if (flowSvg) {
       flowSvg.setAttribute('width', dR.width);
