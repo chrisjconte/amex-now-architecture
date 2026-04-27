@@ -895,15 +895,32 @@ body[data-version="hybrid"] .inst.is .mod{color:#fff}
       // Quadratic curve midpoint: (p1 + 2*ctrl + p2) / 4
       var lmx = (p1.x + 2 * ctrlX + p2.x) / 4;
       var lmy = (p1.y + 2 * ctrlY + p2.y) / 4;
-      // Anchor the label at the chord midpoint, then push it perpendicular to
-      // the chord on the OPPOSITE side from where the curve bows so the curve
-      // and label never sit on top of each other. Short chords (siblings in
-      // the same row) get a larger push so the label clears the section
-      // labels stacked above/below the row.
+      // Position labels off the curve. Two cases:
+      //   • Short chords (siblings in the same row) — push perpendicular to
+      //     the chord on the opposite side from where the curve bows, by
+      //     enough to clear the section-label strip above/below the row.
+      //   • Long chords (cross-instance) — anchor at chord midpoint X but
+      //     clamp Y into the inter-row gutter (between EW.b and ER.t /
+      //     IS.t), where there is real dead space, so the label never lands
+      //     on a card body.
       var isShort = len < 260;
-      var labelOffset = isShort ? 36 : 26;
-      var lpx = mx - perpX * sign * labelOffset;
-      var lpy = my - perpY * sign * labelOffset;
+      var lpx, lpy;
+      if (isShort) {
+        var shortOffset = 36;
+        lpx = mx - perpX * sign * shortOffset;
+        lpy = my - perpY * sign * shortOffset;
+      } else {
+        var ewBox = getBox('ew'), erBox = getBox('er'), isBox = getBox('is');
+        var rowTop  = ewBox ? ewBox.b : my;
+        var rowBot  = (erBox && isBox) ? Math.min(erBox.t, isBox.t) : my;
+        var gutterMid = (rowTop + rowBot) / 2;
+        // Place label horizontally a little off the chord midpoint so it
+        // doesn't sit on top of the WDF banner (which is centered there),
+        // skewing toward the side that has the line's destination.
+        var skewX = (p2.x - p1.x) > 0 ? 90 : -90;
+        lpx = mx + skewX;
+        lpy = gutterMid;
+      }
       var label = document.createElement('div');
       label.className = 'flow-label';
       label.style.left = lpx + 'px';
