@@ -17,6 +17,13 @@
   --sans:'ServiceNow Sans',-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
   --mono:'ServiceNow Sans Mono','Consolas',monospace;
   --ew:#63DF4E; --er:#7661FF; --is:#52B8FF; --cm:#BF71F2;
+  /* "Scenario / fabric" accent color — purple by default, light blue in hybrid.
+     Use rgba(var(--sc-rgb), X) for rgba colors so opacity variants also swap. */
+  --sc:#BF71F2; --sc-rgb:191,113,242;
+}
+/* Hybrid Commercial: swap the purple scenario / fabric accent to light blue. */
+body[data-version="hybrid"]{
+  --sc:#52B8FF; --sc-rgb:82,184,255; --purple:#52B8FF; --cm:#52B8FF;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;overflow:hidden}
@@ -77,7 +84,7 @@ body[data-version="direct"] .vtab.active{background:rgba(118,97,255,.08);border-
   color:var(--g4);cursor:pointer;transition:all .25s;user-select:none;
 }
 .scenario-chip:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.15);color:#fff}
-.scenario-chip.active{background:rgba(191,113,242,.1);border-color:rgba(191,113,242,.3);color:var(--purple)}
+.scenario-chip.active{background:rgba(var(--sc-rgb),.1);border-color:rgba(var(--sc-rgb),.3);color:var(--purple)}
 .scenario-desc{
   margin-left:auto;font-size:.5rem;color:var(--g5);font-weight:300;font-style:italic;
   transition:all .3s;opacity:0;
@@ -138,13 +145,13 @@ body[data-version="direct"] .vtab.active{background:rgba(118,97,255,.08);border-
 
 /* Module scenario highlighting (legacy highlight mode - kept for fallback) */
 .mod.s-active{
-  background:rgba(191,113,242,.12);
-  box-shadow:inset 0 -2px 0 var(--purple),0 0 12px rgba(191,113,242,.1);
+  background:rgba(var(--sc-rgb),.12);
+  box-shadow:inset 0 -2px 0 var(--purple),0 0 12px rgba(var(--sc-rgb),.1);
   color:#fff;
 }
 .mod.s-dim{opacity:.3}
 .inst.s-dim-card{opacity:.2}
-.zcc-hub.s-glow{border-color:rgba(191,113,242,.5);box-shadow:0 0 30px rgba(191,113,242,.15)}
+.zcc-hub.s-glow{border-color:rgba(var(--sc-rgb),.5);box-shadow:0 0 30px rgba(var(--sc-rgb),.15)}
 
 /* ── Scenario flow mode (end-to-end story) ── */
 body.s-flow .inst{transition:opacity .4s,filter .4s}
@@ -152,24 +159,24 @@ body.s-flow .inst:not(.s-flow-host){opacity:.1;filter:saturate(.3)}
 body.s-flow .mod,body.s-flow .lyr,body.s-flow .uchip,body.s-flow .cmdb{transition:opacity .4s,background .3s,box-shadow .3s,transform .3s}
 body.s-flow .s-flow-dim{opacity:.08}
 body.s-flow .mod.s-flow-hot{
-  background:rgba(191,113,242,.18);
-  box-shadow:inset 0 -2px 0 var(--purple),0 0 24px rgba(191,113,242,.35);
+  background:rgba(var(--sc-rgb),.18);
+  box-shadow:inset 0 -2px 0 var(--purple),0 0 24px rgba(var(--sc-rgb),.35);
   color:#fff;transform:scale(1.03);position:relative;z-index:3;
 }
 body.s-flow .lyr.s-flow-hot,body.s-flow .uchip.s-flow-hot{
-  background:rgba(191,113,242,.16);
-  border-color:rgba(191,113,242,.5)!important;
-  box-shadow:0 0 22px rgba(191,113,242,.3);
+  background:rgba(var(--sc-rgb),.16);
+  border-color:rgba(var(--sc-rgb),.5)!important;
+  box-shadow:0 0 22px rgba(var(--sc-rgb),.3);
   color:#fff;position:relative;z-index:3;
 }
 body.s-flow .cmdb.s-flow-hot{
-  border-color:rgba(191,113,242,.55);
-  box-shadow:0 0 26px rgba(191,113,242,.28);
+  border-color:rgba(var(--sc-rgb),.55);
+  box-shadow:0 0 26px rgba(var(--sc-rgb),.28);
   transform:scale(1.015);position:relative;z-index:3;
 }
 body.s-flow .zcc-hub.s-flow-hot{
-  border-color:rgba(191,113,242,.75);
-  box-shadow:0 0 50px rgba(191,113,242,.35);
+  border-color:rgba(var(--sc-rgb),.75);
+  box-shadow:0 0 50px rgba(var(--sc-rgb),.35);
 }
 body.s-flow .zcc-hub:not(.s-flow-hot){opacity:.2}
 /* Hide legacy ZCC connectors during flow mode */
@@ -177,13 +184,13 @@ body.s-flow .cp.zcc,body.s-flow .cp.zcc-glow{opacity:0}
 
 /* Flow path + label */
 .cp.flow{
-  fill:none;stroke:rgba(191,113,242,.75);stroke-width:2.5;stroke-linecap:round;
+  fill:none;stroke:rgba(var(--sc-rgb),.75);stroke-width:2.5;stroke-linecap:round;
   stroke-dasharray:8 10;
-  filter:drop-shadow(0 0 6px rgba(191,113,242,.5));
+  filter:drop-shadow(0 0 6px rgba(var(--sc-rgb),.5));
   animation:flowOut 1.6s linear infinite;
 }
 .cp.flow-halo{
-  fill:none;stroke:rgba(191,113,242,.18);stroke-width:8;stroke-linecap:round;
+  fill:none;stroke:rgba(var(--sc-rgb),.18);stroke-width:8;stroke-linecap:round;
 }
 .flow-origin{
   fill:#63DF4E;stroke:rgba(99,223,78,.4);stroke-width:6;
@@ -193,22 +200,22 @@ body.s-flow .cp.zcc,body.s-flow .cp.zcc-glow{opacity:0}
 }
 .flow-arrow{
   fill:#BF71F2;stroke:rgba(255,255,255,.85);stroke-width:1;
-  filter:drop-shadow(0 0 6px rgba(191,113,242,.8));
+  filter:drop-shadow(0 0 6px rgba(var(--sc-rgb),.8));
 }
 .flow-arrow.step{
-  fill:rgba(191,113,242,.85);stroke:none;
-  filter:drop-shadow(0 0 4px rgba(191,113,242,.6));
+  fill:rgba(var(--sc-rgb),.85);stroke:none;
+  filter:drop-shadow(0 0 4px rgba(var(--sc-rgb),.6));
 }
 @keyframes flowPulse{0%,100%{opacity:1}50%{opacity:.55}}
 .flow-label{
   position:absolute;z-index:6;pointer-events:none;
-  background:rgba(10,25,41,.9);border:1px solid rgba(191,113,242,.4);
+  background:rgba(10,25,41,.9);border:1px solid rgba(var(--sc-rgb),.4);
   padding:.22rem .55rem;border-radius:999px;
   font-size:.56rem;font-weight:500;color:#fff;
   font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;
   white-space:nowrap;transform:translate(-50%,-50%);
   backdrop-filter:blur(4px);
-  box-shadow:0 6px 18px rgba(0,0,0,.5),0 0 14px rgba(191,113,242,.2);
+  box-shadow:0 6px 18px rgba(0,0,0,.5),0 0 14px rgba(var(--sc-rgb),.2);
   display:inline-flex;align-items:center;gap:.35rem;
   opacity:0;animation:flowLabelIn .45s ease .15s forwards;
 }
@@ -218,7 +225,7 @@ body.s-flow .cp.zcc,body.s-flow .cp.zcc-glow{opacity:0}
   background:var(--purple);color:#fff;
   font-size:.5rem;font-weight:700;font-family:var(--sans);
   display:inline-flex;align-items:center;justify-content:center;
-  box-shadow:0 0 8px rgba(191,113,242,.6);
+  box-shadow:0 0 8px rgba(var(--sc-rgb),.6);
 }
 .flow-cap{
   font-size:.46rem;font-weight:700;letter-spacing:.1em;
@@ -268,16 +275,16 @@ body.s-flow .cp.zcc,body.s-flow .cp.zcc-glow{opacity:0}
 .cmdb{
   position:relative;flex-shrink:0;
   border-radius:8px;overflow:hidden;
-  border:1.5px solid rgba(191,113,242,.2);
+  border:1.5px solid rgba(var(--sc-rgb),.2);
   background:linear-gradient(135deg,rgba(82,184,255,.05),rgba(118,97,255,.05));
   display:flex;align-items:center;padding:.4rem .75rem;gap:.7rem;
   margin-top:.2rem;transition:all .3s;
 }
-.cmdb:hover{border-color:rgba(191,113,242,.35);box-shadow:0 0 20px rgba(191,113,242,.08)}
+.cmdb:hover{border-color:rgba(var(--sc-rgb),.35);box-shadow:0 0 20px rgba(var(--sc-rgb),.08)}
 .cmdb::before{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
   background:linear-gradient(90deg,var(--blue),var(--indigo),var(--wasabi));
   background-size:200% 100%;animation:shimmer 4s linear infinite}
-.cmdb-icon{width:32px;height:32px;min-width:32px;border-radius:7px;background:rgba(191,113,242,.12);display:flex;align-items:center;justify-content:center}
+.cmdb-icon{width:32px;height:32px;min-width:32px;border-radius:7px;background:rgba(var(--sc-rgb),.12);display:flex;align-items:center;justify-content:center}
 .cmdb-icon svg{width:17px;height:17px}
 .cmdb-info{flex:1}
 .cmdb-name{font-size:.92rem;font-weight:700}
@@ -294,33 +301,30 @@ body.s-flow .cp.zcc,body.s-flow .cp.zcc-glow{opacity:0}
   left:50%;transform:translateX(-50%);
   width:clamp(260px, 40%, 560px);
   border-radius:10px;overflow:hidden;
-  border:1.5px solid rgba(191,113,242,.2);
-  background:rgba(191,113,242,.03);backdrop-filter:blur(8px);
+  border:1.5px solid rgba(var(--sc-rgb),.2);
+  background:rgba(var(--sc-rgb),.03);backdrop-filter:blur(8px);
   padding:.75rem 1.5rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.25rem;
   transition:border-color .35s, box-shadow .35s, opacity .4s;
 }
-.zcc-hub:hover{border-color:rgba(191,113,242,.35);box-shadow:0 0 25px rgba(191,113,242,.08)}
+.zcc-hub:hover{border-color:rgba(var(--sc-rgb),.35);box-shadow:0 0 25px rgba(var(--sc-rgb),.08)}
 .zcc-hub::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
   background:linear-gradient(90deg,var(--wasabi),var(--purple),var(--indigo),var(--blue));
   background-size:300% 100%;animation:shimmer 4s linear infinite}
 .zcc-hub::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
   background:linear-gradient(90deg,var(--blue),var(--indigo),var(--purple),var(--wasabi));
   background-size:300% 100%;animation:shimmer 4s linear infinite}
-.zcc-title{font-size:.85rem;font-family:var(--mono);text-transform:uppercase;letter-spacing:.16em;color:rgba(191,113,242,.85);font-weight:600;white-space:nowrap}
+.zcc-title{font-size:.85rem;font-family:var(--mono);text-transform:uppercase;letter-spacing:.16em;color:rgba(var(--sc-rgb),.85);font-weight:600;white-space:nowrap}
 
 /* SVG paths */
 .cp{fill:none;stroke-width:1.5;transition:opacity .3s}
-.cp.zcc{stroke:rgba(191,113,242,.2);stroke-width:2}
-.cp.zcc-glow{fill:none;stroke:rgba(191,113,242,.55);stroke-width:2.5;stroke-linecap:round;
-  stroke-dasharray:25 90;filter:drop-shadow(0 0 4px rgba(191,113,242,.35))}
+.cp.zcc{stroke:rgba(var(--sc-rgb),.2);stroke-width:2}
+.cp.zcc-glow{fill:none;stroke:rgba(var(--sc-rgb),.55);stroke-width:2.5;stroke-linecap:round;
+  stroke-dasharray:25 90;filter:drop-shadow(0 0 4px rgba(var(--sc-rgb),.35))}
 
-/* Hybrid Commercial: swap hub + connectors from purple → light blue */
-body[data-version="hybrid"] .zcc-hub{border-color:rgba(82,184,255,.2);background:rgba(82,184,255,.03)}
-body[data-version="hybrid"] .zcc-hub:hover{border-color:rgba(82,184,255,.35);box-shadow:0 0 25px rgba(82,184,255,.08)}
-body[data-version="hybrid"] .zcc-title{color:rgba(82,184,255,.85)}
-body[data-version="hybrid"] .zcc-hub.s-glow{border-color:rgba(82,184,255,.5);box-shadow:0 0 30px rgba(82,184,255,.15)}
-body[data-version="hybrid"] .cp.zcc{stroke:rgba(82,184,255,.2)}
-body[data-version="hybrid"] .cp.zcc-glow{stroke:rgba(82,184,255,.55);filter:drop-shadow(0 0 4px rgba(82,184,255,.35))}
+/* Hybrid Commercial: tag the Info Sec instance with the Cognizant operator */
+body[data-version="hybrid"] .inst.is .inst-name::after{
+  content:' / Cognizant';color:rgba(255,255,255,.55);font-weight:500;
+}
 body[data-version="direct"] .is-v-hybrid{display:none}
 body[data-version="hybrid"] .is-v-direct{display:none}
 body[data-version="hybrid"] .inst.is{border-color:rgba(82,184,255,.32);box-shadow:0 0 24px rgba(82,184,255,.08) inset}
@@ -532,6 +536,7 @@ body[data-version="hybrid"] .inst.is .mod{color:#fff}
           <div class="mods">
             <div class="mod" id="ew-hrsd" data-tip="HR Service Delivery &mdash; employee lifecycle, onboarding, case management">HR Service Delivery</div>
             <div class="mod" id="ew-wsd" data-tip="Workplace Service Delivery &mdash; facilities, space planning, workplace requests">Workplace Service Delivery</div>
+            <div class="mod" id="ew-fsm" data-tip="Field Service Management &mdash; field technician dispatch, work orders, and on-site task execution">Field Service Management</div>
             <div class="mod" id="ew-sop" data-tip="Source-to-Pay &mdash; procurement, sourcing, and supplier management">Source-to-Pay</div>
             <div class="mod" id="ew-tprm" data-tip="Third-Party Risk Management &mdash; vendor assessment and risk scoring">Third-Party Risk Management</div>
           </div>
