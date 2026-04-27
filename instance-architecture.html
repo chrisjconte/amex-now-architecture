@@ -887,6 +887,19 @@ body[data-version="hybrid"] .inst.is .mod{color:#fff}
       var perpX = -chordY / len, perpY = chordX / len;
       var outwardDot = perpX * (mx - cX) + perpY * (my - cY);
       var sign = outwardDot >= 0 ? 1 : -1;
+      // If the previous step shares the same row (both endpoints on roughly
+      // the same y as this step's endpoints), flip the bow direction so the
+      // two arcs go to opposite sides of the row and their labels do not
+      // pile on top of each other.
+      if (i > 0) {
+        var prev = steps[i - 1];
+        var pa = getBox(prev.from), pb = getBox(prev.to);
+        if (pa && pb &&
+            Math.abs(pa.cy - a.cy) < 30 && Math.abs(pb.cy - b.cy) < 30 &&
+            Math.abs(a.cy - b.cy) < 30) {
+          sign = -sign;
+        }
+      }
       // Bigger arcs for short chords so the curve actually shows; capped on
       // long chords so cross-instance lines do not balloon out of bounds.
       var amt = Math.max(28, Math.min(70, len * 0.28));
