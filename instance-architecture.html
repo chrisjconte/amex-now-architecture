@@ -892,6 +892,9 @@ body[data-version="hybrid"] .inst.is .mod{color:#fff}
       (flowSvg || svg).appendChild(p);
       flowPaths.push(p);
 
+      // Quadratic curve midpoint: (p1 + 2*ctrl + p2) / 4
+      var lmx = (p1.x + 2 * ctrlX + p2.x) / 4;
+      var lmy = (p1.y + 2 * ctrlY + p2.y) / 4;
       // Position label off the curve to avoid overlapping cards. Short chords
       // (siblings in the same row) get a larger perpendicular push so the
       // label clears the section labels above/below the row. Long chords
