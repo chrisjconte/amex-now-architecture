@@ -892,15 +892,13 @@ body[data-version="hybrid"] .inst.is .mod{color:#fff}
       (flowSvg || svg).appendChild(p);
       flowPaths.push(p);
 
-      // Quadratic curve midpoint: (p1 + 2*ctrl + p2) / 4
-      var lmx = (p1.x + 2 * ctrlX + p2.x) / 4;
-      var lmy = (p1.y + 2 * ctrlY + p2.y) / 4;
-      // Offset label perpendicular to the chord, in the same direction the curve
-      // bows, so it sits clearly off the line and away from card edges instead of
-      // dropping straight onto the curve midpoint.
-      var labelOffset = 22;
-      var lpx = lmx + perpX * sign * labelOffset;
-      var lpy = lmy + perpY * sign * labelOffset;
+      // Place the label at the chord midpoint, then push it perpendicular to
+      // the chord on the opposite side from where the curve bows. This keeps it
+      // off the line and pulls it toward inter-card "gutter" space instead of
+      // dropping it onto a card or onto the curve midpoint itself.
+      var labelOffset = 24;
+      var lpx = mx - perpX * sign * labelOffset;
+      var lpy = my - perpY * sign * labelOffset;
       var label = document.createElement('div');
       label.className = 'flow-label';
       label.style.left = lpx + 'px';
