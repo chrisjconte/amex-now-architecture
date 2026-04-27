@@ -895,10 +895,16 @@ body[data-version="hybrid"] .inst.is .mod{color:#fff}
       // Quadratic curve midpoint: (p1 + 2*ctrl + p2) / 4
       var lmx = (p1.x + 2 * ctrlX + p2.x) / 4;
       var lmy = (p1.y + 2 * ctrlY + p2.y) / 4;
+      // Offset label perpendicular to the chord, in the same direction the curve
+      // bows, so it sits clearly off the line and away from card edges instead of
+      // dropping straight onto the curve midpoint.
+      var labelOffset = 22;
+      var lpx = lmx + perpX * sign * labelOffset;
+      var lpy = lmy + perpY * sign * labelOffset;
       var label = document.createElement('div');
       label.className = 'flow-label';
-      label.style.left = lmx + 'px';
-      label.style.top = lmy + 'px';
+      label.style.left = lpx + 'px';
+      label.style.top = lpy + 'px';
       label.style.animationDelay = (0.15 + i * 0.15) + 's';
       var prefix = '';
       if (i === 0) prefix = '<span class="flow-cap start">START</span>';
