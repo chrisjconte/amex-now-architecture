@@ -101,7 +101,7 @@ body{font-family:var(--sans);background:var(--bg);color:#fff}
     <span class="brand-deck-title">AMEX Instance Architecture · Deck</span>
     <span class="brand-spacer"></span>
     <div class="brand-meta">
-      <span class="pill" id="version-pill">Full Direct</span>
+      <span class="pill blue" id="version-pill">Hybrid Commercial</span>
       <span class="pill blue">3 Production Environments</span>
     </div>
   </div>
@@ -116,7 +116,7 @@ body{font-family:var(--sans);background:var(--bg);color:#fff}
 
   <div class="slide-body" id="body">
     <iframe id="frame" title="Diagram"
-      src="instance-architecture.html?deck=1"
+      src="instance-architecture.html?deck=1&version=hybrid"
       loading="eager"
       allow="clipboard-read; clipboard-write"></iframe>
     <div class="frame-loading">Loading…</div>
@@ -136,10 +136,10 @@ body{font-family:var(--sans);background:var(--bg);color:#fff}
   var slides = [
     {
       title: 'AMEX ServiceNow Instance Architecture',
-      eyebrow: 'Cover · Multi-Instance Full Direct',
-      desc: 'Three production environments — Enterprise Environment, Enterprise Risk, and Info Sec — federated through the Workflow Data Fabric and a single AMEX CMDB hosted in Info Sec.',
+      eyebrow: 'Cover · Multi-Instance Hybrid Commercial',
+      desc: 'Three production environments — Enterprise Environment, Enterprise Risk, and Info Sec (operated by Cognizant) — federated through the Workflow Data Fabric and a single AMEX CMDB hosted in Info Sec.',
       scenario: null,
-      version: 'direct'
+      version: 'hybrid'
     },
     {
       title: 'HR Case Flow',
@@ -206,7 +206,13 @@ body{font-family:var(--sans);background:var(--bg);color:#fff}
     dotsEl.appendChild(d);
   });
 
+  // Hybrid Commercial is the deck's default view of the AMEX estate. Per-slide
+  // `version` overrides only when a slide explicitly wants the legacy Full
+  // Direct rendering.
+  var DEFAULT_VERSION = 'hybrid';
+
   function setSlideText(s, i) {
+    var version = s.version || DEFAULT_VERSION;
     titleEl.textContent = s.title;
     descEl.textContent  = s.desc;
     eyebrowEl.textContent = s.eyebrow;
@@ -217,14 +223,15 @@ body{font-family:var(--sans);background:var(--bg);color:#fff}
     prevBtn.disabled = (i === 0);
     nextBtn.disabled = (i === slides.length - 1);
     deckEl.classList.toggle('is-cover', i === 0);
-    versionPill.textContent = (s.version === 'hybrid') ? 'Hybrid Commercial' : 'Full Direct';
-    versionPill.classList.toggle('blue', s.version === 'hybrid');
+    versionPill.textContent = (version === 'hybrid') ? 'Hybrid Commercial' : 'Full Direct';
+    versionPill.classList.toggle('blue', version === 'hybrid');
   }
 
   function activateInFrame(s) {
     if (!iframeReady) return;
+    var version = s.version || DEFAULT_VERSION;
     try {
-      frameEl.contentWindow.postMessage({type: 'set-version', version: s.version || 'direct'}, '*');
+      frameEl.contentWindow.postMessage({type: 'set-version', version: version}, '*');
       frameEl.contentWindow.postMessage({type: 'set-scenario', key: s.scenario || null}, '*');
     } catch (e) {}
   }
