@@ -494,7 +494,7 @@ body[data-version="hybrid"] .inst.is .mod{color:#fff}
   <div class="scenarios" id="scenarios">
     <span class="scenario-label">Scenarios</span>
     <span class="scenario-chip" data-scenario="hr-case">HR Case Flow</span>
-    <span class="scenario-chip" data-scenario="workplace">Workplace Request</span>
+    <span class="scenario-chip" data-scenario="workplace">Facilities Request</span>
     <span class="scenario-chip" data-scenario="security">Security Incident</span>
     <span class="scenario-chip" data-scenario="risk">Supplier Onboarding</span>
     <span class="scenario-chip" data-scenario="conf-room">Conference Room Setup</span>
@@ -670,12 +670,9 @@ body[data-version="hybrid"] .inst.is .mod{color:#fff}
       ]
     },
     'workplace': {
-      desc: 'Employee books a workplace service; WSD fulfills; ITAM tracks the physical asset impacted.',
+      desc: 'Employee raises a facilities request in Workplace Service Delivery; the work order is dispatched directly to Field Service Management for resolution.',
       steps: [
-        {from: 'ew-catalog',  to: 'ew-wsd',   label: 'Request raised'},
-        {from: 'ew-wsd',      to: 'zcc-hub',  label: 'Asset context'},
-        {from: 'zcc-hub',     to: 'is-itam',  label: 'Track asset'},
-        {from: 'is-cmdb',     to: 'is-itam',  label: 'CI relationship'}
+        {from: 'ew-wsd',  to: 'ew-fsm',  label: 'Dispatch to field'}
       ]
     },
     'security': {
