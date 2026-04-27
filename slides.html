@@ -80,6 +80,49 @@ body{font-family:var(--sans);background:var(--bg);color:#fff}
 .slide-num{font-size:.65rem;color:var(--g4);font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;min-width:55px;text-align:right}
 .kbd-hint{font-size:.55rem;color:var(--g5);font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase}
 
+.icon-btn{padding:.5rem .65rem;border-radius:6px;background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.1);color:#fff;cursor:pointer;font-size:.7rem;
+  font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;
+  transition:all .2s;display:inline-flex;align-items:center;gap:.4rem}
+.icon-btn:hover{background:rgba(82,184,255,.08);border-color:rgba(82,184,255,.3);color:var(--blue)}
+.icon-btn .grid-icon{display:inline-grid;grid-template-columns:repeat(2,1fr);gap:2px;width:11px;height:11px}
+.icon-btn .grid-icon span{display:block;background:currentColor;border-radius:1px}
+
+/* Grid view — PowerPoint-style slide sorter, opens over the deck. */
+.grid-view{position:fixed;inset:0;z-index:200;background:rgba(7,14,26,.98);
+  backdrop-filter:blur(8px);display:none;flex-direction:column;padding:1.4rem 1.8rem 1.4rem}
+.grid-view.open{display:flex}
+.grid-head{display:flex;align-items:center;gap:1rem;flex-shrink:0;padding-bottom:1rem;
+  border-bottom:1px solid var(--line);margin-bottom:1.2rem}
+.grid-head .title{font-size:1.05rem;font-weight:600;letter-spacing:.02em}
+.grid-head .sub{font-size:.65rem;font-family:var(--mono);text-transform:uppercase;
+  letter-spacing:.16em;color:var(--blue)}
+.grid-head .spacer{flex:1}
+.grid-cells{flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:1.1rem;overflow-y:auto;
+  padding:.2rem;align-content:start}
+.grid-cell{position:relative;aspect-ratio:16/10;background:var(--panel);border-radius:10px;
+  overflow:hidden;cursor:pointer;border:1px solid var(--line);
+  transition:transform .2s, border-color .2s, box-shadow .2s;display:flex;flex-direction:column}
+.grid-cell:hover{transform:translateY(-3px);border-color:rgba(82,184,255,.4);
+  box-shadow:0 14px 32px rgba(82,184,255,.18)}
+.grid-cell.is-current{border-color:var(--wasabi);box-shadow:0 0 0 1px rgba(99,223,78,.4),0 14px 32px rgba(99,223,78,.18)}
+.grid-cell-frame-wrap{flex:1;position:relative;overflow:hidden;background:var(--bg)}
+.grid-cell iframe{position:absolute;inset:0;width:100%;height:100%;border:none;
+  pointer-events:none;background:var(--bg)}
+.grid-cell-info{flex-shrink:0;padding:.55rem .8rem;border-top:1px solid var(--line);
+  background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,0))}
+.grid-cell-num{display:inline-block;font-size:.5rem;font-family:var(--mono);font-weight:700;
+  letter-spacing:.1em;color:var(--blue);margin-bottom:.18rem}
+.grid-cell.is-current .grid-cell-num{color:var(--wasabi)}
+.grid-cell-title{font-size:.78rem;font-weight:600;line-height:1.15;color:#fff}
+.grid-cell-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  color:var(--g5);font-size:.55rem;font-family:var(--mono);text-transform:uppercase;letter-spacing:.16em;
+  pointer-events:none;transition:opacity .25s;background:var(--bg);z-index:1}
+.grid-cell.is-loaded .grid-cell-loading{opacity:0}
+
+@media (max-width:1300px){ .grid-cells{grid-template-columns:repeat(3,1fr)} }
+@media (max-width:900px){ .grid-cells{grid-template-columns:repeat(2,1fr)} }
+
 /* Title slide override — first slide gets a hero treatment */
 .deck.is-cover .slide-head{padding:.6rem 0 1.2rem}
 .deck.is-cover .slide-title{font-size:2.4rem}
@@ -126,9 +169,27 @@ body{font-family:var(--sans);background:var(--bg);color:#fff}
     <button class="nav-btn" id="prev"><span class="arrow">←</span><span>Previous</span></button>
     <div class="dots" id="dots"></div>
     <span class="kbd-hint">←  →  Navigate</span>
+    <button class="icon-btn" id="grid-btn" title="Grid view (G)">
+      <span class="grid-icon"><span></span><span></span><span></span><span></span></span>
+      <span>Grid</span>
+    </button>
     <button class="nav-btn" id="next"><span>Next</span><span class="arrow">→</span></button>
     <span class="slide-num" id="num">1 / 7</span>
   </div>
+</div>
+
+<!-- Grid view: PowerPoint-style slide sorter with live thumbnails -->
+<div class="grid-view" id="grid-view" role="dialog" aria-label="All slides">
+  <div class="grid-head">
+    <div>
+      <div class="sub">Slide Sorter</div>
+      <div class="title">All Slides — click any thumbnail to jump</div>
+    </div>
+    <div class="spacer"></div>
+    <span class="kbd-hint">Esc to close</span>
+    <button class="nav-btn" id="grid-close"><span>Close</span><span class="arrow">×</span></button>
+  </div>
+  <div class="grid-cells" id="grid-cells"></div>
 </div>
 
 <script>
@@ -144,7 +205,7 @@ body{font-family:var(--sans);background:var(--bg);color:#fff}
     {
       title: 'HR Case Flow',
       eyebrow: 'Scenario 1 · Employee Lifecycle',
-      desc: 'Employee raises an HR case via portal; HRSD handles it; CMDB context enriches the ITSM ticket.',
+      desc: 'Employee raises an HR case via portal; HRSD handles it; Workplace Service Delivery assigns the desk and workspace; the IT side is opened in ITSM with CMDB context.',
       scenario: 'hr-case'
     },
     {
@@ -250,11 +311,95 @@ body{font-family:var(--sans);background:var(--bg);color:#fff}
     // Ignore if focus is in an input
     var t = e.target;
     if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) return;
+    if (gridOpen) {
+      if (e.key === 'Escape') { e.preventDefault(); closeGrid(); }
+      return;
+    }
     if (e.key === 'ArrowLeft' || e.key === 'PageUp')      { e.preventDefault(); goto(current - 1); }
     else if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ')
                                                           { e.preventDefault(); goto(current + 1); }
     else if (e.key === 'Home')                            { e.preventDefault(); goto(0); }
     else if (e.key === 'End')                             { e.preventDefault(); goto(slides.length - 1); }
+    else if (e.key === 'g' || e.key === 'G')              { e.preventDefault(); openGrid(); }
+  });
+
+  // ── Grid view (slide sorter) ──
+  var gridViewEl  = document.getElementById('grid-view');
+  var gridCellsEl = document.getElementById('grid-cells');
+  var gridBtn     = document.getElementById('grid-btn');
+  var gridClose   = document.getElementById('grid-close');
+  var gridBuilt   = false;
+  var gridOpen    = false;
+  var gridCells   = [];
+
+  function buildGrid() {
+    if (gridBuilt) return;
+    slides.forEach(function(s, i) {
+      var version = s.version || DEFAULT_VERSION;
+      var url = 'instance-architecture.html?deck=1&version=' + version;
+      if (s.scenario) url += '&scenario=' + s.scenario;
+
+      var cell = document.createElement('div');
+      cell.className = 'grid-cell';
+      cell.tabIndex = 0;
+      cell.setAttribute('role', 'button');
+      cell.setAttribute('aria-label', 'Slide ' + (i + 1) + ': ' + s.title);
+
+      var loading = document.createElement('div');
+      loading.className = 'grid-cell-loading';
+      loading.textContent = 'Loading…';
+
+      var frameWrap = document.createElement('div');
+      frameWrap.className = 'grid-cell-frame-wrap';
+      var fr = document.createElement('iframe');
+      fr.title = s.title;
+      fr.src = url;
+      fr.addEventListener('load', function(){ cell.classList.add('is-loaded'); });
+      frameWrap.appendChild(fr);
+      frameWrap.appendChild(loading);
+
+      var info = document.createElement('div');
+      info.className = 'grid-cell-info';
+      var num = document.createElement('div');
+      num.className = 'grid-cell-num';
+      num.textContent = 'Slide ' + (i + 1);
+      var title = document.createElement('div');
+      title.className = 'grid-cell-title';
+      title.textContent = s.title;
+      info.appendChild(num);
+      info.appendChild(title);
+
+      cell.appendChild(frameWrap);
+      cell.appendChild(info);
+      cell.addEventListener('click', function() { goto(i); closeGrid(); });
+      cell.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goto(i); closeGrid(); }
+      });
+      gridCellsEl.appendChild(cell);
+      gridCells.push(cell);
+    });
+    gridBuilt = true;
+  }
+
+  function openGrid() {
+    buildGrid();
+    gridCells.forEach(function(c, i) {
+      c.classList.toggle('is-current', i === current);
+    });
+    gridViewEl.classList.add('open');
+    gridOpen = true;
+  }
+
+  function closeGrid() {
+    gridViewEl.classList.remove('open');
+    gridOpen = false;
+  }
+
+  gridBtn.addEventListener('click', openGrid);
+  gridClose.addEventListener('click', closeGrid);
+  gridViewEl.addEventListener('click', function(e) {
+    // Click on backdrop (outside any cell) closes the grid.
+    if (e.target === gridViewEl || e.target.classList.contains('grid-cells')) closeGrid();
   });
 
   // Wait for the diagram iframe to finish loading before sending postMessage
