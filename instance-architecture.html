@@ -282,14 +282,16 @@ body.s-flow .cp.zcc,body.s-flow .cp.zcc-glow{opacity:0}
 .cmdb-fd.er{background:rgba(118,97,255,.1);color:var(--indigo);animation-delay:.4s}
 .cmdb-fd.is{background:rgba(82,184,255,.1);color:var(--blue);animation-delay:.8s}
 
-/* Zero Copy Connect Hub */
+/* Zero Copy Connect Hub — sized dynamically by JS based on available gap */
 .zcc-hub{
-  position:absolute;z-index:2;left:30%;width:40%;
+  position:absolute;z-index:2;
+  left:50%;transform:translateX(-50%);
+  width:clamp(260px, 40%, 560px);
   border-radius:10px;overflow:hidden;
   border:1.5px solid rgba(191,113,242,.2);
   background:rgba(191,113,242,.03);backdrop-filter:blur(8px);
   padding:.75rem 1.5rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.25rem;
-  transition:all .4s;
+  transition:border-color .35s, box-shadow .35s, opacity .4s;
 }
 .zcc-hub:hover{border-color:rgba(191,113,242,.35);box-shadow:0 0 25px rgba(191,113,242,.08)}
 .zcc-hub::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
@@ -298,7 +300,7 @@ body.s-flow .cp.zcc,body.s-flow .cp.zcc-glow{opacity:0}
 .zcc-hub::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
   background:linear-gradient(90deg,var(--blue),var(--indigo),var(--purple),var(--wasabi));
   background-size:300% 100%;animation:shimmer 4s linear infinite}
-.zcc-title{font-size:.85rem;font-family:var(--mono);text-transform:uppercase;letter-spacing:.16em;color:rgba(191,113,242,.85);font-weight:600}
+.zcc-title{font-size:.85rem;font-family:var(--mono);text-transform:uppercase;letter-spacing:.16em;color:rgba(191,113,242,.85);font-weight:600;white-space:nowrap}
 
 /* SVG paths */
 .cp{fill:none;stroke-width:1.5;transition:opacity .3s}
@@ -745,8 +747,19 @@ body[data-version="hybrid"] .inst.is .mod{color:#fff}
     var ew = getBox('ew'), er = getBox('er'), is = getBox('is');
     if (!ew || !er || !is) return;
 
-    // Dynamically center ZCC hub in the gap between EW and ER/IS
+    // Dynamically size + center ZCC hub in the gap between EW and ER/IS.
+    // The EW card grows taller as the window narrows (content reflow), which can
+    // collapse — or even invert — the gap to ER/IS. Scale the hub to fit.
     var hubEl = document.getElementById('zcc-hub');
+    var titleEl = hubEl.querySelector('.zcc-title');
+    var availableGap = Math.max(0, er.t - ew.b);
+    // Aim for ~92% of the gap, but never larger than 60px or smaller than 26px.
+    var targetH = Math.max(26, Math.min(60, availableGap * 0.92));
+    var fontPx = Math.max(9, Math.min(14, targetH * 0.32));
+    var padY = Math.max(3, (targetH - fontPx) / 2 - 4);
+    hubEl.style.paddingTop = padY + 'px';
+    hubEl.style.paddingBottom = padY + 'px';
+    titleEl.style.fontSize = fontPx + 'px';
     var hubH = hubEl.getBoundingClientRect().height;
     var gapCenter = (ew.b + er.t) / 2;
     hubEl.style.top = (gapCenter - hubH / 2) + 'px';
