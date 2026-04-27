@@ -892,13 +892,21 @@ body[data-version="hybrid"] .inst.is .mod{color:#fff}
       (flowSvg || svg).appendChild(p);
       flowPaths.push(p);
 
-      // Place the label at the chord midpoint, then push it perpendicular to
-      // the chord on the opposite side from where the curve bows. This keeps it
-      // off the line and pulls it toward inter-card "gutter" space instead of
-      // dropping it onto a card or onto the curve midpoint itself.
-      var labelOffset = 24;
-      var lpx = mx - perpX * sign * labelOffset;
-      var lpy = my - perpY * sign * labelOffset;
+      // Position label off the curve to avoid overlapping cards. Short chords
+      // (siblings in the same row) get a larger perpendicular push so the
+      // label clears the section labels above/below the row. Long chords
+      // anchor at the chord midpoint with a smaller push toward the gutter
+      // between EW and ER/IS where there is real dead space.
+      var isShort = len < 260;
+      var anchorX = isShort ? lmx : mx;
+      var anchorY = isShort ? lmy : my;
+      // Short: keep the same direction as the bow so the label sits further
+      //        off the row. Long: opposite direction so the label drops into
+      //        the inter-card gutter rather than further into a card.
+      var dirSign = isShort ? sign : -sign;
+      var labelOffset = isShort ? 38 : 26;
+      var lpx = anchorX + perpX * dirSign * labelOffset;
+      var lpy = anchorY + perpY * dirSign * labelOffset;
       var label = document.createElement('div');
       label.className = 'flow-label';
       label.style.left = lpx + 'px';
