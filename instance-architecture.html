@@ -673,10 +673,11 @@ body[data-version="hybrid"] .inst.is .mod{color:#fff}
   // ── Scenario definitions ──
   var scenarios = {
     'hr-case': {
-      desc: 'Employee raises an HR case via portal; HRSD handles it; CMDB context enriches the ITSM ticket.',
+      desc: 'Employee raises an HR case via portal; HRSD handles it; Workplace Service Delivery assigns the desk and workspace; the IT side is opened in ITSM with CMDB context.',
       steps: [
         {from: 'ew-employee-works', to: 'ew-hrsd',  label: 'Case submitted'},
-        {from: 'ew-hrsd',           to: 'zcc-hub',  label: 'Sync via WDF'},
+        {from: 'ew-hrsd',           to: 'ew-wsd',   label: 'Assign desk & workspace'},
+        {from: 'ew-wsd',            to: 'zcc-hub',  label: 'Sync via WDF'},
         {from: 'zcc-hub',           to: 'is-itsm',  label: 'Route to IT'},
         {from: 'is-cmdb',           to: 'is-itsm',  label: 'Enrich with CI'}
       ]
