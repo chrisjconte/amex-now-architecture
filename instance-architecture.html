@@ -19,11 +19,16 @@
   --ew:#63DF4E; --er:#7661FF; --is:#52B8FF; --cm:#BF71F2;
 }
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{height:100%;overflow:hidden}
+html,body{height:100%}
+html{overflow:hidden}
+/* Allow the body to scroll when the viewport is so short the diagram can't
+   compress further (e.g. extreme wide-short aspect ratios). For the common
+   case the viewport-scaled rem below keeps everything within 100vh. */
+body{overflow-y:auto;overflow-x:hidden}
 /* Scale every rem-based size with the viewport so the whole diagram
    compresses gracefully on narrower / shorter windows instead of clipping.
-   Height tends to be the binding constraint (the page is overflow:hidden
-   at 100vh), so weight vh more heavily than vw. */
+   Height tends to be the binding constraint (.page is min-height:100vh),
+   so weight vh more heavily than vw. */
 html{font-size:clamp(9px, min(0.7vw, 1.45vh) + 2.5px, 16px)}
 body{font-family:var(--sans);background:var(--bg);color:#fff}
 
@@ -37,7 +42,11 @@ body{font-family:var(--sans);background:var(--bg);color:#fff}
   background-image:radial-gradient(circle,rgba(99,223,78,.02) 1px,transparent 1px);background-size:28px 28px}
 
 /* Page structure */
-.page{position:relative;z-index:2;height:100vh;display:flex;flex-direction:column;padding:0 1.25rem}
+.page{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column;padding:0 1.25rem}
+/* Floor on the diagram height so the content has room when the viewport is
+   so short that everything would otherwise be jammed together. Body scrolls
+   in that case. */
+.page .diagram{min-height:32rem}
 
 /* Header */
 .hdr{display:flex;align-items:center;justify-content:space-between;padding:.5rem 0;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,.06)}
