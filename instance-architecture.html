@@ -871,6 +871,15 @@ body[data-version="hybrid"] .inst.is .mod{color:#fff}
       var p1 = edgeAnchor(a, b.cx, b.cy);
       var p2 = edgeAnchor(b, a.cx, a.cy);
 
+      // For adjacent siblings (touching borders) the edge anchors collapse to
+      // a near-zero chord. Fall back to centre-to-centre so the curve has
+      // something to bow over.
+      var rawDX = p2.x - p1.x, rawDY = p2.y - p1.y;
+      if (Math.sqrt(rawDX * rawDX + rawDY * rawDY) < 18) {
+        p1 = {x: a.cx, y: a.cy};
+        p2 = {x: b.cx, y: b.cy};
+      }
+
       // Uniform curve: perpendicular to chord, bowing away from diagram center
       var mx = (p1.x + p2.x) / 2, my = (p1.y + p2.y) / 2;
       var chordX = p2.x - p1.x, chordY = p2.y - p1.y;
@@ -878,7 +887,9 @@ body[data-version="hybrid"] .inst.is .mod{color:#fff}
       var perpX = -chordY / len, perpY = chordX / len;
       var outwardDot = perpX * (mx - cX) + perpY * (my - cY);
       var sign = outwardDot >= 0 ? 1 : -1;
-      var amt = Math.min(CURVE, len * 0.25);
+      // Bigger arcs for short chords so the curve actually shows; capped on
+      // long chords so cross-instance lines do not balloon out of bounds.
+      var amt = Math.max(28, Math.min(70, len * 0.28));
       var ctrlX = mx + perpX * sign * amt;
       var ctrlY = my + perpY * sign * amt;
 
