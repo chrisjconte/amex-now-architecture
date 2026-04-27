@@ -46,6 +46,17 @@ body{font-family:var(--sans);background:var(--bg);color:#fff}
 /* Page structure */
 .page{position:relative;z-index:2;height:100vh;display:flex;flex-direction:column;padding:0 1.25rem}
 
+/* Deck embed mode — slides.html loads this page in an iframe and supplies
+   its own slide title / description, so hide the in-page chrome and let the
+   diagram fill the frame. */
+body.deck-mode .hdr,
+body.deck-mode .title-row,
+body.deck-mode .vtabs,
+body.deck-mode .scenarios,
+body.deck-mode .ftr{display:none !important}
+body.deck-mode .page{padding:.5rem 1rem .8rem}
+body.deck-mode .diagram{margin:0}
+
 /* Header */
 .hdr{display:flex;align-items:center;justify-content:space-between;padding:.5rem 0;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,.06)}
 .hdr-right{display:flex;gap:.5rem;align-items:center}
@@ -1263,6 +1274,49 @@ body[data-version="hybrid"] .inst.is .mod{color:#fff}
   // ── Init ──
   window.addEventListener('load', function() { setTimeout(function(){ drawConnections(); rerenderFlow(); }, 150); });
   window.addEventListener('resize', function() { drawConnections(); rerenderFlow(); });
+
+  // ── Deck embed support ──
+  // ?deck=1 hides this page's own chrome (header, title row, version tabs,
+  // scenario picker, footer) so the diagram fills an embedding iframe.
+  // ?scenario=<key> auto-activates a scenario after first render so the
+  // slide-deck companion (slides.html) can land on the right view.
+  // ?version=hybrid switches the version tab to Hybrid Commercial.
+  try {
+    var params = new URLSearchParams(window.location.search);
+    if (params.get('deck') === '1') document.body.classList.add('deck-mode');
+    var initialVersion = params.get('version');
+    if (initialVersion === 'hybrid' || initialVersion === 'direct') {
+      document.body.dataset.version = initialVersion;
+      document.querySelectorAll('.vtab').forEach(function(t) {
+        t.classList.toggle('active', t.dataset.version === initialVersion);
+      });
+      document.getElementById('version-label').textContent = versionLabels[initialVersion];
+    }
+    var initialScenario = params.get('scenario');
+    if (initialScenario && scenarios[initialScenario]) {
+      window.addEventListener('load', function() {
+        setTimeout(function() { activateScenario(initialScenario); }, 250);
+      });
+    }
+    // Allow the deck wrapper to switch scenarios without reloading the iframe.
+    window.addEventListener('message', function(ev) {
+      var d = ev.data;
+      if (!d || typeof d !== 'object') return;
+      if (d.type === 'set-scenario') {
+        if (d.key && scenarios[d.key]) activateScenario(d.key);
+        else clearScenario();
+      } else if (d.type === 'set-version') {
+        var v = d.version === 'hybrid' ? 'hybrid' : 'direct';
+        document.body.dataset.version = v;
+        document.querySelectorAll('.vtab').forEach(function(t) {
+          t.classList.toggle('active', t.dataset.version === v);
+        });
+        document.getElementById('version-label').textContent = versionLabels[v];
+        if (activeScenario) clearScenario();
+        setTimeout(drawConnections, 50);
+      }
+    });
+  } catch (e) {}
 })();
 </script>
 </body>
