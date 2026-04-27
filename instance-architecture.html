@@ -744,25 +744,42 @@ body[data-version="hybrid"] .inst.is .mod{color:#fff}
     svg.appendChild(defs);
     paths = [];
 
+    // Reset any previous inline overrides on the bottom row before re-measuring,
+    // so the natural CSS layout (top:54%, bottom:1%) is what we see on first pass.
+    var erEl = document.querySelector('.inst.er');
+    var isEl = document.querySelector('.inst.is');
+    erEl.style.top = ''; erEl.style.bottom = '';
+    isEl.style.top = ''; isEl.style.bottom = '';
+
     var ew = getBox('ew'), er = getBox('er'), is = getBox('is');
     if (!ew || !er || !is) return;
 
-    // Dynamically size + center ZCC hub in the gap between EW and ER/IS.
-    // The EW card grows taller as the window narrows (content reflow), which can
-    // collapse — or even invert — the gap to ER/IS. Scale the hub to fit.
+    // Decide WDF hub height first, scaled to viewport so it stays proportional.
+    // Then guarantee a real gap of (hubH + breathing room) between EW and ER/IS,
+    // pushing the bottom row down via inline `top` if EW grew tall enough to
+    // collapse the natural 54% boundary (happens on narrow / short windows).
     var hubEl = document.getElementById('zcc-hub');
     var titleEl = hubEl.querySelector('.zcc-title');
-    var availableGap = Math.max(0, er.t - ew.b);
-    // Aim for ~92% of the gap, but never larger than 60px or smaller than 26px.
-    var targetH = Math.max(26, Math.min(60, availableGap * 0.92));
-    var fontPx = Math.max(9, Math.min(14, targetH * 0.32));
-    var padY = Math.max(3, (targetH - fontPx) / 2 - 4);
+    var hubH = Math.max(28, Math.min(56, dR.height * 0.06));
+    var fontPx = Math.max(10, Math.min(14, hubH * 0.32));
+    var padY = Math.max(4, (hubH - fontPx) / 2 - 4);
     hubEl.style.paddingTop = padY + 'px';
     hubEl.style.paddingBottom = padY + 'px';
     titleEl.style.fontSize = fontPx + 'px';
-    var hubH = hubEl.getBoundingClientRect().height;
+
+    var breathing = 8;
+    var requiredErTop = ew.b + breathing + hubH + breathing;
+    if (er.t < requiredErTop) {
+      erEl.style.top = requiredErTop + 'px';
+      isEl.style.top = requiredErTop + 'px';
+      // Re-measure after the bottom row has shifted.
+      er = getBox('er'); is = getBox('is');
+    }
+
+    // Center the hub in the (now guaranteed) gap.
+    var actualHubH = hubEl.getBoundingClientRect().height;
     var gapCenter = (ew.b + er.t) / 2;
-    hubEl.style.top = (gapCenter - hubH / 2) + 'px';
+    hubEl.style.top = (gapCenter - actualHubH / 2) + 'px';
 
     var hub = getBox('zcc-hub');
 
