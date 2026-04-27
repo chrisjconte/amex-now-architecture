@@ -906,20 +906,20 @@ body[data-version="hybrid"] .inst.is .mod{color:#fff}
       var isShort = len < 260;
       var lpx, lpy;
       if (isShort) {
-        var shortOffset = 36;
+        var shortOffset = 52;
         lpx = mx - perpX * sign * shortOffset;
         lpy = my - perpY * sign * shortOffset;
       } else {
-        var ewBox = getBox('ew'), erBox = getBox('er'), isBox = getBox('is');
-        var rowTop  = ewBox ? ewBox.b : my;
-        var rowBot  = (erBox && isBox) ? Math.min(erBox.t, isBox.t) : my;
-        var gutterMid = (rowTop + rowBot) / 2;
-        // Place label horizontally a little off the chord midpoint so it
-        // doesn't sit on top of the WDF banner (which is centered there),
-        // skewing toward the side that has the line's destination.
+        // Long cross-instance chord: anchor in the narrow dead-space band
+        // ABOVE the WDF banner (between EW.b and the banner top), and skew
+        // horizontally toward the chord's destination side so steps that
+        // share this band don't pile up on each other.
+        var ewBox = getBox('ew'), zccBox = getBox('zcc-hub');
+        var bandTop = ewBox ? ewBox.b : my;
+        var bandBot = zccBox ? zccBox.t : my;
         var skewX = (p2.x - p1.x) > 0 ? 90 : -90;
         lpx = mx + skewX;
-        lpy = gutterMid;
+        lpy = (bandTop + bandBot) / 2;
       }
       var label = document.createElement('div');
       label.className = 'flow-label';
