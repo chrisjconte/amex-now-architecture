@@ -706,9 +706,9 @@ body[data-version="hybrid"] .inst.is .mod{color:#fff}
       ]
     },
     'digital-workplace': {
-      desc: 'Employee reports a laptop problem through agentic chat; CMDB locates the laptop CI; ITOM enriches it with NextThink telemetry; ITSM drives the break-fix process through to resolution.',
+      desc: 'Colleague chats with Employee Works AI about a laptop problem; CMDB locates the laptop CI; ITOM enriches it with NextThink telemetry; ITSM drives the break-fix process through to resolution.',
       steps: [
-        {from: 'ew-conversational-ai', to: 'is-cmdb',              label: 'Laptop CI lookup'},
+        {from: 'ew-conversational-ai', to: 'is-cmdb',              label: 'Colleague chats with Employee Works AI'},
         {from: 'is-cmdb',              to: 'is-itom',              label: 'Enrich via NextThink'},
         {from: 'is-itom',              to: 'is-itsm',              label: 'Open break-fix ticket'},
         {from: 'is-itsm',              to: 'ew-conversational-ai', label: 'Laptop fixed'}
@@ -895,32 +895,23 @@ body[data-version="hybrid"] .inst.is .mod{color:#fff}
       // Quadratic curve midpoint: (p1 + 2*ctrl + p2) / 4
       var lmx = (p1.x + 2 * ctrlX + p2.x) / 4;
       var lmy = (p1.y + 2 * ctrlY + p2.y) / 4;
-      // Position labels off the curve. Two cases:
-      //   • Short chords (siblings in the same row) — push perpendicular to
-      //     the chord on the opposite side from where the curve bows, by
-      //     enough to clear the section-label strip above/below the row.
-      //   • Long chords (cross-instance) — anchor at chord midpoint X but
-      //     clamp Y into the inter-row gutter (between EW.b and ER.t /
-      //     IS.t), where there is real dead space, so the label never lands
-      //     on a card body.
-      var isShort = len < 260;
-      var lpx, lpy;
-      if (isShort) {
-        var shortOffset = 52;
-        lpx = mx - perpX * sign * shortOffset;
-        lpy = my - perpY * sign * shortOffset;
-      } else {
-        // Long cross-instance chord: anchor in the narrow dead-space band
-        // ABOVE the WDF banner (between EW.b and the banner top), and skew
-        // horizontally toward the chord's destination side so steps that
-        // share this band don't pile up on each other.
-        var ewBox = getBox('ew'), zccBox = getBox('zcc-hub');
-        var bandTop = ewBox ? ewBox.b : my;
-        var bandBot = zccBox ? zccBox.t : my;
-        var skewX = (p2.x - p1.x) > 0 ? 90 : -90;
-        lpx = mx + skewX;
-        lpy = (bandTop + bandBot) / 2;
-      }
+      // Anchor each label on its own arc so the number and the arrow stay
+      // visually paired. Sit it on the bowed side of the curve, just off
+      // the line, with a slide along the chord that staggers steps so
+      // multiple labels do not pile up on top of each other.
+      var basePerp = (len < 260) ? 30 : 22;
+      // Stagger along the chord: each successive step pushes its label a
+      // bit toward p2 so adjacent steps in a flow read 1, 2, 3, 4 left to
+      // right (or top to bottom) instead of stacking.
+      var staggerT = 0.5 + ((i % 2 === 0) ? -0.08 : 0.08);
+      var ax = p1.x + (p2.x - p1.x) * staggerT;
+      var ay = p1.y + (p2.y - p1.y) * staggerT;
+      // Pull the anchor toward the bowed control point so the label hugs
+      // the arc rather than the straight chord.
+      ax = ax + (ctrlX - ax) * 0.35;
+      ay = ay + (ctrlY - ay) * 0.35;
+      var lpx = ax + perpX * sign * basePerp;
+      var lpy = ay + perpY * sign * basePerp;
       var label = document.createElement('div');
       label.className = 'flow-label';
       label.style.left = lpx + 'px';
