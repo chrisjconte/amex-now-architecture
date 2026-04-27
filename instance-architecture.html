@@ -258,9 +258,10 @@ body.s-flow .cp.zcc,body.s-flow .cp.zcc-glow{opacity:0}
 .inst.is .inst-bar{background:var(--is);box-shadow:0 0 8px rgba(82,184,255,.3)}
 .inst.is .inst-dot{background:var(--is);box-shadow:0 0 6px rgba(82,184,255,.4)}
 
-/* Bottom row: natural stacking with consistent gaps between groups */
+/* Bottom row: distribute groups across the available height so the cards
+   look filled (no big empty area at the bottom) when the viewport is tall. */
 .inst.er .inst-body,
-.inst.is .inst-body{flex:1;display:flex;flex-direction:column;gap:.2rem}
+.inst.is .inst-body{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap:.2rem}
 .inst-group{display:flex;flex-direction:column}
 
 /* CMDB callout (inside Info Sec) */
