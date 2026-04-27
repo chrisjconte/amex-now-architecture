@@ -20,6 +20,9 @@
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;overflow:hidden}
+/* Scale every rem-based size with the viewport so the whole diagram
+   compresses gracefully on narrower / shorter windows instead of clipping. */
+html{font-size:clamp(11px, min(0.78vw, 1.05vh) + 5px, 16px)}
 body{font-family:var(--sans);background:var(--bg);color:#fff}
 
 /* Background */
