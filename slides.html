@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AMEX Instance Architecture — Deck</title>
+<style>
+@font-face{font-family:'ServiceNow Sans';src:url('https://www.servicenow.com/etc.clientlibs/ds/clientlibs/clientlib-arc-commons/resources/fonts/ServiceNowSans-Regular.woff2') format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:'ServiceNow Sans';src:url('https://www.servicenow.com/etc.clientlibs/ds/clientlibs/clientlib-arc-commons/resources/fonts/ServiceNowSans-Medium.woff2') format('woff2');font-weight:500;font-display:swap}
+@font-face{font-family:'ServiceNow Sans';src:url('https://www.servicenow.com/etc.clientlibs/ds/clientlibs/clientlib-arc-commons/resources/fonts/ServiceNowSans-Bold.woff2') format('woff2');font-weight:700;font-display:swap}
+@font-face{font-family:'ServiceNow Sans Mono';src:url('https://www.servicenow.com/etc.clientlibs/ds/clientlibs/clientlib-arc-commons/resources/fonts/ServiceNowSansMono-Regular.woff2') format('woff2');font-weight:400;font-display:swap}
+
+:root{
+  --bg:#070E1A; --panel:#0B1726; --line:rgba(255,255,255,.07);
+  --wasabi:#63DF4E; --blue:#52B8FF; --indigo:#7661FF; --purple:#BF71F2;
+  --g3:#D1D5DB; --g4:#9CA3AF; --g5:#6B7280;
+  --sans:'ServiceNow Sans',-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+  --mono:'ServiceNow Sans Mono','Consolas',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
+body{font-family:var(--sans);background:var(--bg);color:#fff}
+
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 800px 600px at 15% 30%,rgba(4,67,85,.45) 0%,transparent 70%),
+    radial-gradient(ellipse 500px 400px at 85% 20%,rgba(99,223,78,.03) 0%,transparent 55%),
+    radial-gradient(ellipse 900px 600px at 50% 95%,rgba(3,45,66,.35) 0%,transparent 60%)}
+.bg::after{content:'';position:absolute;inset:0;
+  background-image:radial-gradient(circle,rgba(99,223,78,.02) 1px,transparent 1px);background-size:28px 28px}
+
+.deck{position:relative;z-index:2;height:100vh;display:flex;flex-direction:column;padding:1.4rem 1.8rem 1rem}
+
+/* Top brand strip */
+.brand{display:flex;align-items:center;gap:.7rem;flex-shrink:0;padding-bottom:.6rem;margin-bottom:.6rem;border-bottom:1px solid var(--line)}
+.brand-mark{width:104px;height:auto}
+.brand-deck-title{font-size:.6rem;font-family:var(--mono);text-transform:uppercase;letter-spacing:.16em;color:var(--g4)}
+.brand-spacer{flex:1}
+.brand-meta{display:flex;align-items:center;gap:.6rem}
+.pill{background:rgba(99,223,78,.1);color:var(--wasabi);padding:.18rem .55rem;border-radius:999px;font-size:.55rem;font-weight:600;font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em}
+.pill.blue{background:rgba(82,184,255,.1);color:var(--blue)}
+.pill.indigo{background:rgba(118,97,255,.1);color:var(--indigo)}
+
+/* Slide header */
+.slide-head{display:flex;align-items:flex-end;justify-content:space-between;gap:1.5rem;flex-shrink:0;padding:.4rem 0 .9rem}
+.slide-eyebrow{font-size:.62rem;font-family:var(--mono);text-transform:uppercase;letter-spacing:.16em;color:var(--blue);margin-bottom:.45rem}
+.slide-title{font-size:1.85rem;font-weight:700;line-height:1.05;margin:0}
+.slide-title .accent{color:var(--wasabi)}
+.slide-desc{font-size:.85rem;color:var(--g3);max-width:540px;line-height:1.45;font-weight:300;margin-bottom:.2rem}
+
+/* Slide body — embedded diagram */
+.slide-body{flex:1;position:relative;border-radius:14px;overflow:hidden;border:1px solid var(--line);
+  background:linear-gradient(180deg,rgba(255,255,255,.015),rgba(255,255,255,0));
+  box-shadow:0 20px 50px rgba(0,0,0,.4),0 0 0 1px rgba(255,255,255,.02);min-height:0}
+.slide-body iframe{width:100%;height:100%;border:none;display:block;background:var(--bg)}
+.slide-body .frame-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--g4);font-size:.7rem;font-family:var(--mono);text-transform:uppercase;letter-spacing:.16em;pointer-events:none;opacity:0;transition:opacity .25s}
+.slide-body.is-loading .frame-loading{opacity:1}
+
+/* Footer / nav */
+.deck-foot{flex-shrink:0;display:flex;align-items:center;gap:1rem;padding-top:.85rem;margin-top:.7rem;border-top:1px solid var(--line)}
+.dots{display:flex;gap:.4rem;flex:1;justify-content:center}
+.dot{position:relative;width:11px;height:11px;border-radius:50%;background:rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.04);cursor:pointer;transition:all .25s}
+.dot:hover{background:rgba(255,255,255,.22)}
+.dot.active{background:var(--wasabi);box-shadow:0 0 12px rgba(99,223,78,.55);border-color:rgba(99,223,78,.5)}
+.dot-tip{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);
+  background:rgba(10,25,41,.94);border:1px solid rgba(82,184,255,.25);padding:.25rem .55rem;border-radius:5px;
+  font-size:.52rem;font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;
+  color:#fff;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .15s}
+.dot:hover .dot-tip{opacity:1}
+
+.nav-btn{padding:.5rem .9rem;border-radius:6px;background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.1);color:#fff;cursor:pointer;font-size:.7rem;
+  font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;
+  transition:all .2s;display:inline-flex;align-items:center;gap:.4rem}
+.nav-btn:hover:not(:disabled){background:rgba(82,184,255,.08);border-color:rgba(82,184,255,.3);color:var(--blue)}
+.nav-btn:disabled{opacity:.25;cursor:not-allowed}
+.nav-btn .arrow{font-size:.85rem;line-height:1}
+
+.slide-num{font-size:.65rem;color:var(--g4);font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;min-width:55px;text-align:right}
+.kbd-hint{font-size:.55rem;color:var(--g5);font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase}
+
+/* Title slide override — first slide gets a hero treatment */
+.deck.is-cover .slide-head{padding:.6rem 0 1.2rem}
+.deck.is-cover .slide-title{font-size:2.4rem}
+.deck.is-cover .slide-desc{font-size:.95rem;max-width:620px}
+
+@media (max-width: 1100px) {
+  .slide-title{font-size:1.4rem}
+  .slide-desc{font-size:.78rem;max-width:55%}
+}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+
+<div class="deck" id="deck">
+  <div class="brand">
+    <img class="brand-mark" alt="ServiceNow"
+      src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 36'%3E%3Ctext x='0' y='26' font-family='Helvetica,Arial,sans-serif' font-weight='700' font-size='24' fill='%23ffffff'%3Eservicenow%3C/text%3E%3Ccircle cx='162' cy='20' r='4' fill='%2363DF4E'/%3E%3C/svg%3E"/>
+    <span class="brand-deck-title">AMEX Instance Architecture · Deck</span>
+    <span class="brand-spacer"></span>
+    <div class="brand-meta">
+      <span class="pill" id="version-pill">Full Direct</span>
+      <span class="pill blue">3 Production Environments</span>
+    </div>
+  </div>
+
+  <div class="slide-head">
+    <div>
+      <div class="slide-eyebrow" id="eyebrow">Cover</div>
+      <h1 class="slide-title" id="title">AMEX ServiceNow Instance Architecture</h1>
+    </div>
+    <div class="slide-desc" id="desc"></div>
+  </div>
+
+  <div class="slide-body" id="body">
+    <iframe id="frame" title="Diagram"
+      src="instance-architecture.html?deck=1"
+      loading="eager"
+      allow="clipboard-read; clipboard-write"></iframe>
+    <div class="frame-loading">Loading…</div>
+  </div>
+
+  <div class="deck-foot">
+    <button class="nav-btn" id="prev"><span class="arrow">←</span><span>Previous</span></button>
+    <div class="dots" id="dots"></div>
+    <span class="kbd-hint">←  →  Navigate</span>
+    <button class="nav-btn" id="next"><span>Next</span><span class="arrow">→</span></button>
+    <span class="slide-num" id="num">1 / 7</span>
+  </div>
+</div>
+
+<script>
+(function() {
+  var slides = [
+    {
+      title: 'AMEX ServiceNow Instance Architecture',
+      eyebrow: 'Cover · Multi-Instance Full Direct',
+      desc: 'Three production environments — Enterprise Environment, Enterprise Risk, and Info Sec — federated through the Workflow Data Fabric and a single AMEX CMDB hosted in Info Sec.',
+      scenario: null,
+      version: 'direct'
+    },
+    {
+      title: 'HR Case Flow',
+      eyebrow: 'Scenario 1 · Employee Lifecycle',
+      desc: 'Employee raises an HR case via portal; HRSD handles it; CMDB context enriches the ITSM ticket.',
+      scenario: 'hr-case'
+    },
+    {
+      title: 'Facilities Request',
+      eyebrow: 'Scenario 2 · Workplace',
+      desc: 'Employee raises a facilities request in Workplace Service Delivery; the work order is dispatched directly to Field Service Management for resolution.',
+      scenario: 'workplace'
+    },
+    {
+      title: 'Security Incident',
+      eyebrow: 'Scenario 3 · SecOps',
+      desc: 'SIR detects a threat, ITSM opens an incident, ITOM correlates infrastructure impact — all within Info Sec.',
+      scenario: 'security'
+    },
+    {
+      title: 'Supplier Onboarding',
+      eyebrow: 'Scenario 4 · Governance, Risk & Compliance',
+      desc: 'Procurement requests a new supplier; TPRM screens third-party risk; Workflow Data Fabric federates the signal to Enterprise Risk where IRM assesses and BCM plans continuity.',
+      scenario: 'risk'
+    },
+    {
+      title: 'Workplace Services Request',
+      eyebrow: 'Scenario 5 · Cross-Instance Procurement',
+      desc: 'Employee requests a conference room with a monitor; WSD raises the request; ITAM finds no monitors in stock; S2P procures one; the new monitor is received, registered in the CMDB as a physical CI, and ITAM assigns it to the room.',
+      scenario: 'conf-room'
+    },
+    {
+      title: 'Digital Workplace Flow',
+      eyebrow: 'Scenario 6 · Break-Fix',
+      desc: 'Colleague chats with Employee Works AI about a laptop problem; CMDB locates the laptop CI; ITOM enriches it with NextThink telemetry; ITSM drives the break-fix process through to resolution.',
+      scenario: 'digital-workplace'
+    }
+  ];
+
+  var current = 0;
+  var iframeReady = false;
+
+  var deckEl    = document.getElementById('deck');
+  var bodyEl    = document.getElementById('body');
+  var frameEl   = document.getElementById('frame');
+  var titleEl   = document.getElementById('title');
+  var descEl    = document.getElementById('desc');
+  var eyebrowEl = document.getElementById('eyebrow');
+  var numEl     = document.getElementById('num');
+  var dotsEl    = document.getElementById('dots');
+  var prevBtn   = document.getElementById('prev');
+  var nextBtn   = document.getElementById('next');
+  var versionPill = document.getElementById('version-pill');
+
+  // Build the dots
+  slides.forEach(function(s, i) {
+    var d = document.createElement('div');
+    d.className = 'dot';
+    d.addEventListener('click', function() { goto(i); });
+    var tip = document.createElement('span');
+    tip.className = 'dot-tip';
+    tip.textContent = (i + 1) + '. ' + s.title;
+    d.appendChild(tip);
+    dotsEl.appendChild(d);
+  });
+
+  function setSlideText(s, i) {
+    titleEl.textContent = s.title;
+    descEl.textContent  = s.desc;
+    eyebrowEl.textContent = s.eyebrow;
+    numEl.textContent = (i + 1) + ' / ' + slides.length;
+    Array.from(dotsEl.children).forEach(function(d, j) {
+      d.classList.toggle('active', j === i);
+    });
+    prevBtn.disabled = (i === 0);
+    nextBtn.disabled = (i === slides.length - 1);
+    deckEl.classList.toggle('is-cover', i === 0);
+    versionPill.textContent = (s.version === 'hybrid') ? 'Hybrid Commercial' : 'Full Direct';
+    versionPill.classList.toggle('blue', s.version === 'hybrid');
+  }
+
+  function activateInFrame(s) {
+    if (!iframeReady) return;
+    try {
+      frameEl.contentWindow.postMessage({type: 'set-version', version: s.version || 'direct'}, '*');
+      frameEl.contentWindow.postMessage({type: 'set-scenario', key: s.scenario || null}, '*');
+    } catch (e) {}
+  }
+
+  function goto(i) {
+    current = Math.max(0, Math.min(slides.length - 1, i));
+    var s = slides[current];
+    setSlideText(s, current);
+    if (iframeReady) activateInFrame(s);
+  }
+
+  prevBtn.addEventListener('click', function() { goto(current - 1); });
+  nextBtn.addEventListener('click', function() { goto(current + 1); });
+
+  document.addEventListener('keydown', function(e) {
+    // Ignore if focus is in an input
+    var t = e.target;
+    if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) return;
+    if (e.key === 'ArrowLeft' || e.key === 'PageUp')      { e.preventDefault(); goto(current - 1); }
+    else if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ')
+                                                          { e.preventDefault(); goto(current + 1); }
+    else if (e.key === 'Home')                            { e.preventDefault(); goto(0); }
+    else if (e.key === 'End')                             { e.preventDefault(); goto(slides.length - 1); }
+  });
+
+  // Wait for the diagram iframe to finish loading before sending postMessage
+  bodyEl.classList.add('is-loading');
+  frameEl.addEventListener('load', function() {
+    iframeReady = true;
+    bodyEl.classList.remove('is-loading');
+    // Apply the current slide once the iframe is ready (covers initial load
+    // and any future re-loads).
+    activateInFrame(slides[current]);
+  });
+
+  // Initial render
+  setSlideText(slides[0], 0);
+})();
+</script>
+</body>
+</html>
