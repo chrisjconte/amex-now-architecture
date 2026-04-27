@@ -498,6 +498,7 @@ body[data-version="hybrid"] .inst.is .mod{color:#fff}
     <span class="scenario-chip" data-scenario="security">Security Incident</span>
     <span class="scenario-chip" data-scenario="risk">Supplier Onboarding</span>
     <span class="scenario-chip" data-scenario="conf-room">Conference Room Setup</span>
+    <span class="scenario-chip" data-scenario="digital-workplace">Digital Workplace Flow</span>
     <span class="scenario-desc" id="scenario-desc"></span>
   </div>
 
@@ -702,6 +703,15 @@ body[data-version="hybrid"] .inst.is .mod{color:#fff}
         {from: 'is-itam',    to: 'ew-sop',   label: 'Out of stock — order monitor'},
         {from: 'ew-sop',     to: 'is-cmdb',  label: 'Receive & register CI'},
         {from: 'is-cmdb',    to: 'is-itam',  label: 'Assign asset to room'}
+      ]
+    },
+    'digital-workplace': {
+      desc: 'Employee reports a laptop problem; CMDB locates the laptop CI; ITOM enriches it with NextThink telemetry; ITSM drives the break-fix process through to resolution.',
+      steps: [
+        {from: 'ew-employee-works', to: 'is-cmdb',           label: 'Laptop CI lookup'},
+        {from: 'is-cmdb',           to: 'is-itom',           label: 'Enrich via NextThink'},
+        {from: 'is-itom',           to: 'is-itsm',           label: 'Open break-fix ticket'},
+        {from: 'is-itsm',           to: 'ew-employee-works', label: 'Laptop fixed'}
       ]
     }
   };
